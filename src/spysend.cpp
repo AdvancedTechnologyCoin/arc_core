@@ -37,8 +37,8 @@ CActiveGoldmine activeGoldmine;
 
 /* *** BEGIN SPYSEND MAGIC - ARC **********
     Copyright (c) 2014-2015, Arctic Developers
-        eduffield - evan@dashpay.io
-        udjinm6   - udjinm6@dashpay.io
+        eduffield - evan@arcticcoinpay.io
+        udjinm6   - udjinm6@arcticcoinpay.io
 */
 
 void CSpysendPool::ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
@@ -2230,7 +2230,7 @@ void ThreadCheckSpySendPool()
     if(fLiteMode) return; //disable all Spysend/Goldmine related functionality
 
     // Make this thread recognisable as the wallet flushing thread
-    RenameThread("dash-spysend");
+    RenameThread("arcticcoin-spysend");
 
     unsigned int c = 0;
 

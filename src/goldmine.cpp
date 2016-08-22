@@ -523,14 +523,14 @@ bool CGoldmineBroadcast::CheckInputsAndAdd(int& nDoS)
     }
 
     // verify that sig time is legit in past
-    // should be at least not earlier than block when 1000 DASH tx got GOLDMINE_MIN_CONFIRMATIONS
+    // should be at least not earlier than block when 1000 ARC tx got GOLDMINE_MIN_CONFIRMATIONS
     uint256 hashBlock = 0;
     CTransaction tx2;
     GetTransaction(vin.prevout.hash, tx2, hashBlock, true);
     BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
     if (mi != mapBlockIndex.end() && (*mi).second)
     {
-        CBlockIndex* pMNIndex = (*mi).second; // block for 1000 DASH tx -> 1 confirmation
+        CBlockIndex* pMNIndex = (*mi).second; // block for 1000 ARC tx -> 1 confirmation
         CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + GOLDMINE_MIN_CONFIRMATIONS - 1]; // block where tx got GOLDMINE_MIN_CONFIRMATIONS
         if(pConfIndex->GetBlockTime() > sigTime)
         {
