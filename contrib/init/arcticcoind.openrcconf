@@ -1,0 +1,27 @@
+# /etc/conf.d/arcticcoind: config file for /etc/init.d/arcticcoind
+
+# Config file location
+#BITCOIND_CONFIGFILE="/etc/arcticcoin/arcticcoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
+#BITCOIND_PIDDIR="/var/run/arcticcoind"
+
+# What filename to give the pidfile
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/arcticcoind.pid"
+
+# Where to write arcticcoind data (be mindful that the blockchain is large)
+#BITCOIND_DATADIR="/var/lib/arcticcoind"
+
+# User and group to own arcticcoind process
+#BITCOIND_USER="arcticcoin"
+#BITCOIND_GROUP="arcticcoin"
+
+# Path to arcticcoind executable
+#BITCOIND_BIN="/usr/bin/arcticcoind"
+
+# Nice value to run arcticcoind under
+#BITCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+BITCOIND_OPTS="-disablewallet"
+

@@ -1,0 +1,22 @@
+[Unit]
+Description=Arctic's distributed currency daemon
+After=network.target
+
+[Service]
+User=arcticcoin
+Group=arcticcoin
+
+Type=forking
+PIDFile=/var/lib/arcticcoind/arcticcoind.pid
+ExecStart=/usr/bin/arcticcoind -daemon -pid=/var/lib/arcticcoind/arcticcoind.pid \
+-conf=/etc/arcticcoin/arcticcoin.conf -datadir=/var/lib/arcticcoind -disablewallet
+
+Restart=always
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=2s
+StartLimitInterval=120s
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
