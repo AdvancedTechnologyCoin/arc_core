@@ -101,11 +101,11 @@ void CSpySendRelay::Relay()
 
 void CSpySendRelay::RelayThroughNode(int nRank)
 {
-    CGoldmine* pmn = gmineman.GetGoldmineByRank(nRank, nBlockHeight, MIN_POOL_PEER_PROTO_VERSION);
+    CGoldmine* pgm = gmineman.GetGoldmineByRank(nRank, nBlockHeight, MIN_POOL_PEER_PROTO_VERSION);
 
-    if(pmn != NULL){
-        //printf("RelayThroughNode %s\n", pmn->addr.ToString().c_str());
-        CNode* pnode = ConnectNode((CAddress)pmn->addr, NULL, false);
+    if(pgm != NULL){
+        //printf("RelayThroughNode %s\n", pgm->addr.ToString().c_str());
+        CNode* pnode = ConnectNode((CAddress)pgm->addr, NULL, false);
         if(pnode){
             //printf("Connected\n");
             pnode->PushMessage("dsr", (*this));

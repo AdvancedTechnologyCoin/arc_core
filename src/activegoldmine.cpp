@@ -28,11 +28,11 @@ void CActiveGoldmine::ManageStatus()
     if(status == ACTIVE_GOLDMINE_SYNC_IN_PROCESS) status = ACTIVE_GOLDMINE_INITIAL;
 
     if(status == ACTIVE_GOLDMINE_INITIAL) {
-        CGoldmine *pmn;
-        pmn = gmineman.Find(pubKeyGoldmine);
-        if(pmn != NULL) {
-            pmn->Check();
-            if(pmn->IsEnabled() && pmn->protocolVersion == PROTOCOL_VERSION) EnableHotColdGoldMine(pmn->vin, pmn->addr);
+        CGoldmine *pgm;
+        pgm = gmineman.Find(pubKeyGoldmine);
+        if(pgm != NULL) {
+            pgm->Check();
+            if(pgm->IsEnabled() && pgm->protocolVersion == PROTOCOL_VERSION) EnableHotColdGoldMine(pgm->vin, pgm->addr);
         }
     }
 
@@ -113,8 +113,8 @@ void CActiveGoldmine::ManageStatus()
                 return;
             }
 
-            CGoldmineBroadcast mnb;
-            if(!CreateBroadcast(vin, service, keyCollateralAddress, pubKeyCollateralAddress, keyGoldmine, pubKeyGoldmine, errorMessage, mnb)) {
+            CGoldmineBroadcast gmb;
+            if(!CreateBroadcast(vin, service, keyCollateralAddress, pubKeyCollateralAddress, keyGoldmine, pubKeyGoldmine, errorMessage, gmb)) {
                 notCapableReason = "Error on CreateBroadcast: " + errorMessage;
                 LogPrintf("Register::ManageStatus() - %s\n", notCapableReason);
                 return;
@@ -122,7 +122,7 @@ void CActiveGoldmine::ManageStatus()
 
             //send to all peers
             LogPrintf("CActiveGoldmine::ManageStatus() - Relay broadcast vin = %s\n", vin.ToString());
-            mnb.Relay();
+            gmb.Relay();
 
             LogPrintf("CActiveGoldmine::ManageStatus() - Is capable master node!\n");
             status = ACTIVE_GOLDMINE_STARTED;
@@ -177,20 +177,20 @@ bool CActiveGoldmine::SendGoldminePing(std::string& errorMessage) {
     }
 
     // Update lastPing for our goldmine in Goldmine list
-    CGoldmine* pmn = gmineman.Find(vin);
-    if(pmn != NULL)
+    CGoldmine* pgm = gmineman.Find(vin);
+    if(pgm != NULL)
     {
-        if(pmn->IsPingedWithin(GOLDMINE_PING_SECONDS, mnp.sigTime)){
+        if(pgm->IsPingedWithin(GOLDMINE_PING_SECONDS, mnp.sigTime)){
             errorMessage = "Too early to send Goldmine Ping";
             return false;
         }
 
-        pmn->lastPing = mnp;
+        pgm->lastPing = mnp;
         gmineman.mapSeenGoldminePing.insert(make_pair(mnp.GetHash(), mnp));
 
         //gmineman.mapSeenGoldmineBroadcast.lastPing is probably outdated, so we'll update it
-        CGoldmineBroadcast mnb(*pmn);
-        uint256 hash = mnb.GetHash();
+        CGoldmineBroadcast gmb(*pgm);
+        uint256 hash = gmb.GetHash();
         if(gmineman.mapSeenGoldmineBroadcast.count(hash)) gmineman.mapSeenGoldmineBroadcast[hash].lastPing = mnp;
 
         mnp.Relay();
@@ -208,7 +208,7 @@ bool CActiveGoldmine::SendGoldminePing(std::string& errorMessage) {
 
 }
 
-bool CActiveGoldmine::CreateBroadcast(std::string strService, std::string strKeyGoldmine, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CGoldmineBroadcast &mnb, bool fOffline) {
+bool CActiveGoldmine::CreateBroadcast(std::string strService, std::string strKeyGoldmine, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CGoldmineBroadcast &gmb, bool fOffline) {
     CTxIn vin;
     CPubKey pubKeyCollateralAddress;
     CKey keyCollateralAddress;
@@ -250,10 +250,10 @@ bool CActiveGoldmine::CreateBroadcast(std::string strService, std::string strKey
 
     addrman.Add(CAddress(service), CNetAddr("127.0.0.1"), 2*60*60);
 
-    return CreateBroadcast(vin, CService(strService), keyCollateralAddress, pubKeyCollateralAddress, keyGoldmine, pubKeyGoldmine, errorMessage, mnb);
+    return CreateBroadcast(vin, CService(strService), keyCollateralAddress, pubKeyCollateralAddress, keyGoldmine, pubKeyGoldmine, errorMessage, gmb);
 }
 
-bool CActiveGoldmine::CreateBroadcast(CTxIn vin, CService service, CKey keyCollateralAddress, CPubKey pubKeyCollateralAddress, CKey keyGoldmine, CPubKey pubKeyGoldmine, std::string &errorMessage, CGoldmineBroadcast &mnb) {
+bool CActiveGoldmine::CreateBroadcast(CTxIn vin, CService service, CKey keyCollateralAddress, CPubKey pubKeyCollateralAddress, CKey keyGoldmine, CPubKey pubKeyGoldmine, std::string &errorMessage, CGoldmineBroadcast &gmb) {
     // wait for reindex and/or import to finish
     if (fImporting || fReindex) return false;
 
@@ -261,16 +261,16 @@ bool CActiveGoldmine::CreateBroadcast(CTxIn vin, CService service, CKey keyColla
     if(!mnp.Sign(keyGoldmine, pubKeyGoldmine)){
         errorMessage = strprintf("Failed to sign ping, vin: %s", vin.ToString());
         LogPrintf("CActiveGoldmine::CreateBroadcast() -  %s\n", errorMessage);
-        mnb = CGoldmineBroadcast();
+        gmb = CGoldmineBroadcast();
         return false;
     }
 
-    mnb = CGoldmineBroadcast(service, vin, pubKeyCollateralAddress, pubKeyGoldmine, PROTOCOL_VERSION);
-    mnb.lastPing = mnp;
-    if(!mnb.Sign(keyCollateralAddress)){
+    gmb = CGoldmineBroadcast(service, vin, pubKeyCollateralAddress, pubKeyGoldmine, PROTOCOL_VERSION);
+    gmb.lastPing = mnp;
+    if(!gmb.Sign(keyCollateralAddress)){
         errorMessage = strprintf("Failed to sign broadcast, vin: %s", vin.ToString());
         LogPrintf("CActiveGoldmine::CreateBroadcast() - %s\n", errorMessage);
-        mnb = CGoldmineBroadcast();
+        gmb = CGoldmineBroadcast();
         return false;
     }
 

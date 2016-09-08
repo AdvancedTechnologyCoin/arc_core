@@ -30,7 +30,7 @@ private:
     bool SendGoldminePing(std::string& errorMessage);
 
     /// Create Goldmine broadcast, needs to be relayed manually after that
-    bool CreateBroadcast(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyGoldmine, CPubKey pubKeyGoldmine, std::string &errorMessage, CGoldmineBroadcast &mnb);
+    bool CreateBroadcast(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyGoldmine, CPubKey pubKeyGoldmine, std::string &errorMessage, CGoldmineBroadcast &gmb);
 
     /// Get 1000ARC input that can be used for the Goldmine
     bool GetGoldMineVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey, std::string strTxHash, std::string strOutputIndex);
@@ -58,7 +58,7 @@ public:
     std::string GetStatus();
 
     /// Create Goldmine broadcast, needs to be relayed manually after that
-    bool CreateBroadcast(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CGoldmineBroadcast &mnb, bool fOffline = false);
+    bool CreateBroadcast(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CGoldmineBroadcast &gmb, bool fOffline = false);
 
     /// Get 1000ARC input that can be used for the Goldmine
     bool GetGoldMineVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey);

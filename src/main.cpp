@@ -4179,7 +4179,7 @@ void static ProcessGetData(CNode* pfrom)
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
                         ss << gmineman.mapSeenGoldmineBroadcast[inv.hash];
-                        pfrom->PushMessage("mnb", ss);
+                        pfrom->PushMessage("gmb", ss);
                         pushed = true;
                     }
                 }
@@ -4636,10 +4636,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             //these allow goldmines to publish a limited amount of free transactions
             vRecv >> tx >> vin >> vchSig >> sigTime;
 
-            CGoldmine* pmn = gmineman.Find(vin);
-            if(pmn != NULL)
+            CGoldmine* pgm = gmineman.Find(vin);
+            if(pgm != NULL)
             {
-                if(!pmn->allowFreeTx){
+                if(!pgm->allowFreeTx){
                     //multiple peers can send us a valid goldmine transaction
                     if(fDebug) LogPrintf("dstx: Goldmine sending too many transactions %s\n", tx.GetHash().ToString());
                     return true;
@@ -4648,7 +4648,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 std::string strMessage = tx.GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
 
                 std::string errorMessage = "";
-                if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)){
+                if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)){
                     LogPrintf("dstx: Got bad goldmine address signature %s \n", vin.ToString());
                     //pfrom->Misbehaving(20);
                     return false;
@@ -4657,7 +4657,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 LogPrintf("dstx: Got Goldmine transaction %s\n", tx.GetHash().ToString());
 
                 ignoreFees = true;
-                pmn->allowFreeTx = false;
+                pgm->allowFreeTx = false;
 
                 if(!mapSpysendBroadcastTxes.count(tx.GetHash())){
                     CSpysendBroadcastTx dstx;

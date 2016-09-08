@@ -238,7 +238,7 @@ bool LogAcceptCategory(const char* category)
                 ptrCategory->insert(string("instantx"));
                 ptrCategory->insert(string("goldmine"));
                 ptrCategory->insert(string("keepass"));
-                ptrCategory->insert(string("mnpayments"));
+                ptrCategory->insert(string("gmpayments"));
                 ptrCategory->insert(string("gmevolution"));
             }
         }

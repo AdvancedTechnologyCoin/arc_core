@@ -27,7 +27,7 @@ CCriticalSection cs_mapGoldminePayeeVotes;
 
 CGoldminePaymentDB::CGoldminePaymentDB()
 {
-    pathDB = GetDataDir() / "mnpayments.dat";
+    pathDB = GetDataDir() / "gmpayments.dat";
     strMagicMessage = "GoldminePayments";
 }
 
@@ -58,7 +58,7 @@ bool CGoldminePaymentDB::Write(const CGoldminePayments& objToSave)
     }
     fileout.fclose();
 
-    LogPrintf("Written info to mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrintf("Written info to gmpayments.dat  %dms\n", GetTimeMillis() - nStart);
 
     return true;
 }
@@ -141,7 +141,7 @@ CGoldminePaymentDB::ReadResult CGoldminePaymentDB::Read(CGoldminePayments& objTo
         return IncorrectFormat;
     }
 
-    LogPrintf("Loaded info from mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrintf("Loaded info from gmpayments.dat  %dms\n", GetTimeMillis() - nStart);
     LogPrintf("  %s\n", objToLoad.ToString());
     if(!fDryRun) {
         LogPrintf("Goldmine payments manager - cleaning....\n");
@@ -160,14 +160,14 @@ void DumpGoldminePayments()
     CGoldminePaymentDB paymentdb;
     CGoldminePayments tempPayments;
 
-    LogPrintf("Verifying mnpayments.dat format...\n");
+    LogPrintf("Verifying gmpayments.dat format...\n");
     CGoldminePaymentDB::ReadResult readResult = paymentdb.Read(tempPayments, true);
     // there was an error and it was not an error on file opening => do not proceed
     if (readResult == CGoldminePaymentDB::FileError)
-        LogPrintf("Missing evolutions file - mnpayments.dat, will try to recreate\n");
+        LogPrintf("Missing evolutions file - gmpayments.dat, will try to recreate\n");
     else if (readResult != CGoldminePaymentDB::Ok)
     {
-        LogPrintf("Error reading mnpayments.dat: ");
+        LogPrintf("Error reading gmpayments.dat: ");
         if(readResult == CGoldminePaymentDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
@@ -176,7 +176,7 @@ void DumpGoldminePayments()
             return;
         }
     }
-    LogPrintf("Writting info to mnpayments.dat...\n");
+    LogPrintf("Writting info to gmpayments.dat...\n");
     paymentdb.Write(goldminePayments);
 
     LogPrintf("Evolution dump finished  %dms\n", GetTimeMillis() - nStart);
@@ -228,7 +228,7 @@ bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue){
 bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight)
 {
     if(!goldmineSync.IsSynced()) { //there is no evolution data to use to check anything -- find the longest chain
-        LogPrint("mnpayments", "Client not synced, skipping block payee checks\n");
+        LogPrint("gmpayments", "Client not synced, skipping block payee checks\n");
         return true;
     }
 
@@ -342,58 +342,63 @@ void CGoldminePayments::ProcessMessageGoldminePayments(CNode* pfrom, std::string
     if(fLiteMode) return; //disable all Spysend/Goldmine related functionality
 
 
-    if (strCommand == "mnget") { //Goldmine Payments Request Sync
+    if (strCommand == "gmget") { //Goldmine Payments Request Sync
         if(fLiteMode) return; //disable all Spysend/Goldmine related functionality
 
         int nCountNeeded;
         vRecv >> nCountNeeded;
 
         if(Params().NetworkID() == CBaseChainParams::MAIN){
-            if(pfrom->HasFulfilledRequest("mnget")) {
-                LogPrintf("mnget - peer already asked me for the list\n");
+            if(pfrom->HasFulfilledRequest("gmget")) {
+                LogPrintf("gmget - peer already asked me for the list\n");
                 Misbehaving(pfrom->GetId(), 20);
                 return;
             }
         }
 
-        pfrom->FulfilledRequest("mnget");
+        pfrom->FulfilledRequest("gmget");
         goldminePayments.Sync(pfrom, nCountNeeded);
-        LogPrintf("mnget - Sent Goldmine winners to %s\n", pfrom->addr.ToString().c_str());
+        LogPrintf("gmget - Sent Goldmine winners to %s\n", pfrom->addr.ToString().c_str());
     }
     else if (strCommand == "mnw") { //Goldmine Payments Declare Winner
         //this is required in litemodef
         CGoldminePaymentWinner winner;
         vRecv >> winner;
 
-        if(pfrom->nVersion < MIN_MNW_PEER_PROTO_VERSION) return;
+        if(pfrom->nVersion < MIN_GMW_PEER_PROTO_VERSION) return;
 
-        if(chainActive.Tip() == NULL) return;
+        int nHeight;
+		{
+			TRY_LOCK(cs_main, locked);
+			if(!locked || chainActive.Tip() == NULL) return;
+			nHeight = chainActive.Tip()->nHeight;
+		}
 
         if(goldminePayments.mapGoldminePayeeVotes.count(winner.GetHash())){
-            LogPrint("mnpayments", "mnw - Already seen - %s bestHeight %d\n", winner.GetHash().ToString().c_str(), chainActive.Tip()->nHeight);
+            LogPrint("gmpayments", "gmw - Already seen - %s bestHeight %d\n", winner.GetHash().ToString().c_str(), nHeight);
             goldmineSync.AddedGoldmineWinner(winner.GetHash());
             return;
         }
 
-        int nFirstBlock = chainActive.Tip()->nHeight - (gmineman.CountEnabled()*1.25);
-        if(winner.nBlockHeight < nFirstBlock || winner.nBlockHeight > chainActive.Tip()->nHeight+20){
-            LogPrint("mnpayments", "mnw - winner out of range - FirstBlock %d Height %d bestHeight %d\n", nFirstBlock, winner.nBlockHeight, chainActive.Tip()->nHeight);
+        int nFirstBlock = nHeight - (gmineman.CountEnabled()*1.25);
+        if(winner.nBlockHeight < nFirstBlock || winner.nBlockHeight > winner.nBlockHeight->nHeight+20){
+            LogPrint("gmpayments", "gmw - winner out of range - FirstBlock %d Height %d bestHeight %d\n", nFirstBlock, winner.nBlockHeight, nHeight);
             return;
         }
 
         std::string strError = "";
         if(!winner.IsValid(pfrom, strError)){
-            if(strError != "") LogPrintf("mnw - invalid message - %s\n", strError);
+            if(strError != "") LogPrintf("gmw - invalid message - %s\n", strError);
             return;
         }
 
         if(!goldminePayments.CanVote(winner.vinGoldmine.prevout, winner.nBlockHeight)){
-            LogPrintf("mnw - goldmine already voted - %s\n", winner.vinGoldmine.prevout.ToStringShort());
+            LogPrintf("gmw - goldmine already voted - %s\n", winner.vinGoldmine.prevout.ToStringShort());
             return;
         }
 
         if(!winner.SignatureValid()){
-            LogPrintf("mnw - invalid signature\n");
+            LogPrintf("gmw - invalid signature\n");
             if(goldmineSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
             // it could just be a non-synced goldmine
             gmineman.AskForMN(pfrom, winner.vinGoldmine);
@@ -404,7 +409,7 @@ void CGoldminePayments::ProcessMessageGoldminePayments(CNode* pfrom, std::string
         ExtractDestination(winner.payee, address1);
         CBitcoinAddress address2(address1);
 
-        LogPrint("mnpayments", "mnw - winning vote - Addr %s Height %d bestHeight %d - %s\n", address2.ToString().c_str(), winner.nBlockHeight, chainActive.Tip()->nHeight, winner.vinGoldmine.prevout.ToStringShort());
+        LogPrint("gmpayments", "gmw - winning vote - Addr %s Height %d bestHeight %d - %s\n", address2.ToString().c_str(), winner.nBlockHeight, nHeight, winner.vinGoldmine.prevout.ToStringShort());
 
         if(goldminePayments.AddWinningGoldmine(winner)){
             winner.Relay();
@@ -450,18 +455,22 @@ bool CGoldminePayments::IsScheduled(CGoldmine& gm, int nNotBlockHeight)
 {
     LOCK(cs_mapGoldmineBlocks);
 
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(pindexPrev == NULL) return false;
-
-    CScript mnpayee;
-    mnpayee = GetScriptForDestination(gm.pubkey.GetID());
+    int nHeight;
+	{
+		TRY_LOCK(cs_main, locked);
+		if(!locked || chainActive.Tip() == NULL) return false;
+		nHeight = chainActive.Tip()->nHeight;
+	}
+    
+    CScript gmpayee;
+    gmpayee = GetScriptForDestination(gm.pubkey.GetID());
 
     CScript payee;
-    for(int64_t h = pindexPrev->nHeight; h <= pindexPrev->nHeight+8; h++){
+    for(int64_t h = nHeight; h <= nHeight+8; h++){
         if(h == nNotBlockHeight) continue;
         if(mapGoldmineBlocks.count(h)){
             if(mapGoldmineBlocks[h].GetPayee(payee)){
-                if(mnpayee == payee) {
+                if(gmpayee == payee) {
                     return true;
                 }
             }
@@ -512,11 +521,11 @@ bool CGoldmineBlockPayees::IsTransactionValid(const CTransaction& txNew)
     //require at least 6 signatures
 
     BOOST_FOREACH(CGoldminePayee& payee, vecPayments)
-        if(payee.nVotes >= nMaxSignatures && payee.nVotes >= MNPAYMENTS_SIGNATURES_REQUIRED)
+        if(payee.nVotes >= nMaxSignatures && payee.nVotes >= GMPAYMENTS_SIGNATURES_REQUIRED)
             nMaxSignatures = payee.nVotes;
 
     // if we don't have at least 6 signatures on a payee, approve whichever is the longest chain
-    if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
+    if(nMaxSignatures < GMPAYMENTS_SIGNATURES_REQUIRED) return true;
 
     BOOST_FOREACH(CGoldminePayee& payee, vecPayments)
     {
@@ -527,7 +536,7 @@ bool CGoldmineBlockPayees::IsTransactionValid(const CTransaction& txNew)
             }
         }
 
-        if(payee.nVotes >= MNPAYMENTS_SIGNATURES_REQUIRED){
+        if(payee.nVotes >= GMPAYMENTS_SIGNATURES_REQUIRED){
             if(found) return true;
 
             CTxDestination address1;
@@ -595,7 +604,12 @@ void CGoldminePayments::CleanPaymentList()
 {
     LOCK2(cs_mapGoldminePayeeVotes, cs_mapGoldmineBlocks);
 
-    if(chainActive.Tip() == NULL) return;
+    int nHeight;
+	{
+		TRY_LOCK(cs_main, locked);
+		if(!locked || chainActive.Tip() == NULL) return;
+		nHeight = chainActive.Tip()->nHeight;
+	}
 
     //keep up to five cycles for historical sake
     int nLimit = std::max(int(gmineman.size()*1.25), 1000);
@@ -604,9 +618,9 @@ void CGoldminePayments::CleanPaymentList()
     while(it != mapGoldminePayeeVotes.end()) {
         CGoldminePaymentWinner winner = (*it).second;
 
-        if(chainActive.Tip()->nHeight - winner.nBlockHeight > nLimit){
-            LogPrint("mnpayments", "CGoldminePayments::CleanPaymentList - Removing old Goldmine payment - block %d\n", winner.nBlockHeight);
-            goldmineSync.mapSeenSyncMNW.erase((*it).first);
+        if(nHeight - winner.nBlockHeight > nLimit){
+            LogPrint("gmpayments", "CGoldminePayments::CleanPaymentList - Removing old Goldmine payment - block %d\n", winner.nBlockHeight);
+            goldmineSync.mapSeenSyncGMW.erase((*it).first);
             mapGoldminePayeeVotes.erase(it++);
             mapGoldmineBlocks.erase(winner.nBlockHeight);
         } else {
@@ -629,9 +643,9 @@ bool CGoldminePaymentWinner::IsValid(CNode* pnode, std::string& strError)
 {
     if(IsReferenceNode(vinGoldmine)) return true;
 
-    CGoldmine* pmn = gmineman.Find(vinGoldmine);
+    CGoldmine* pgm = gmineman.Find(vinGoldmine);
 
-    if(!pmn)
+    if(!pgm)
     {
         strError = strprintf("Unknown Goldmine %s", vinGoldmine.prevout.ToStringShort());
         LogPrintf ("CGoldminePaymentWinner::IsValid - %s\n", strError);
@@ -639,22 +653,22 @@ bool CGoldminePaymentWinner::IsValid(CNode* pnode, std::string& strError)
         return false;
     }
 
-    if(pmn->protocolVersion < MIN_MNW_PEER_PROTO_VERSION)
+    if(pgm->protocolVersion < MIN_GMW_PEER_PROTO_VERSION)
     {
-        strError = strprintf("Goldmine protocol too old %d - req %d", pmn->protocolVersion, MIN_MNW_PEER_PROTO_VERSION);
+        strError = strprintf("Goldmine protocol too old %d - req %d", pgm->protocolVersion, MIN_GMW_PEER_PROTO_VERSION);
         LogPrintf ("CGoldminePaymentWinner::IsValid - %s\n", strError);
         return false;
     }
 
-    int n = gmineman.GetGoldmineRank(vinGoldmine, nBlockHeight-100, MIN_MNW_PEER_PROTO_VERSION);
+    int n = gmineman.GetGoldmineRank(vinGoldmine, nBlockHeight-100, MIN_GMW_PEER_PROTO_VERSION);
 
-    if(n > MNPAYMENTS_SIGNATURES_TOTAL)
+    if(n > GMPAYMENTS_SIGNATURES_TOTAL)
     {    
         //It's common to have goldmines mistakenly think they are in the top 10
         // We don't want to print all of these messages, or punish them unless they're way off
-        if(n > MNPAYMENTS_SIGNATURES_TOTAL*2)
+        if(n > GMPAYMENTS_SIGNATURES_TOTAL*2)
         {
-            strError = strprintf("Goldmine not in the top %d (%d)", MNPAYMENTS_SIGNATURES_TOTAL, n);
+            strError = strprintf("Goldmine not in the top %d (%d)", GMPAYMENTS_SIGNATURES_TOTAL, n);
             LogPrintf("CGoldminePaymentWinner::IsValid - %s\n", strError);
             if(goldmineSync.IsSynced()) Misbehaving(pnode->GetId(), 20);
         }
@@ -671,17 +685,17 @@ bool CGoldminePayments::ProcessBlock(int nBlockHeight)
     //reference node - hybrid mode
 
     if(!IsReferenceNode(activeGoldmine.vin)){
-        int n = gmineman.GetGoldmineRank(activeGoldmine.vin, nBlockHeight-100, MIN_MNW_PEER_PROTO_VERSION);
+        int n = gmineman.GetGoldmineRank(activeGoldmine.vin, nBlockHeight-100, MIN_GMW_PEER_PROTO_VERSION);
 
         if(n == -1)
         {
-            LogPrint("mnpayments", "CGoldminePayments::ProcessBlock - Unknown Goldmine\n");
+            LogPrint("gmpayments", "CGoldminePayments::ProcessBlock - Unknown Goldmine\n");
             return false;
         }
 
-        if(n > MNPAYMENTS_SIGNATURES_TOTAL)
+        if(n > GMPAYMENTS_SIGNATURES_TOTAL)
         {
-            LogPrint("mnpayments", "CGoldminePayments::ProcessBlock - Goldmine not in the top %d (%d)\n", MNPAYMENTS_SIGNATURES_TOTAL, n);
+            LogPrint("gmpayments", "CGoldminePayments::ProcessBlock - Goldmine not in the top %d (%d)\n", GMPAYMENTS_SIGNATURES_TOTAL, n);
             return false;
         }
     }
@@ -695,17 +709,17 @@ bool CGoldminePayments::ProcessBlock(int nBlockHeight)
     } else {
         LogPrintf("CGoldminePayments::ProcessBlock() Start nHeight %d - vin %s. \n", nBlockHeight, activeGoldmine.vin.ToString().c_str());
 
-        // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
+        // pay to the oldest GM that still had no payment but its input is old enough and it was active long enough
         int nCount = 0;
-        CGoldmine *pmn = gmineman.GetNextGoldmineInQueueForPayment(nBlockHeight, true, nCount);
+        CGoldmine *pgm = gmineman.GetNextGoldmineInQueueForPayment(nBlockHeight, true, nCount);
         
-        if(pmn != NULL)
+        if(pgm != NULL)
         {
             LogPrintf("CGoldminePayments::ProcessBlock() Found by FindOldestNotInVec \n");
 
             newWinner.nBlockHeight = nBlockHeight;
 
-            CScript payee = GetScriptForDestination(pmn->pubkey.GetID());
+            CScript payee = GetScriptForDestination(pgm->pubkey.GetID());
             newWinner.AddPayee(payee);
 
             CTxDestination address1;
@@ -754,16 +768,16 @@ void CGoldminePaymentWinner::Relay()
 bool CGoldminePaymentWinner::SignatureValid()
 {
 
-    CGoldmine* pmn = gmineman.Find(vinGoldmine);
+    CGoldmine* pgm = gmineman.Find(vinGoldmine);
 
-    if(pmn != NULL)
+    if(pgm != NULL)
     {
         std::string strMessage =  vinGoldmine.prevout.ToStringShort() +
                     boost::lexical_cast<std::string>(nBlockHeight) +
                     payee.ToString();
 
         std::string errorMessage = "";
-        if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)){
+        if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)){
             return error("CGoldminePaymentWinner::SignatureValid() - Got bad Goldmine address signature %s \n", vinGoldmine.ToString().c_str());
         }
 
@@ -777,7 +791,12 @@ void CGoldminePayments::Sync(CNode* node, int nCountNeeded)
 {
     LOCK(cs_mapGoldminePayeeVotes);
 
-    if(chainActive.Tip() == NULL) return;
+    int nHeight;
+	{
+		TRY_LOCK(cs_main, locked);
+		if(!locked || chainActive.Tip() == NULL) return;
+		nHeight = chainActive.Tip()->nHeight;
+	}
 
     int nCount = (gmineman.CountEnabled()*1.25);
     if(nCountNeeded > nCount) nCountNeeded = nCount;
@@ -786,13 +805,13 @@ void CGoldminePayments::Sync(CNode* node, int nCountNeeded)
     std::map<uint256, CGoldminePaymentWinner>::iterator it = mapGoldminePayeeVotes.begin();
     while(it != mapGoldminePayeeVotes.end()) {
         CGoldminePaymentWinner winner = (*it).second;
-        if(winner.nBlockHeight >= chainActive.Tip()->nHeight-nCountNeeded && winner.nBlockHeight <= chainActive.Tip()->nHeight + 20) {
+        if(winner.nBlockHeight >= nHeight-nCountNeeded && winner.nBlockHeight <= nHeight + 20) {
             node->PushInventory(CInv(MSG_GOLDMINE_WINNER, winner.GetHash()));
             nInvCount++;
         }
         ++it;
     }
-    node->PushMessage("ssc", GOLDMINE_SYNC_MNW, nInvCount);
+    node->PushMessage("ssc", GOLDMINE_SYNC_GMW, nInvCount);
 }
 
 std::string CGoldminePayments::ToString() const

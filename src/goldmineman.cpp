@@ -48,7 +48,7 @@ struct CompareScoreMN
 
 CGoldmineDB::CGoldmineDB()
 {
-    pathMN = GetDataDir() / "mncache.dat";
+    pathMN = GetDataDir() / "gmcache.dat";
     strMagicMessage = "GoldmineCache";
 }
 
@@ -80,7 +80,7 @@ bool CGoldmineDB::Write(const CGoldmineMan& gminemanToSave)
 //    FileCommit(fileout);
     fileout.fclose();
 
-    LogPrintf("Written info to mncache.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrintf("Written info to gmcache.dat  %dms\n", GetTimeMillis() - nStart);
     LogPrintf("  %s\n", gminemanToSave.ToString());
 
     return true;
@@ -161,7 +161,7 @@ CGoldmineDB::ReadResult CGoldmineDB::Read(CGoldmineMan& gminemanToLoad, bool fDr
         return IncorrectFormat;
     }
 
-    LogPrintf("Loaded info from mncache.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrintf("Loaded info from gmcache.dat  %dms\n", GetTimeMillis() - nStart);
     LogPrintf("  %s\n", gminemanToLoad.ToString());
     if(!fDryRun) {
         LogPrintf("Goldmine manager - cleaning....\n");
@@ -177,17 +177,17 @@ void DumpGoldmines()
 {
     int64_t nStart = GetTimeMillis();
 
-    CGoldmineDB mndb;
+    CGoldmineDB gmdb;
     CGoldmineMan tempMnodeman;
 
-    LogPrintf("Verifying mncache.dat format...\n");
-    CGoldmineDB::ReadResult readResult = mndb.Read(tempMnodeman, true);
+    LogPrintf("Verifying gmcache.dat format...\n");
+    CGoldmineDB::ReadResult readResult = gmdb.Read(tempMnodeman, true);
     // there was an error and it was not an error on file opening => do not proceed
     if (readResult == CGoldmineDB::FileError)
-        LogPrintf("Missing goldmine cache file - mncache.dat, will try to recreate\n");
+        LogPrintf("Missing goldmine cache file - gmcache.dat, will try to recreate\n");
     else if (readResult != CGoldmineDB::Ok)
     {
-        LogPrintf("Error reading mncache.dat: ");
+        LogPrintf("Error reading gmcache.dat: ");
         if(readResult == CGoldmineDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
@@ -196,8 +196,8 @@ void DumpGoldmines()
             return;
         }
     }
-    LogPrintf("Writting info to mncache.dat...\n");
-    mndb.Write(gmineman);
+    LogPrintf("Writting info to gmcache.dat...\n");
+    gmdb.Write(gmineman);
 
     LogPrintf("Goldmine dump finished  %dms\n", GetTimeMillis() - nStart);
 }
@@ -213,8 +213,8 @@ bool CGoldmineMan::Add(CGoldmine &gm)
     if (!gm.IsEnabled())
         return false;
 
-    CGoldmine *pmn = Find(gm.vin);
-    if (pmn == NULL)
+    CGoldmine *pgm = Find(gm.vin);
+    if (pgm == NULL)
     {
         LogPrint("goldmine", "CGoldmineMan: Adding new Goldmine %s - %i now\n", gm.addr.ToString(), size() + 1);
         vGoldmines.push_back(gm);
@@ -233,7 +233,7 @@ void CGoldmineMan::AskForMN(CNode* pnode, CTxIn &vin)
         if (GetTime() < t) return; // we've asked recently
     }
 
-    // ask for the mnb info once from the node that sent mnp
+    // ask for the gmb info once from the node that sent mnp
 
     LogPrintf("CGoldmineMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.ToString());
     pnode->PushMessage("dseg", vin);
@@ -267,7 +267,7 @@ void CGoldmineMan::CheckAndRemove(bool forceExpiredRemoval)
 
             //erase all of the broadcasts we've seen from this vin
             // -- if we missed a few pings and the node was removed, this will allow is to get it back without them 
-            //    sending a brand new mnb
+            //    sending a brand new gmb
             map<uint256, CGoldmineBroadcast>::iterator it3 = mapSeenGoldmineBroadcast.begin();
             while(it3 != mapSeenGoldmineBroadcast.end()){
                 if((*it3).second.vin == (*it).vin){
@@ -486,13 +486,13 @@ CGoldmine* CGoldmineMan::GetNextGoldmineInQueueForPayment(int nBlockHeight, bool
     int nCountTenth = 0; 
     uint256 nHigh = 0;
     BOOST_FOREACH (PAIRTYPE(int64_t, CTxIn)& s, vecGoldmineLastPaid){
-        CGoldmine* pmn = Find(s.second);
-        if(!pmn) break;
+        CGoldmine* pgm = Find(s.second);
+        if(!pgm) break;
 
-        uint256 n = pmn->CalculateScore(1, nBlockHeight-100);
+        uint256 n = pgm->CalculateScore(1, nBlockHeight-100);
         if(n > nHigh){
             nHigh = n;
-            pBestGoldmine = pmn;
+            pBestGoldmine = pgm;
         }
         nCountTenth++;
         if(nCountTenth >= nTenthNetwork) break;
@@ -682,14 +682,14 @@ void CGoldmineMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
 
     LOCK(cs_process_message);
 
-    if (strCommand == "mnb") { //Goldmine Broadcast
-        CGoldmineBroadcast mnb;
-        vRecv >> mnb;
+    if (strCommand == "gmb") { //Goldmine Broadcast
+        CGoldmineBroadcast gmb;
+        vRecv >> gmb;
 
         int nDoS = 0;
-        if (CheckMnbAndUpdateGoldmineList(mnb, nDoS)) {
+        if (CheckMnbAndUpdateGoldmineList(gmb, nDoS)) {
             // use announced Goldmine as a peer
-             addrman.Add(CAddress(mnb.addr), pfrom->addr, 2*60*60);
+             addrman.Add(CAddress(gmb.addr), pfrom->addr, 2*60*60);
         } else {
             if(nDoS > 0) Misbehaving(pfrom->GetId(), nDoS);
         }
@@ -712,9 +712,9 @@ void CGoldmineMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             Misbehaving(pfrom->GetId(), nDoS);
         } else {
             // if nothing significant failed, search existing Goldmine list
-            CGoldmine* pmn = Find(mnp.vin);
-            // if it's known, don't ask for the mnb, just return
-            if(pmn != NULL) return;
+            CGoldmine* pgm = Find(mnp.vin);
+            // if it's known, don't ask for the gmb, just return
+            if(pgm != NULL) return;
         }
 
         // something significant is broken or gm is unknown,
@@ -754,12 +754,12 @@ void CGoldmineMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             if(gm.IsEnabled()) {
                 LogPrint("goldmine", "dseg - Sending Goldmine entry - %s \n", gm.addr.ToString());
                 if(vin == CTxIn() || vin == gm.vin){
-                    CGoldmineBroadcast mnb = CGoldmineBroadcast(gm);
-                    uint256 hash = mnb.GetHash();
+                    CGoldmineBroadcast gmb = CGoldmineBroadcast(gm);
+                    uint256 hash = gmb.GetHash();
                     pfrom->PushInventory(CInv(MSG_GOLDMINE_ANNOUNCE, hash));
                     nInvCount++;
 
-                    if(!mapSeenGoldmineBroadcast.count(hash)) mapSeenGoldmineBroadcast.insert(make_pair(hash, mnb));
+                    if(!mapSeenGoldmineBroadcast.count(hash)) mapSeenGoldmineBroadcast.insert(make_pair(hash, gmb));
 
                     if(vin == gm.vin) {
                         LogPrintf("dseg - Sent 1 Goldmine entries to %s\n", pfrom->addr.ToString());
@@ -805,43 +805,43 @@ std::string CGoldmineMan::ToString() const
     return info.str();
 }
 
-void CGoldmineMan::UpdateGoldmineList(CGoldmineBroadcast mnb) {
-    mapSeenGoldminePing.insert(make_pair(mnb.lastPing.GetHash(), mnb.lastPing));
-    mapSeenGoldmineBroadcast.insert(make_pair(mnb.GetHash(), mnb));
-    goldmineSync.AddedGoldmineList(mnb.GetHash());
+void CGoldmineMan::UpdateGoldmineList(CGoldmineBroadcast gmb) {
+    mapSeenGoldminePing.insert(make_pair(gmb.lastPing.GetHash(), gmb.lastPing));
+    mapSeenGoldmineBroadcast.insert(make_pair(gmb.GetHash(), gmb));
+    goldmineSync.AddedGoldmineList(gmb.GetHash());
 
-    LogPrintf("CGoldmineMan::UpdateGoldmineList() - addr: %s\n    vin: %s\n", mnb.addr.ToString(), mnb.vin.ToString());
+    LogPrintf("CGoldmineMan::UpdateGoldmineList() - addr: %s\n    vin: %s\n", gmb.addr.ToString(), gmb.vin.ToString());
 
-    CGoldmine* pmn = Find(mnb.vin);
-    if(pmn == NULL)
+    CGoldmine* pgm = Find(gmb.vin);
+    if(pgm == NULL)
     {
-        CGoldmine gm(mnb);
+        CGoldmine gm(gmb);
         Add(gm);
     } else {
-        pmn->UpdateFromNewBroadcast(mnb);
+        pgm->UpdateFromNewBroadcast(gmb);
     }
 }
 
-bool CGoldmineMan::CheckMnbAndUpdateGoldmineList(CGoldmineBroadcast mnb, int& nDos) {
+bool CGoldmineMan::CheckMnbAndUpdateGoldmineList(CGoldmineBroadcast gmb, int& nDos) {
     nDos = 0;
-    LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s\n", mnb.vin.ToString());
+    LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s\n", gmb.vin.ToString());
 
-    if(mapSeenGoldmineBroadcast.count(mnb.GetHash())) { //seen
-        goldmineSync.AddedGoldmineList(mnb.GetHash());
+    if(mapSeenGoldmineBroadcast.count(gmb.GetHash())) { //seen
+        goldmineSync.AddedGoldmineList(gmb.GetHash());
         return true;
     }
-    mapSeenGoldmineBroadcast.insert(make_pair(mnb.GetHash(), mnb));
+    mapSeenGoldmineBroadcast.insert(make_pair(gmb.GetHash(), gmb));
 
-    LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s new\n", mnb.vin.ToString());
+    LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s new\n", gmb.vin.ToString());
 
-    if(!mnb.CheckAndUpdate(nDos)){
-        LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s CheckAndUpdate failed\n", mnb.vin.ToString());
+    if(!gmb.CheckAndUpdate(nDos)){
+        LogPrint("goldmine", "CGoldmineMan::CheckMnbAndUpdateGoldmineList - Goldmine broadcast, vin: %s CheckAndUpdate failed\n", gmb.vin.ToString());
         return false;
     }
 
     // make sure the vout that was signed is related to the transaction that spawned the Goldmine
     //  - this is expensive, so it's only done once per Goldmine
-    if(!spySendSigner.IsVinAssociatedWithPubkey(mnb.vin, mnb.pubkey)) {
+    if(!spySendSigner.IsVinAssociatedWithPubkey(gmb.vin, gmb.pubkey)) {
         LogPrintf("CGoldmineMan::CheckMnbAndUpdateGoldmineList - Got mismatched pubkey and vin\n");
         nDos = 33;
         return false;
@@ -849,10 +849,10 @@ bool CGoldmineMan::CheckMnbAndUpdateGoldmineList(CGoldmineBroadcast mnb, int& nD
 
     // make sure it's still unspent
     //  - this is checked later by .check() in many places and by ThreadCheckSpySendPool()
-    if(mnb.CheckInputsAndAdd(nDos)) {
-        goldmineSync.AddedGoldmineList(mnb.GetHash());
+    if(gmb.CheckInputsAndAdd(nDos)) {
+        goldmineSync.AddedGoldmineList(gmb.GetHash());
     } else {
-        LogPrintf("CGoldmineMan::CheckMnbAndUpdateGoldmineList - Rejected Goldmine entry %s\n", mnb.addr.ToString());
+        LogPrintf("CGoldmineMan::CheckMnbAndUpdateGoldmineList - Rejected Goldmine entry %s\n", gmb.addr.ToString());
         return false;
     }
 

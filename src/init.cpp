@@ -378,7 +378,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += "                         " + _("If <category> is not supplied, output all debugging information.") + "\n";
     strUsage += "                         " + _("<category> can be:\n");
     strUsage += "                           addrman, alert, bench, coindb, db, lock, rand, rpc, selectcoins, mempool, net,\n"; // Don't translate these and qt below
-    strUsage += "                           arcticcoin (or specifically: spysend, instantx, goldmine, keepass, mnpayments, gmevolution)"; // Don't translate these and qt below
+    strUsage += "                           arcticcoin (or specifically: spysend, instantx, goldmine, keepass, gmpayments, gmevolution)"; // Don't translate these and qt below
     if (mode == HMM_BITCOIN_QT)
         strUsage += ", qt";
     strUsage += ".\n";
@@ -1418,13 +1418,13 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     uiInterface.InitMessage(_("Loading goldmine cache..."));
 
-    CGoldmineDB mndb;
-    CGoldmineDB::ReadResult readResult = mndb.Read(gmineman);
+    CGoldmineDB gmdb;
+    CGoldmineDB::ReadResult readResult = gmdb.Read(gmineman);
     if (readResult == CGoldmineDB::FileError)
-        LogPrintf("Missing goldmine cache file - mncache.dat, will try to recreate\n");
+        LogPrintf("Missing goldmine cache file - gmcache.dat, will try to recreate\n");
     else if (readResult != CGoldmineDB::Ok)
     {
-        LogPrintf("Error reading mncache.dat: ");
+        LogPrintf("Error reading gmcache.dat: ");
         if(readResult == CGoldmineDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
@@ -1454,14 +1454,14 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     uiInterface.InitMessage(_("Loading goldmine payment cache..."));
 
-    CGoldminePaymentDB mnpayments;
-    CGoldminePaymentDB::ReadResult readResult3 = mnpayments.Read(goldminePayments);
+    CGoldminePaymentDB gmpayments;
+    CGoldminePaymentDB::ReadResult readResult3 = gmpayments.Read(goldminePayments);
     
     if (readResult3 == CGoldminePaymentDB::FileError)
-        LogPrintf("Missing goldmine payment cache - mnpayments.dat, will try to recreate\n");
+        LogPrintf("Missing goldmine payment cache - gmpayments.dat, will try to recreate\n");
     else if (readResult3 != CGoldminePaymentDB::Ok)
     {
-        LogPrintf("Error reading mnpayments.dat: ");
+        LogPrintf("Error reading gmpayments.dat: ");
         if(readResult3 == CGoldminePaymentDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else

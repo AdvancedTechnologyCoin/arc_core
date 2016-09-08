@@ -70,8 +70,8 @@ void CSpysendPool::ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, 
         CTransaction txCollateral;
         vRecv >> nDenom >> txCollateral;
 
-        CGoldmine* pmn = gmineman.Find(activeGoldmine.vin);
-        if(pmn == NULL)
+        CGoldmine* pgm = gmineman.Find(activeGoldmine.vin);
+        if(pgm == NULL)
         {
             errorID = ERR_MN_LIST;
             pfrom->PushMessage("dssu", sessionID, GetState(), GetEntriesCount(), GOLDMINE_REJECTED, errorID);
@@ -79,8 +79,8 @@ void CSpysendPool::ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, 
         }
 
         if(sessionUsers == 0) {
-            if(pmn->nLastDsq != 0 &&
-                pmn->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
+            if(pgm->nLastDsq != 0 &&
+                pgm->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
                 LogPrintf("dsa -- last dsq too recent, must wait. %s \n", pfrom->addr.ToString());
                 errorID = ERR_RECENT;
                 pfrom->PushMessage("dssu", sessionID, GetState(), GetEntriesCount(), GOLDMINE_REJECTED, errorID);
@@ -116,8 +116,8 @@ void CSpysendPool::ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, 
 
         if(dsq.IsExpired()) return;
 
-        CGoldmine* pmn = gmineman.Find(dsq.vin);
-        if(pmn == NULL) return;
+        CGoldmine* pgm = gmineman.Find(dsq.vin);
+        if(pgm == NULL) return;
 
         // if the queue is ready, submit if we can
         if(dsq.ready) {
@@ -136,16 +136,16 @@ void CSpysendPool::ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, 
                 if(q.vin == dsq.vin) return;
             }
 
-            LogPrint("spysend", "dsq last %d last2 %d count %d\n", pmn->nLastDsq, pmn->nLastDsq + gmineman.size()/5, gmineman.nDsqCount);
+            LogPrint("spysend", "dsq last %d last2 %d count %d\n", pgm->nLastDsq, pgm->nLastDsq + gmineman.size()/5, gmineman.nDsqCount);
             //don't allow a few nodes to dominate the queuing process
-            if(pmn->nLastDsq != 0 &&
-                pmn->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
-                LogPrint("spysend", "dsq -- Goldmine sending too many dsq messages. %s \n", pmn->addr.ToString());
+            if(pgm->nLastDsq != 0 &&
+                pgm->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
+                LogPrint("spysend", "dsq -- Goldmine sending too many dsq messages. %s \n", pgm->addr.ToString());
                 return;
             }
             gmineman.nDsqCount++;
-            pmn->nLastDsq = gmineman.nDsqCount;
-            pmn->allowFreeTx = true;
+            pgm->nLastDsq = gmineman.nDsqCount;
+            pgm->allowFreeTx = true;
 
             LogPrint("spysend", "dsq - new Spysend queue object - %s\n", addr.ToString());
             vecSpysendQueue.push_back(dsq);
@@ -1543,20 +1543,20 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
                     continue;
                 }
 
-                CGoldmine* pmn = gmineman.Find(dsq.vin);
-                if(pmn == NULL)
+                CGoldmine* pgm = gmineman.Find(dsq.vin);
+                if(pgm == NULL)
                 {
                     LogPrintf("DoAutomaticDenominating --- dsq vin %s is not in goldmine list!", dsq.vin.ToString());
                     continue;
                 }
 
-                LogPrintf("DoAutomaticDenominating --- attempt to connect to goldmine from queue %s\n", pmn->addr.ToString());
+                LogPrintf("DoAutomaticDenominating --- attempt to connect to goldmine from queue %s\n", pgm->addr.ToString());
                 lastTimeChanged = GetTimeMillis();
                 // connect to Goldmine and submit the queue request
                 CNode* pnode = ConnectNode((CAddress)addr, NULL, true);
                 if(pnode != NULL)
                 {
-                    pSubmittedToGoldmine = pmn;
+                    pSubmittedToGoldmine = pgm;
                     vecGoldminesUsed.push_back(dsq.vin);
                     sessionDenom = dsq.nDenom;
 
@@ -1582,26 +1582,26 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
         // otherwise, try one randomly
         while(i < 10)
         {
-            CGoldmine* pmn = gmineman.FindRandomNotInVec(vecGoldminesUsed, MIN_POOL_PEER_PROTO_VERSION);
-            if(pmn == NULL)
+            CGoldmine* pgm = gmineman.FindRandomNotInVec(vecGoldminesUsed, MIN_POOL_PEER_PROTO_VERSION);
+            if(pgm == NULL)
             {
                 LogPrintf("DoAutomaticDenominating --- Can't find random goldmine!\n");
                 strAutoDenomResult = _("Can't find random Goldmine.");
                 return false;
             }
 
-            if(pmn->nLastDsq != 0 &&
-                pmn->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
+            if(pgm->nLastDsq != 0 &&
+                pgm->nLastDsq + gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)/5 > gmineman.nDsqCount){
                 i++;
                 continue;
             }
 
             lastTimeChanged = GetTimeMillis();
-            LogPrintf("DoAutomaticDenominating --- attempt %d connection to Goldmine %s\n", i, pmn->addr.ToString());
-            CNode* pnode = ConnectNode((CAddress)pmn->addr, NULL, true);
+            LogPrintf("DoAutomaticDenominating --- attempt %d connection to Goldmine %s\n", i, pgm->addr.ToString());
+            CNode* pnode = ConnectNode((CAddress)pgm->addr, NULL, true);
             if(pnode != NULL){
-                pSubmittedToGoldmine = pmn;
-                vecGoldminesUsed.push_back(pmn->vin);
+                pSubmittedToGoldmine = pgm;
+                vecGoldminesUsed.push_back(pgm->vin);
 
                 std::vector<CAmount> vecAmounts;
                 pwalletMain->ConvertList(vCoins, vecAmounts);
@@ -1614,7 +1614,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
                 strAutoDenomResult = _("Mixing in progress...");
                 return true;
             } else {
-                vecGoldminesUsed.push_back(pmn->vin); // postpone GM we wasn't able to connect to
+                vecGoldminesUsed.push_back(pgm->vin); // postpone GM we wasn't able to connect to
                 i++;
                 continue;
             }
@@ -2163,14 +2163,14 @@ bool CSpysendQueue::Relay()
 
 bool CSpysendQueue::CheckSignature()
 {
-    CGoldmine* pmn = gmineman.Find(vin);
+    CGoldmine* pgm = gmineman.Find(vin);
 
-    if(pmn != NULL)
+    if(pgm != NULL)
     {
         std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(time) + boost::lexical_cast<std::string>(ready);
 
         std::string errorMessage = "";
-        if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)){
+        if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)){
             return error("CSpysendQueue::CheckSignature() - Got bad Goldmine address signature %s \n", vin.ToString().c_str());
         }
 

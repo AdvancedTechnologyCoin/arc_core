@@ -22,8 +22,6 @@ std::map<uint256, int64_t> askedForSourceProposalOrEvolution;
 std::vector<CEvolutionProposalBroadcast> vecImmatureEvolutionProposals;
 std::vector<CFinalizedEvolutionBroadcast> vecImmatureFinalizedEvolutions;
 
-int nSubmittedFinalEvolution;
-
 int GetEvolutionPaymentCycleBlocks(){
     // Amount of blocks in a months period of time (using 2.6 minutes per) = (60*24*30)/2.6
     if(Params().NetworkID() == CBaseChainParams::MAIN) return 16616;
@@ -122,13 +120,20 @@ void CEvolutionManager::CheckOrphanVotes()
 
 void CEvolutionManager::SubmitFinalEvolution()
 {
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(!pindexPrev) return;
+    static int nSubmittedHeight = 0; // height at which final evolution was submitted last time
+    int nCurrentHeight;
+	{
+		TRY_LOCK(cs_main, locked);
+		if(!locked) return;
+		if(!chainActive.Tip()) return;
+		nCurrentHeight = chainActive.Height();
+	}
+  
+	int nBlockStart = nCurrentHeight - nCurrentHeight % GetEvolutionPaymentCycleBlocks() + GetEvolutionPaymentCycleBlocks();
+	if(nSubmittedHeight >= nBlockStart) return;
+	if(nBlockStart - nCurrentHeight > 576*2) return; // allow submitting final evolution only when 2 days left before payments
 
-    int nBlockStart = pindexPrev->nHeight - pindexPrev->nHeight % GetEvolutionPaymentCycleBlocks() + GetEvolutionPaymentCycleBlocks();
-    if(nSubmittedFinalEvolution >= nBlockStart) return;
-    if(nBlockStart - pindexPrev->nHeight > 576*2) return; //submit final evolution 2 days before payment
-
+	
     std::vector<CEvolutionProposal*> vEvolutionProposals = evolution.GetEvolution();
     std::string strEvolutionName = "main";
     std::vector<CTxEvolutionPayment> vecTxEvolutionPayments;
@@ -149,14 +154,15 @@ void CEvolutionManager::SubmitFinalEvolution()
     CFinalizedEvolutionBroadcast tempEvolution(strEvolutionName, nBlockStart, vecTxEvolutionPayments, 0);
     if(mapSeenFinalizedEvolutions.count(tempEvolution.GetHash())) {
         LogPrintf("CEvolutionManager::SubmitFinalEvolution - Evolution already exists - %s\n", tempEvolution.GetHash().ToString());    
-        nSubmittedFinalEvolution = pindexPrev->nHeight;
+        nSubmittedHeight = nCurrentHeight;
         return; //already exists
     }
 
     //create fee tx
     CTransaction tx;
-    
-    if(!mapCollateral.count(tempEvolution.GetHash())){
+    uint256 txidCollateral;
+	
+    if(!mapCollateralTxids.count(tempEvolution.GetHash())){
         CWalletTx wtx;
         if(!pwalletMain->GetEvolutionSystemCollateralTX(wtx, tempEvolution.GetHash(), false)){
             LogPrintf("CEvolutionManager::SubmitFinalEvolution - Can't make collateral transaction\n");
@@ -167,28 +173,43 @@ void CEvolutionManager::SubmitFinalEvolution()
         CReserveKey reservekey(pwalletMain);
         //send the tx to the network
         pwalletMain->CommitTransaction(wtx, reservekey, "ix");
-
-        mapCollateral.insert(make_pair(tempEvolution.GetHash(), (CTransaction)wtx));
         tx = (CTransaction)wtx;
+		txidCollateral = tx.GetHash();
+		mapCollateralTxids.insert(make_pair(tempEvolution.GetHash(), txidCollateral));
     } else {
-        tx = mapCollateral[tempEvolution.GetHash()];
+        txidCollateral = mapCollateralTxids[tempEvolution.GetHash()];
     }
 
-    CTxIn in(COutPoint(tx.GetHash(), 0));
-    int conf = GetInputAgeIX(tx.GetHash(), in);
+	int conf = GetIXConfirmations(tx.GetHash());
+	CTransaction txCollateral;
+	uint256 nBlockHash;
+	if(!GetTransaction(txidCollateral, txCollateral, nBlockHash, true)) {
+		LogPrintf ("CBudgetManager::SubmitFinalBudget - Can't find collateral tx %s", txidCollateral.ToString());
+		return;
+	}
+	
+	if (nBlockHash != uint256(0)) {
+		BlockMap::iterator mi = mapBlockIndex.find(nBlockHash);
+		if (mi != mapBlockIndex.end() && (*mi).second) {
+			CBlockIndex* pindex = (*mi).second;
+			if (chainActive.Contains(pindex)) {
+				conf += chainActive.Height() - pindex->nHeight + 1;
+			}
+		}
+	}
+
+	
     /*
         Wait will we have 1 extra confirmation, otherwise some clients might reject this feeTX
         -- This function is tied to NewBlock, so we will propagate this evolution while the block is also propagating
     */
     if(conf < EVOLUTION_FEE_CONFIRMATIONS+1){
-        LogPrintf ("CEvolutionManager::SubmitFinalEvolution - Collateral requires at least %d confirmations - %s - %d confirmations\n", EVOLUTION_FEE_CONFIRMATIONS, tx.GetHash().ToString(), conf);
-        return;
+        LogPrintf ("CEvolutionManager::SubmitFinalEvolution - Collateral requires at least %d confirmations - %s - %d confirmations\n", EVOLUTION_FEE_CONFIRMATIONS+1, txidCollateral.ToString(), conf);
+		return;
     }
 
-    nSubmittedFinalEvolution = nBlockStart;
-
     //create the proposal incase we're the first to make it
-    CFinalizedEvolutionBroadcast finalizedEvolutionBroadcast(strEvolutionName, nBlockStart, vecTxEvolutionPayments, tx.GetHash());
+    CFinalizedEvolutionBroadcast finalizedEvolutionBroadcast(strEvolutionName, nBlockStart, vecTxEvolutionPayments, txidCollateral);
 
     std::string strError = "";
     if(!finalizedEvolutionBroadcast.IsValid(strError)){
@@ -200,6 +221,8 @@ void CEvolutionManager::SubmitFinalEvolution()
     mapSeenFinalizedEvolutions.insert(make_pair(finalizedEvolutionBroadcast.GetHash(), finalizedEvolutionBroadcast));
     finalizedEvolutionBroadcast.Relay();
     evolution.AddFinalizedEvolution(finalizedEvolutionBroadcast);
+	nSubmittedHeight = nCurrentHeight;
+	LogPrintf("CEvolutionManager::SubmitFinalEvolution - Done! %s\n", finalizedEvolutionBroadcast.GetHash().ToString());
 }
 
 //
@@ -899,23 +922,23 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
 
     LOCK(cs_evolution);
 
-    if (strCommand == "mnvs") { //Goldmine vote sync
+    if (strCommand == "gmvs") { //Goldmine vote sync
         uint256 nProp;
         vRecv >> nProp;
 
         if(Params().NetworkID() == CBaseChainParams::MAIN){
             if(nProp == 0) {
-                if(pfrom->HasFulfilledRequest("mnvs")) {
-                    LogPrintf("mnvs - peer already asked me for the list\n");
+                if(pfrom->HasFulfilledRequest("gmvs")) {
+                    LogPrintf("gmvs - peer already asked me for the list\n");
                     Misbehaving(pfrom->GetId(), 20);
                     return;
                 }
-                pfrom->FulfilledRequest("mnvs");
+                pfrom->FulfilledRequest("gmvs");
             }
         }
 
         Sync(pfrom, nProp);
-        LogPrintf("mnvs - Sent Goldmine votes to %s\n", pfrom->addr.ToString());
+        LogPrintf("gmvs - Sent Goldmine votes to %s\n", pfrom->addr.ToString());
     }
 
     if (strCommand == "mprop") { //Goldmine Proposal
@@ -962,8 +985,8 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
             return;
         }
 
-        CGoldmine* pmn = gmineman.Find(vote.vin);
-        if(pmn == NULL) {
+        CGoldmine* pgm = gmineman.Find(vote.vin);
+        if(pgm == NULL) {
             LogPrint("gmevolution", "mvote - unknown goldmine - vin: %s\n", vote.vin.ToString());
             gmineman.AskForMN(pfrom, vote.vin);
             return;
@@ -1033,8 +1056,8 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
             return;
         }
 
-        CGoldmine* pmn = gmineman.Find(vote.vin);
-        if(pmn == NULL) {
+        CGoldmine* pgm = gmineman.Find(vote.vin);
+        if(pgm == NULL) {
             LogPrint("gmevolution", "fbvote - unknown goldmine - vin: %s\n", vote.vin.ToString());
             gmineman.AskForMN(pfrom, vote.vin);
             return;
@@ -1232,7 +1255,7 @@ bool CEvolutionManager::UpdateProposal(CEvolutionVote& vote, CNode* pfrom, std::
             mapOrphanGoldmineEvolutionVotes[vote.nProposalHash] = vote;
 
             if(!askedForSourceProposalOrEvolution.count(vote.nProposalHash)){
-                pfrom->PushMessage("mnvs", vote.nProposalHash);
+                pfrom->PushMessage("gmvs", vote.nProposalHash);
                 askedForSourceProposalOrEvolution[vote.nProposalHash] = GetTime();
             }
         }
@@ -1259,7 +1282,7 @@ bool CEvolutionManager::UpdateFinalizedEvolution(CFinalizedEvolutionVote& vote, 
             mapOrphanFinalizedEvolutionVotes[vote.nEvolutionHash] = vote;
 
             if(!askedForSourceProposalOrEvolution.count(vote.nEvolutionHash)){
-                pfrom->PushMessage("mnvs", vote.nEvolutionHash);
+                pfrom->PushMessage("gmvs", vote.nEvolutionHash);
                 askedForSourceProposalOrEvolution[vote.nEvolutionHash] = GetTime();
             }
 
@@ -1585,9 +1608,9 @@ bool CEvolutionVote::SignatureValid(bool fSignatureCheck)
     std::string errorMessage;
     std::string strMessage = vin.prevout.ToStringShort() + nProposalHash.ToString() + boost::lexical_cast<std::string>(nVote) + boost::lexical_cast<std::string>(nTime);
 
-    CGoldmine* pmn = gmineman.Find(vin);
+    CGoldmine* pgm = gmineman.Find(vin);
 
-    if(pmn == NULL)
+    if(pgm == NULL)
     {
         LogPrint("gmevolution", "CEvolutionVote::SignatureValid() - Unknown Goldmine - %s\n", vin.ToString());
         return false;
@@ -1595,7 +1618,7 @@ bool CEvolutionVote::SignatureValid(bool fSignatureCheck)
 
     if(!fSignatureCheck) return true;
 
-    if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)) {
+    if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)) {
         LogPrintf("CEvolutionVote::SignatureValid() - Verify message failed\n");
         return false;
     }
@@ -1987,9 +2010,9 @@ bool CFinalizedEvolutionVote::SignatureValid(bool fSignatureCheck)
 
     std::string strMessage = vin.prevout.ToStringShort() + nEvolutionHash.ToString() + boost::lexical_cast<std::string>(nTime);
 
-    CGoldmine* pmn = gmineman.Find(vin);
+    CGoldmine* pgm = gmineman.Find(vin);
 
-    if(pmn == NULL)
+    if(pgm == NULL)
     {
         LogPrint("gmevolution", "CFinalizedEvolutionVote::SignatureValid() - Unknown Goldmine\n");
         return false;
@@ -1997,7 +2020,7 @@ bool CFinalizedEvolutionVote::SignatureValid(bool fSignatureCheck)
 
     if(!fSignatureCheck) return true;
 
-    if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)) {
+    if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)) {
         LogPrintf("CFinalizedEvolutionVote::SignatureValid() - Verify message failed\n");
         return false;
     }

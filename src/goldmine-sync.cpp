@@ -63,7 +63,7 @@ void CGoldmineSync::Reset()
     lastGoldmineWinner = 0;
     lastEvolutionItem = 0;
     mapSeenSyncMNB.clear();
-    mapSeenSyncMNW.clear();
+    mapSeenSyncGMW.clear();
     mapSeenSyncEvolution.clear();
     lastFailure = 0;
     nCountFailures = 0;
@@ -96,13 +96,13 @@ void CGoldmineSync::AddedGoldmineList(uint256 hash)
 void CGoldmineSync::AddedGoldmineWinner(uint256 hash)
 {
     if(goldminePayments.mapGoldminePayeeVotes.count(hash)) {
-        if(mapSeenSyncMNW[hash] < GOLDMINE_SYNC_THRESHOLD) {
+        if(mapSeenSyncGMW[hash] < GOLDMINE_SYNC_THRESHOLD) {
             lastGoldmineWinner = GetTime();
-            mapSeenSyncMNW[hash]++;
+            mapSeenSyncGMW[hash]++;
         }
     } else {
         lastGoldmineWinner = GetTime();
-        mapSeenSyncMNW.insert(make_pair(hash, 1));
+        mapSeenSyncGMW.insert(make_pair(hash, 1));
     }
 }
 
@@ -143,9 +143,9 @@ void CGoldmineSync::GetNextAsset()
             RequestedGoldmineAssets = GOLDMINE_SYNC_LIST;
             break;
         case(GOLDMINE_SYNC_LIST):
-            RequestedGoldmineAssets = GOLDMINE_SYNC_MNW;
+            RequestedGoldmineAssets = GOLDMINE_SYNC_GMW;
             break;
-        case(GOLDMINE_SYNC_MNW):
+        case(GOLDMINE_SYNC_GMW):
             RequestedGoldmineAssets = GOLDMINE_SYNC_EVOLUTION;
             break;
         case(GOLDMINE_SYNC_EVOLUTION):
@@ -163,7 +163,7 @@ std::string CGoldmineSync::GetSyncStatus()
         case GOLDMINE_SYNC_INITIAL: return _("Synchronization pending...");
         case GOLDMINE_SYNC_SPORKS: return _("Synchronizing sporks...");
         case GOLDMINE_SYNC_LIST: return _("Synchronizing goldmines...");
-        case GOLDMINE_SYNC_MNW: return _("Synchronizing goldmine winners...");
+        case GOLDMINE_SYNC_GMW: return _("Synchronizing goldmine winners...");
         case GOLDMINE_SYNC_EVOLUTION: return _("Synchronizing evolutions...");
         case GOLDMINE_SYNC_FAILED: return _("Synchronization failed");
         case GOLDMINE_SYNC_FINISHED: return _("Synchronization finished");
@@ -188,7 +188,7 @@ void CGoldmineSync::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                 sumGoldmineList += nCount;
                 countGoldmineList++;
                 break;
-            case(GOLDMINE_SYNC_MNW):
+            case(GOLDMINE_SYNC_GMW):
                 if(nItemID != RequestedGoldmineAssets) return;
                 sumGoldmineWinner += nCount;
                 countGoldmineWinner++;
@@ -266,9 +266,9 @@ void CGoldmineSync::Process()
                 gmineman.DsegUpdate(pnode); 
             } else if(RequestedGoldmineAttempt < 6) {
                 int nMnCount = gmineman.CountEnabled();
-                pnode->PushMessage("mnget", nMnCount); //sync payees
+                pnode->PushMessage("gmget", nMnCount); //sync payees
                 uint256 n = 0;
-                pnode->PushMessage("mnvs", n); //sync goldmine votes
+                pnode->PushMessage("gmvs", n); //sync goldmine votes
             } else {
                 RequestedGoldmineAssets = GOLDMINE_SYNC_FINISHED;
             }
@@ -322,7 +322,7 @@ void CGoldmineSync::Process()
                 return;
             }
 
-            if(RequestedGoldmineAssets == GOLDMINE_SYNC_MNW) {
+            if(RequestedGoldmineAssets == GOLDMINE_SYNC_GMW) {
                 if(lastGoldmineWinner > 0 && lastGoldmineWinner < GetTime() - GOLDMINE_SYNC_TIMEOUT*2 && RequestedGoldmineAttempt >= GOLDMINE_SYNC_THRESHOLD){ //hasn't received a new item in the last five seconds, so we'll move to the
                     GetNextAsset();
                     return;
@@ -352,7 +352,7 @@ void CGoldmineSync::Process()
                 if(pindexPrev == NULL) return;
 
                 int nMnCount = gmineman.CountEnabled();
-                pnode->PushMessage("mnget", nMnCount); //sync payees
+                pnode->PushMessage("gmget", nMnCount); //sync payees
                 RequestedGoldmineAttempt++;
 
                 return;
@@ -395,7 +395,7 @@ void CGoldmineSync::Process()
                 if(RequestedGoldmineAttempt >= GOLDMINE_SYNC_THRESHOLD*3) return;
 
                 uint256 n = 0;
-                pnode->PushMessage("mnvs", n); //sync goldmine votes
+                pnode->PushMessage("gmvs", n); //sync goldmine votes
                 RequestedGoldmineAttempt++;
                 
                 return;

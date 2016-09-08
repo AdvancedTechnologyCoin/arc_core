@@ -301,9 +301,9 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
 {
     int n = gmineman.GetGoldmineRank(ctx.vinGoldmine, ctx.nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
 
-    CGoldmine* pmn = gmineman.Find(ctx.vinGoldmine);
-    if(pmn != NULL)
-        LogPrint("instantx", "InstantX::ProcessConsensusVote - Goldmine ADDR %s %d\n", pmn->addr.ToString().c_str(), n);
+    CGoldmine* pgm = gmineman.Find(ctx.vinGoldmine);
+    if(pgm != NULL)
+        LogPrint("instantx", "InstantX::ProcessConsensusVote - Goldmine ADDR %s %d\n", pgm->addr.ToString().c_str(), n);
 
     if(n == -1)
     {
@@ -472,15 +472,15 @@ bool CConsensusVote::SignatureValid()
     std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
     //LogPrintf("verify strMessage %s \n", strMessage.c_str());
 
-    CGoldmine* pmn = gmineman.Find(vinGoldmine);
+    CGoldmine* pgm = gmineman.Find(vinGoldmine);
 
-    if(pmn == NULL)
+    if(pgm == NULL)
     {
         LogPrintf("InstantX::CConsensusVote::SignatureValid() - Unknown Goldmine\n");
         return false;
     }
 
-    if(!spySendSigner.VerifyMessage(pmn->pubkey2, vchGoldMineSignature, strMessage, errorMessage)) {
+    if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchGoldMineSignature, strMessage, errorMessage)) {
         LogPrintf("InstantX::CConsensusVote::SignatureValid() - Verify message failed\n");
         return false;
     }

@@ -186,10 +186,10 @@ public:
 
     bool GetAddress(CService &addr)
     {
-        CGoldmine* pmn = gmineman.Find(vin);
-        if(pmn != NULL)
+        CGoldmine* pgm = gmineman.Find(vin);
+        if(pgm != NULL)
         {
-            addr = pmn->addr;
+            addr = pgm->addr;
             return true;
         }
         return false;
@@ -198,10 +198,10 @@ public:
     /// Get the protocol version
     bool GetProtocolVersion(int &protocolVersion)
     {
-        CGoldmine* pmn = gmineman.Find(vin);
-        if(pmn != NULL)
+        CGoldmine* pgm = gmineman.Find(vin);
+        if(pgm != NULL)
         {
-            protocolVersion = pmn->protocolVersion;
+            protocolVersion = pgm->protocolVersion;
             return true;
         }
         return false;

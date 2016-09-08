@@ -246,8 +246,8 @@ Value gmevolution(const Array& params, bool fHelp)
                 continue;
             }
 
-            CGoldmine* pmn = gmineman.Find(pubKeyGoldmine);
-            if(pmn == NULL)
+            CGoldmine* pgm = gmineman.Find(pubKeyGoldmine);
+            if(pgm == NULL)
             {
                 failed++;
                 statusObj.push_back(Pair("result", "failed"));
@@ -256,7 +256,7 @@ Value gmevolution(const Array& params, bool fHelp)
                 continue;
             }
 
-            CEvolutionVote vote(pmn->vin, hash, nVote);
+            CEvolutionVote vote(pgm->vin, hash, nVote);
             if(!vote.Sign(keyGoldmine, pubKeyGoldmine)){
                 failed++;
                 statusObj.push_back(Pair("result", "failed"));
@@ -310,8 +310,8 @@ Value gmevolution(const Array& params, bool fHelp)
         if(!spySendSigner.SetKey(strGoldMinePrivKey, errorMessage, keyGoldmine, pubKeyGoldmine))
             return "Error upon calling SetKey";
 
-        CGoldmine* pmn = gmineman.Find(activeGoldmine.vin);
-        if(pmn == NULL)
+        CGoldmine* pgm = gmineman.Find(activeGoldmine.vin);
+        if(pgm == NULL)
         {
             return "Failure to find goldmine in list : " + activeGoldmine.vin.ToString();
         }
@@ -533,8 +533,8 @@ Value gmevolutionvoteraw(const Array& params, bool fHelp)
     if (fInvalid)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Malformed base64 encoding");
 
-    CGoldmine* pmn = gmineman.Find(vin);
-    if(pmn == NULL)
+    CGoldmine* pgm = gmineman.Find(vin);
+    if(pgm == NULL)
     {
         return "Failure to find goldmine in list : " + vin.ToString();
     }
@@ -611,8 +611,8 @@ Value gmfinalevolution(const Array& params, bool fHelp)
                 continue;
             }
 
-            CGoldmine* pmn = gmineman.Find(pubKeyGoldmine);
-            if(pmn == NULL)
+            CGoldmine* pgm = gmineman.Find(pubKeyGoldmine);
+            if(pgm == NULL)
             {
                 failed++;
                 statusObj.push_back(Pair("result", "failed"));
@@ -622,7 +622,7 @@ Value gmfinalevolution(const Array& params, bool fHelp)
             }
 
 
-            CFinalizedEvolutionVote vote(pmn->vin, hash);
+            CFinalizedEvolutionVote vote(pgm->vin, hash);
             if(!vote.Sign(keyGoldmine, pubKeyGoldmine)){
                 failed++;
                 statusObj.push_back(Pair("result", "failed"));
@@ -670,8 +670,8 @@ Value gmfinalevolution(const Array& params, bool fHelp)
         if(!spySendSigner.SetKey(strGoldMinePrivKey, errorMessage, keyGoldmine, pubKeyGoldmine))
             return "Error upon calling SetKey";
 
-        CGoldmine* pmn = gmineman.Find(activeGoldmine.vin);
-        if(pmn == NULL)
+        CGoldmine* pgm = gmineman.Find(activeGoldmine.vin);
+        if(pgm == NULL)
         {
             return "Failure to find goldmine in list : " + activeGoldmine.vin.ToString();
         }

@@ -8,7 +8,7 @@
 #define GOLDMINE_SYNC_INITIAL           0
 #define GOLDMINE_SYNC_SPORKS            1
 #define GOLDMINE_SYNC_LIST              2
-#define GOLDMINE_SYNC_MNW               3
+#define GOLDMINE_SYNC_GMW               3
 #define GOLDMINE_SYNC_EVOLUTION            4
 #define GOLDMINE_SYNC_EVOLUTION_PROP       10
 #define GOLDMINE_SYNC_EVOLUTION_FIN        11
@@ -29,7 +29,7 @@ class CGoldmineSync
 {
 public:
     std::map<uint256, int> mapSeenSyncMNB;
-    std::map<uint256, int> mapSeenSyncMNW;
+    std::map<uint256, int> mapSeenSyncGMW;
     std::map<uint256, int> mapSeenSyncEvolution;
 
     int64_t lastGoldmineList;

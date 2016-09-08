@@ -23,8 +23,8 @@ class CGoldmineBlockPayees;
 
 extern CGoldminePayments goldminePayments;
 
-#define MNPAYMENTS_SIGNATURES_REQUIRED           6
-#define MNPAYMENTS_SIGNATURES_TOTAL              10
+#define GMPAYMENTS_SIGNATURES_REQUIRED           6
+#define GMPAYMENTS_SIGNATURES_TOTAL              10
 
 void ProcessMessageGoldminePayments(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
 bool IsReferenceNode(CTxIn& vin);
@@ -35,7 +35,7 @@ void FillBlockPayee(CMutableTransaction& txNew, int64_t nFees);
 
 void DumpGoldminePayments();
 
-/** Save Goldmine Payment Data (mnpayments.dat)
+/** Save Goldmine Payment Data (gmpayments.dat)
  */
 class CGoldminePaymentDB
 {

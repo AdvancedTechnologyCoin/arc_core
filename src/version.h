@@ -28,7 +28,7 @@ static const int MIN_POOL_PEER_PROTO_VERSION = 70103;
 static const int MIN_EVOLUTION_PEER_PROTO_VERSION = 70103;
 
 //! minimum peer version for goldmine winner broadcasts
-static const int MIN_MNW_PEER_PROTO_VERSION = 70103;
+static const int MIN_GMW_PEER_PROTO_VERSION = 70103;
 
 //! minimum peer version that can receive goldmine payments
 // V1 - Last protocol version before update

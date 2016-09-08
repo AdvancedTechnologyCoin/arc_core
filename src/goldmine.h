@@ -41,7 +41,7 @@ public:
 
     CTxIn vin;
     uint256 blockHash;
-    int64_t sigTime; //mnb message times
+    int64_t sigTime; //gmb message times
     std::vector<unsigned char> vchSig;
     //removed stop
 
@@ -125,7 +125,7 @@ public:
     CPubKey pubkey2;
     std::vector<unsigned char> sig;
     int activeState;
-    int64_t sigTime; //mnb message time
+    int64_t sigTime; //gmb message time
     int cacheInputAge;
     int cacheInputAgeBlock;
     bool unitTest;
@@ -138,7 +138,7 @@ public:
 
     CGoldmine();
     CGoldmine(const CGoldmine& other);
-    CGoldmine(const CGoldmineBroadcast& mnb);
+    CGoldmine(const CGoldmineBroadcast& gmb);
 
 
     void swap(CGoldmine& first, CGoldmine& second) // nothrow
@@ -208,7 +208,7 @@ public:
 
     int64_t SecondsSincePayment();
 
-    bool UpdateFromNewBroadcast(CGoldmineBroadcast& mnb);
+    bool UpdateFromNewBroadcast(CGoldmineBroadcast& gmb);
 
     inline uint64_t SliceHash(uint256& hash, int slice)
     {

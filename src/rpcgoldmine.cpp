@@ -306,14 +306,14 @@ Value goldmine(const Array& params, bool fHelp)
             if(mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
-                CGoldmineBroadcast mnb;
+                CGoldmineBroadcast gmb;
 
-                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
+                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb);
 
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
                 if(result) {
-                    gmineman.UpdateGoldmineList(mnb);
-                    mnb.Relay();
+                    gmineman.UpdateGoldmineList(gmb);
+                    gmb.Relay();
                 } else {
                     statusObj.push_back(Pair("errorMessage", errorMessage));
                 }
@@ -366,13 +366,13 @@ Value goldmine(const Array& params, bool fHelp)
             std::string errorMessage;
 
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmine *pmn = gmineman.Find(vin);
-            CGoldmineBroadcast mnb;
+            CGoldmine *pgm = gmineman.Find(vin);
+            CGoldmineBroadcast gmb;
 
-            if(strCommand == "start-missing" && pmn) continue;
-            if(strCommand == "start-disabled" && pmn && pmn->IsEnabled()) continue;
+            if(strCommand == "start-missing" && pgm) continue;
+            if(strCommand == "start-disabled" && pgm && pgm->IsEnabled()) continue;
 
-            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
+            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb);
 
             Object statusObj;
             statusObj.push_back(Pair("alias", mne.getAlias()));
@@ -380,8 +380,8 @@ Value goldmine(const Array& params, bool fHelp)
 
             if(result) {
                 successful++;
-                gmineman.UpdateGoldmineList(mnb);
-                mnb.Relay();
+                gmineman.UpdateGoldmineList(gmb);
+                gmb.Relay();
             } else {
                 failed++;
                 statusObj.push_back(Pair("errorMessage", errorMessage));
@@ -421,9 +421,9 @@ Value goldmine(const Array& params, bool fHelp)
 
         BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmine *pmn = gmineman.Find(vin);
+            CGoldmine *pgm = gmineman.Find(vin);
 
-            std::string strStatus = pmn ? pmn->Status() : "MISSING";
+            std::string strStatus = pgm ? pgm->Status() : "MISSING";
 
             Object mnObj;
             mnObj.push_back(Pair("alias", mne.getAlias()));
@@ -456,11 +456,11 @@ Value goldmine(const Array& params, bool fHelp)
         if(!fGoldMine) throw runtime_error("This is not a goldmine\n");
 
         Object mnObj;
-        CGoldmine *pmn = gmineman.Find(activeGoldmine.vin);
+        CGoldmine *pgm = gmineman.Find(activeGoldmine.vin);
 
         mnObj.push_back(Pair("vin", activeGoldmine.vin.ToString()));
         mnObj.push_back(Pair("service", activeGoldmine.service.ToString()));
-        if (pmn) mnObj.push_back(Pair("pubkey", CBitcoinAddress(pmn->pubkey.GetID()).ToString()));
+        if (pgm) mnObj.push_back(Pair("pubkey", CBitcoinAddress(pgm->pubkey.GetID()).ToString()));
         mnObj.push_back(Pair("status", activeGoldmine.GetStatus()));
         return mnObj;
     }
@@ -693,13 +693,13 @@ Value goldminebroadcast(const Array& params, bool fHelp)
             if(mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
-                CGoldmineBroadcast mnb;
+                CGoldmineBroadcast gmb;
 
-                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb, true);
 
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
                 if(result) {
-                    vecMnb.push_back(mnb);
+                    vecMnb.push_back(gmb);
                     CDataStream ssVecMnb(SER_NETWORK, PROTOCOL_VERSION);
                     ssVecMnb << vecMnb;
                     statusObj.push_back(Pair("hex", HexStr(ssVecMnb.begin(), ssVecMnb.end())));
@@ -754,9 +754,9 @@ Value goldminebroadcast(const Array& params, bool fHelp)
             std::string errorMessage;
 
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmineBroadcast mnb;
+            CGoldmineBroadcast gmb;
 
-            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb, true);
 
             Object statusObj;
             statusObj.push_back(Pair("alias", mne.getAlias()));
@@ -764,7 +764,7 @@ Value goldminebroadcast(const Array& params, bool fHelp)
 
             if(result) {
                 successful++;
-                vecMnb.push_back(mnb);
+                vecMnb.push_back(gmb);
             } else {
                 failed++;
                 statusObj.push_back(Pair("errorMessage", errorMessage));
@@ -798,25 +798,25 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         if (!DecodeHexVecMnb(vecMnb, params[1].get_str()))
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Goldmine broadcast message decode failed");
 
-        BOOST_FOREACH(CGoldmineBroadcast& mnb, vecMnb) {
+        BOOST_FOREACH(CGoldmineBroadcast& gmb, vecMnb) {
             Object resultObj;
 
-            if(mnb.VerifySignature()) {
+            if(gmb.VerifySignature()) {
                 successful++;
-                resultObj.push_back(Pair("vin", mnb.vin.ToString()));
-                resultObj.push_back(Pair("addr", mnb.addr.ToString()));
-                resultObj.push_back(Pair("pubkey", CBitcoinAddress(mnb.pubkey.GetID()).ToString()));
-                resultObj.push_back(Pair("pubkey2", CBitcoinAddress(mnb.pubkey2.GetID()).ToString()));
-                resultObj.push_back(Pair("vchSig", EncodeBase64(&mnb.sig[0], mnb.sig.size())));
-                resultObj.push_back(Pair("sigTime", mnb.sigTime));
-                resultObj.push_back(Pair("protocolVersion", mnb.protocolVersion));
-                resultObj.push_back(Pair("nLastDsq", mnb.nLastDsq));
+                resultObj.push_back(Pair("vin", gmb.vin.ToString()));
+                resultObj.push_back(Pair("addr", gmb.addr.ToString()));
+                resultObj.push_back(Pair("pubkey", CBitcoinAddress(gmb.pubkey.GetID()).ToString()));
+                resultObj.push_back(Pair("pubkey2", CBitcoinAddress(gmb.pubkey2.GetID()).ToString()));
+                resultObj.push_back(Pair("vchSig", EncodeBase64(&gmb.sig[0], gmb.sig.size())));
+                resultObj.push_back(Pair("sigTime", gmb.sigTime));
+                resultObj.push_back(Pair("protocolVersion", gmb.protocolVersion));
+                resultObj.push_back(Pair("nLastDsq", gmb.nLastDsq));
 
                 Object lastPingObj;
-                lastPingObj.push_back(Pair("vin", mnb.lastPing.vin.ToString()));
-                lastPingObj.push_back(Pair("blockHash", mnb.lastPing.blockHash.ToString()));
-                lastPingObj.push_back(Pair("sigTime", mnb.lastPing.sigTime));
-                lastPingObj.push_back(Pair("vchSig", EncodeBase64(&mnb.lastPing.vchSig[0], mnb.lastPing.vchSig.size())));
+                lastPingObj.push_back(Pair("vin", gmb.lastPing.vin.ToString()));
+                lastPingObj.push_back(Pair("blockHash", gmb.lastPing.blockHash.ToString()));
+                lastPingObj.push_back(Pair("sigTime", gmb.lastPing.sigTime));
+                lastPingObj.push_back(Pair("vchSig", EncodeBase64(&gmb.lastPing.vchSig[0], gmb.lastPing.vchSig.size())));
 
                 resultObj.push_back(Pair("lastPing", lastPingObj));
             } else {
@@ -824,7 +824,7 @@ Value goldminebroadcast(const Array& params, bool fHelp)
                 resultObj.push_back(Pair("errorMessage", "Goldmine broadcast signature verification failed"));
             }
 
-            returnObj.push_back(Pair(mnb.GetHash().ToString(), resultObj));
+            returnObj.push_back(Pair(gmb.GetHash().ToString(), resultObj));
         }
 
         returnObj.push_back(Pair("overall", strprintf("Successfully decoded broadcast messages for %d goldmines, failed to decode %d, total %d", successful, failed, successful + failed)));
@@ -851,35 +851,35 @@ Value goldminebroadcast(const Array& params, bool fHelp)
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Goldmine broadcast message decode failed");
 
         // verify all signatures first, bailout if any of them broken
-        BOOST_FOREACH(CGoldmineBroadcast& mnb, vecMnb) {
+        BOOST_FOREACH(CGoldmineBroadcast& gmb, vecMnb) {
             Object resultObj;
 
-            resultObj.push_back(Pair("vin", mnb.vin.ToString()));
-            resultObj.push_back(Pair("addr", mnb.addr.ToString()));
+            resultObj.push_back(Pair("vin", gmb.vin.ToString()));
+            resultObj.push_back(Pair("addr", gmb.addr.ToString()));
 
             int nDos = 0;
             bool fResult;
-            if (mnb.VerifySignature()) {
+            if (gmb.VerifySignature()) {
                 if (fSafe) {
-                    fResult = gmineman.CheckMnbAndUpdateGoldmineList(mnb, nDos);
+                    fResult = gmineman.CheckMnbAndUpdateGoldmineList(gmb, nDos);
                 } else {
-                    gmineman.UpdateGoldmineList(mnb);
-                    mnb.Relay();
+                    gmineman.UpdateGoldmineList(gmb);
+                    gmb.Relay();
                     fResult = true;
                 }
             } else fResult = false;
 
             if(fResult) {
                 successful++;
-                gmineman.UpdateGoldmineList(mnb);
-                mnb.Relay();
-                resultObj.push_back(Pair(mnb.GetHash().ToString(), "successful"));
+                gmineman.UpdateGoldmineList(gmb);
+                gmb.Relay();
+                resultObj.push_back(Pair(gmb.GetHash().ToString(), "successful"));
             } else {
                 failed++;
                 resultObj.push_back(Pair("errorMessage", "Goldmine broadcast signature verification failed"));
             }
 
-            returnObj.push_back(Pair(mnb.GetHash().ToString(), resultObj));
+            returnObj.push_back(Pair(gmb.GetHash().ToString(), resultObj));
         }
 
         returnObj.push_back(Pair("overall", strprintf("Successfully relayed broadcast messages for %d goldmines, failed to relay %d, total %d", successful, failed, successful + failed)));

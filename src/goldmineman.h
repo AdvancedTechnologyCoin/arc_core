@@ -23,7 +23,7 @@ class CGoldmineMan;
 extern CGoldmineMan gmineman;
 void DumpGoldmines();
 
-/** Access to the MN database (mncache.dat)
+/** Access to the MN database (gmcache.dat)
  */
 class CGoldmineDB
 {
@@ -94,7 +94,7 @@ public:
     /// Add an entry
     bool Add(CGoldmine &gm);
 
-    /// Ask (source) node for mnb
+    /// Ask (source) node for gmb
     void AskForMN(CNode *pnode, CTxIn &vin);
 
     /// Check all Goldmines
@@ -142,9 +142,9 @@ public:
     void Remove(CTxIn vin);
 
     /// Update goldmine list and maps using provided CGoldmineBroadcast
-    void UpdateGoldmineList(CGoldmineBroadcast mnb);
+    void UpdateGoldmineList(CGoldmineBroadcast gmb);
     /// Perform complete check and only then update list and maps
-    bool CheckMnbAndUpdateGoldmineList(CGoldmineBroadcast mnb, int& nDos);
+    bool CheckMnbAndUpdateGoldmineList(CGoldmineBroadcast gmb, int& nDos);
 
 };
 

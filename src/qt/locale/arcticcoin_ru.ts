@@ -189,7 +189,7 @@
     </message>
     <message>
         <source>Arctic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your arcticcoins from being stolen by malware infecting your computer.</source>
-        <translation>Сейчас программа закроется для завершения процесса шифрования. Помните, что шифрование вашего кошелька не может полностью защитить ваши даши от кражи с помощью инфицирования вашего компьютера вредоносным ПО.</translation>
+        <translation>Сейчас программа закроется для завершения процесса шифрования. Помните, что шифрование вашего кошелька не может полностью защитить ваши Arctic Coin от кражи с помощью инфицирования вашего компьютера вредоносным ПО.</translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
@@ -3391,7 +3391,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции неденоминированных средств, отличающихся от 1000ARC.</translation>
+        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции неденоминированных средств, отличающихся от 1000DRK.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3735,7 +3735,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Unable to locate enough funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции средств, отличающихся от 1000ARC.</translation>
+        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции средств, отличающихся от 1000DRK.</translation>
     </message>
     <message>
         <source>Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: %s)</source>
