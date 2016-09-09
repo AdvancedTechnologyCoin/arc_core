@@ -381,7 +381,7 @@ void CGoldminePayments::ProcessMessageGoldminePayments(CNode* pfrom, std::string
         }
 
         int nFirstBlock = nHeight - (gmineman.CountEnabled()*1.25);
-        if(winner.nBlockHeight < nFirstBlock || winner.nBlockHeight > winner.nBlockHeight->nHeight+20){
+         if(winner.nBlockHeight < nFirstBlock || winner.nBlockHeight > nHeight+20){
             LogPrint("gmpayments", "gmw - winner out of range - FirstBlock %d Height %d bestHeight %d\n", nFirstBlock, winner.nBlockHeight, nHeight);
             return;
         }
