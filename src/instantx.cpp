@@ -309,7 +309,7 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
     {
         //can be caused by past versions trying to vote with an invalid protocol
         LogPrint("instantx", "InstantX::ProcessConsensusVote - Unknown Goldmine\n");
-        gmineman.AskForMN(pnode, ctx.vinGoldmine);
+        gmineman.AskForGM(pnode, ctx.vinGoldmine);
         return false;
     }
 
@@ -322,7 +322,7 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
     if(!ctx.SignatureValid()) {
         LogPrintf("InstantX::ProcessConsensusVote - Signature invalid\n");
         // don't ban, it could just be a non-synced goldmine
-        gmineman.AskForMN(pnode, ctx.vinGoldmine);
+        gmineman.AskForGM(pnode, ctx.vinGoldmine);
         return false;
     }
 

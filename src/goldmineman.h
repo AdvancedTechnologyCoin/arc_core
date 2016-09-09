@@ -95,7 +95,7 @@ public:
     bool Add(CGoldmine &gm);
 
     /// Ask (source) node for gmb
-    void AskForMN(CNode *pnode, CTxIn &vin);
+    void AskForGM(CNode *pnode, CTxIn &vin);
 
     /// Check all Goldmines
     void Check();

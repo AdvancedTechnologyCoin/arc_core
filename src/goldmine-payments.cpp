@@ -401,7 +401,7 @@ void CGoldminePayments::ProcessMessageGoldminePayments(CNode* pfrom, std::string
             LogPrintf("gmw - invalid signature\n");
             if(goldmineSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
             // it could just be a non-synced goldmine
-            gmineman.AskForMN(pfrom, winner.vinGoldmine);
+            gmineman.AskForGM(pfrom, winner.vinGoldmine);
             return;
         }
 
@@ -649,7 +649,7 @@ bool CGoldminePaymentWinner::IsValid(CNode* pnode, std::string& strError)
     {
         strError = strprintf("Unknown Goldmine %s", vinGoldmine.prevout.ToStringShort());
         LogPrintf ("CGoldminePaymentWinner::IsValid - %s\n", strError);
-        gmineman.AskForMN(pnode, vinGoldmine);
+        gmineman.AskForGM(pnode, vinGoldmine);
         return false;
     }
 

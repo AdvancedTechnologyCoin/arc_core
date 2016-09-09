@@ -988,7 +988,7 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
         CGoldmine* pgm = gmineman.Find(vote.vin);
         if(pgm == NULL) {
             LogPrint("gmevolution", "mvote - unknown goldmine - vin: %s\n", vote.vin.ToString());
-            gmineman.AskForMN(pfrom, vote.vin);
+            gmineman.AskForGM(pfrom, vote.vin);
             return;
         }
 
@@ -998,7 +998,7 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
             LogPrintf("mvote - signature invalid\n");
             if(goldmineSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
             // it could just be a non-synced goldmine
-            gmineman.AskForMN(pfrom, vote.vin);
+            gmineman.AskForGM(pfrom, vote.vin);
             return;
         }
         
@@ -1059,7 +1059,7 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
         CGoldmine* pgm = gmineman.Find(vote.vin);
         if(pgm == NULL) {
             LogPrint("gmevolution", "fbvote - unknown goldmine - vin: %s\n", vote.vin.ToString());
-            gmineman.AskForMN(pfrom, vote.vin);
+            gmineman.AskForGM(pfrom, vote.vin);
             return;
         }
 
@@ -1068,7 +1068,7 @@ void CEvolutionManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
             LogPrintf("fbvote - signature invalid\n");
             if(goldmineSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
             // it could just be a non-synced goldmine
-            gmineman.AskForMN(pfrom, vote.vin);
+            gmineman.AskForGM(pfrom, vote.vin);
             return;
         }
 

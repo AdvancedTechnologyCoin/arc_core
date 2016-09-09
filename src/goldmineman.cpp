@@ -224,7 +224,7 @@ bool CGoldmineMan::Add(CGoldmine &gm)
     return false;
 }
 
-void CGoldmineMan::AskForMN(CNode* pnode, CTxIn &vin)
+void CGoldmineMan::AskForGM(CNode* pnode, CTxIn &vin)
 {
     std::map<COutPoint, int64_t>::iterator i = mWeAskedForGoldmineListEntry.find(vin.prevout);
     if (i != mWeAskedForGoldmineListEntry.end())
@@ -235,7 +235,7 @@ void CGoldmineMan::AskForMN(CNode* pnode, CTxIn &vin)
 
     // ask for the gmb info once from the node that sent mnp
 
-    LogPrintf("CGoldmineMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.ToString());
+    LogPrintf("CGoldmineMan::AskForGM - Asking node for missing entry, vin: %s\n", vin.ToString());
     pnode->PushMessage("dseg", vin);
     int64_t askAgain = GetTime() + GOLDMINE_MIN_MNP_SECONDS;
     mWeAskedForGoldmineListEntry[vin.prevout] = askAgain;
@@ -719,7 +719,7 @@ void CGoldmineMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
 
         // something significant is broken or gm is unknown,
         // we might have to ask for a goldmine entry once
-        AskForMN(pfrom, mnp.vin);
+        AskForGM(pfrom, mnp.vin);
 
     } else if (strCommand == "dseg") { //Get Goldmine list or specific entry
 

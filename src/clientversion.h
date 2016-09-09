@@ -17,7 +17,7 @@
 #define CLIENT_VERSION_MAJOR 0
 #define CLIENT_VERSION_MINOR 12
 #define CLIENT_VERSION_REVISION 0
-#define CLIENT_VERSION_BUILD 58
+#define CLIENT_VERSION_BUILD 59
 
 //! Set to true for release, false for prerelease or test build
 #define CLIENT_VERSION_IS_RELEASE true
@@ -38,7 +38,7 @@
 #define DO_STRINGIZE(X) #X
 
 //! Copyright string used in Windows .rc files
-#define COPYRIGHT_STR "2009-" STRINGIZE(COPYRIGHT_YEAR) " The Bitcoin Core Developers, 2014-" STRINGIZE(COPYRIGHT_YEAR) " The Arctic Core Developers"
+#define COPYRIGHT_STR "2009-" STRINGIZE(COPYRIGHT_YEAR) " The Bitcoin Core Developers, 2015-" STRINGIZE(COPYRIGHT_YEAR) " The Arctic Core Developers"
 
 /**
  * arcticcoind-res.rc includes this file, but it cannot cope with real c++ code.
