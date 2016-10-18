@@ -529,8 +529,7 @@ bool CGoldmineBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
     BOOST_FOREACH(CGoldminePayee& payee, vecPayments)
     {
-        
-		
+
 		if (payee.nVotes >= GMPAYMENTS_SIGNATURES_REQUIRED) {
 	
 			BOOST_FOREACH(CTxOut out, txNew.vout){
@@ -552,7 +551,7 @@ bool CGoldmineBlockPayees::IsTransactionValid(const CTransaction& txNew)
         }
     }
 
-	LogPrintf("CGoldmineBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s', amount: %f ARCTICCOIN\n", strPayeesPossible, (float)goldminePayment/COIN);
+	LogPrintf("CGoldmineBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s', amount: %f ARC\n", strPayeesPossible, (float)goldminePayment/COIN);
     return false;
 }
 
