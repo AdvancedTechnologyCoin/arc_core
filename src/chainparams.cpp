@@ -66,12 +66,13 @@ static Checkpoints::MapCheckpoints mapCheckpoints =
 		(27194, uint256("0x000000000df23b42705c16276be267e784a678586134c1910db86c8735f8192f"))		
 		(27790, uint256("0x0000000014a380900941cdf4d79c53b82dd5d557041dc219abe404b022859385"))
 		(28472, uint256("0x00000000183f960efd87642792d29d86fd15296bd1cf3d5ab23ce6eefe999fb6"))
+		(39408, uint256("0x0000000001ed0fa1f07e9013d073889b6ddb45989e7a90216bd7825c7bf250bd"))
         
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
-        1475037863, // * UNIX timestamp of last checkpoint block
-        29911,      // * total number of transactions between genesis and last checkpoint
+        1476787425, // * UNIX timestamp of last checkpoint block
+        41533,      // * total number of transactions between genesis and last checkpoint
                     //   (the tx=... number in the SetBestChain debug.log lines)
         2800        // * estimated number of transactions per day after checkpoint
     };
@@ -149,14 +150,23 @@ public:
 		vSeeds.push_back(CDNSSeedData("78.46.75.49", "78.46.75.49"));
 		vSeeds.push_back(CDNSSeedData("78.47.238.36", "78.47.238.36"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = list_of( 23);                    // Arctic addresses start with 'A'
-        base58Prefixes[SCRIPT_ADDRESS] = list_of(  8);                    // Arctic script addresses start with '4'
-        base58Prefixes[SECRET_KEY] =     list_of(176);                    // Arctic private keys start with '7' or 'X'
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x07)(0xE8)(0xF8)(0x9C); // Arctic BIP32 pubkeys
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x07)(0x74)(0xA1)(0x37); // Arctic BIP32 prvkeys
-        base58Prefixes[EXT_COIN_TYPE]  = list_of(0x80000005);             // Arctic BIP44 coin type is '5'
-
-        convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
+		#if __cplusplus > 199711L
+			base58Prefixes[PUBKEY_ADDRESS] = {23};                    // Arctic addresses start with 'A'
+			base58Prefixes[SCRIPT_ADDRESS] = {8};                    // Arctic script addresses start with '4'
+			base58Prefixes[SECRET_KEY] =     {176};                    // Arctic private keys start with '7' or 'X'
+			base58Prefixes[EXT_PUBLIC_KEY] = {0x07,0xE8,0xF8,0x9C}; // Arctic BIP32 pubkeys
+			base58Prefixes[EXT_SECRET_KEY] = {0x07,0x74,0xA1,0x37}; // Arctic BIP32 prvkeys
+			base58Prefixes[EXT_COIN_TYPE]  = {0x05,0x00,0x00,0x80};             // Arctic BIP44 coin type is '5'
+		#else
+			base58Prefixes[PUBKEY_ADDRESS] = list_of( 23);                    // Arctic addresses start with 'A'
+			base58Prefixes[SCRIPT_ADDRESS] = list_of(  8);                    // Arctic script addresses start with '4'
+			base58Prefixes[SECRET_KEY] =     list_of(176);                    // Arctic private keys start with '7' or 'X'
+			base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x07)(0xE8)(0xF8)(0x9C); // Arctic BIP32 pubkeys
+			base58Prefixes[EXT_SECRET_KEY] = list_of(0x07)(0x74)(0xA1)(0x37); // Arctic BIP32 prvkeys
+			base58Prefixes[EXT_COIN_TYPE]  = list_of(0x80000005);             // Arctic BIP44 coin type is '5'
+        #endif
+		
+		convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
         fRequireRPCPassword = true;
         fMiningRequiresPeers = true;
@@ -211,14 +221,23 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        
-        base58Prefixes[PUBKEY_ADDRESS] = list_of(83);                    // Testnet arcticcoin addresses start with 'a' 
-        base58Prefixes[SCRIPT_ADDRESS] = list_of( 9);                    // Testnet arcticcoin script addresses start with '4' or '5'
-        base58Prefixes[SECRET_KEY]     = list_of(239);                    // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
-        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x09)(0x72)(0x98)(0xBF); // Testnet arcticcoin BIP32 pubkeys 
-        base58Prefixes[EXT_SECRET_KEY] = list_of(0x09)(0x62)(0x3A)(0x6F); // Testnet arcticcoin BIP32 prvkeys
-        base58Prefixes[EXT_COIN_TYPE]  = list_of(0x80000001);             // Testnet arcticcoin BIP44 coin type is '5' (All coin's testnet default)
-
+		
+		#if __cplusplus > 199711L
+			base58Prefixes[PUBKEY_ADDRESS] = {83};                    // Testnet arcticcoin addresses start with 'a' 
+			base58Prefixes[SCRIPT_ADDRESS] = {9};                    // Testnet arcticcoin script addresses start with '4' or '5'
+			base58Prefixes[SECRET_KEY]     = {239};                    // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
+			base58Prefixes[EXT_PUBLIC_KEY] = {0x09,0x72,0x98,0xBF}; // Testnet arcticcoin BIP32 pubkeys 
+			base58Prefixes[EXT_SECRET_KEY] = {0x09,0x62,0x3A,0x6F}; // Testnet arcticcoin BIP32 prvkeys
+			base58Prefixes[EXT_COIN_TYPE]  = {0x01,0x00,0x00,0x80};             // Testnet arcticcoin BIP44 coin type is '5' (All coin's testnet default)        
+		#else
+			base58Prefixes[PUBKEY_ADDRESS] = list_of(83);                    // Testnet arcticcoin addresses start with 'a' 
+			base58Prefixes[SCRIPT_ADDRESS] = list_of( 9);                    // Testnet arcticcoin script addresses start with '4' or '5'
+			base58Prefixes[SECRET_KEY]     = list_of(239);                    // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
+			base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x09)(0x72)(0x98)(0xBF); // Testnet arcticcoin BIP32 pubkeys 
+			base58Prefixes[EXT_SECRET_KEY] = list_of(0x09)(0x62)(0x3A)(0x6F); // Testnet arcticcoin BIP32 prvkeys
+			base58Prefixes[EXT_COIN_TYPE]  = list_of(0x80000001);             // Testnet arcticcoin BIP44 coin type is '5' (All coin's testnet default)
+		#endif
+			
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
         fRequireRPCPassword = true;

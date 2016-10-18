@@ -529,30 +529,29 @@ bool CGoldmineBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
     BOOST_FOREACH(CGoldminePayee& payee, vecPayments)
     {
-        bool found = false;
-        BOOST_FOREACH(CTxOut out, txNew.vout){
-            if(payee.scriptPubKey == out.scriptPubKey && goldminePayment == out.nValue){
-                found = true;
-            }
-        }
 
-        if(payee.nVotes >= GMPAYMENTS_SIGNATURES_REQUIRED){
-            if(found) return true;
+		if (payee.nVotes >= GMPAYMENTS_SIGNATURES_REQUIRED) {
+	
+			BOOST_FOREACH(CTxOut out, txNew.vout){
+				if(payee.scriptPubKey == out.scriptPubKey && goldminePayment == out.nValue){
+					LogPrint("gmpayments", "CGoldmineBlockPayees::IsTransactionValid -- Found required payment\n");
+					return true;
+				}
+			}
 
             CTxDestination address1;
             ExtractDestination(payee.scriptPubKey, address1);
             CBitcoinAddress address2(address1);
 
             if(strPayeesPossible == ""){
-                strPayeesPossible += address2.ToString();
+                strPayeesPossible = address2.ToString();
             } else {
                 strPayeesPossible += "," + address2.ToString();
             }
         }
     }
 
-
-    LogPrintf("CGoldminePayments::IsTransactionValid - Missing required payment - %s\n", strPayeesPossible.c_str());
+	LogPrintf("CGoldmineBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s', amount: %f ARC\n", strPayeesPossible, (float)goldminePayment/COIN);
     return false;
 }
 
