@@ -11,7 +11,7 @@
 #include "noui.h"
 #include "ui_interface.h"
 #include "util.h"
-#include "goldmineconfig.h"
+#include "goldminenodeconfig.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
@@ -111,8 +111,8 @@ bool AppInit(int argc, char* argv[])
 
         // parse goldmine.conf
         std::string strErr;
-        if(!goldmineConfig.read(strErr)) {
-            fprintf(stderr,"Error reading goldmine configuration file: %s\n", strErr.c_str());
+        if(!masternodeConfig.read(strErr)) {
+            fprintf(stderr,"Error reading masternode configuration file: %s\n", strErr.c_str());
             return false;
         }
 

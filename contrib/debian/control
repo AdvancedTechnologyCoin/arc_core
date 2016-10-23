@@ -24,7 +24,7 @@ Build-Depends: debhelper,
 Standards-Version: 3.9.2
 Homepage: http://www.arcticcoin.org/
 Vcs-Git: git://github.com/ArcticCore/arcticcoin.git
-Vcs-Browser: http://github.com/ArcticCore/ArcticCoin
+Vcs-Browser: http://github.com/ArcticCore/arcticcoin
 
 Package: arcticcoind
 Architecture: any

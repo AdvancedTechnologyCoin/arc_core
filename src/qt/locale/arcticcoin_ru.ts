@@ -1812,8 +1812,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Цепочка блоков</translation>
     </message>
     <message>
-        <source>Number of Goldmines</source>
-        <translation>Количество Goldmine</translation>
+        <source>Number of Goldmine Nodes</source>
+        <translation>Количество Goldmine нод</translation>
     </message>
     <message>
         <source>&amp;Console</source>
@@ -3800,8 +3800,8 @@ rpcpassword=%s
         <translation>Copyright (C) 2009-%i The Bitcoin Core Developers</translation>
     </message>
     <message>
-        <source>Copyright (C) 2014-%i The Arctic Core Developers</source>
-        <translation>Copyright (C) 2014-%i The Arctic Core Developers</translation>
+        <source>Copyright (C) 2015-%i The Arctic Core Developers</source>
+        <translation>Copyright (C) 2015-%i The Arctic Core Developers</translation>
     </message>
     <message>
         <source>Could not parse -rpcbind value %s as network address</source>

@@ -15,8 +15,8 @@
 #include "main.h"
 #include "net.h"
 #include "ui_interface.h"
-#include "goldmineman.h"
-#include "goldmine-sync.h"
+#include "goldminenodeman.h"
+#include "goldminenode-sync.h"
 #include "util.h"
 
 #include <stdint.h>
@@ -32,7 +32,7 @@ ClientModel::ClientModel(OptionsModel *optionsModel, QObject *parent) :
     optionsModel(optionsModel),
     peerTableModel(0),
     cachedNumBlocks(0),
-    cachedGoldmineCountString(""),
+    cachedMasternodeCountString(""),
     cachedReindexing(0), cachedImporting(0),
     numBlocksAtStartup(-1), pollTimer(0)
 {
@@ -68,11 +68,11 @@ int ClientModel::getNumConnections(unsigned int flags) const
     return nNum;
 }
 
-QString ClientModel::getGoldmineCountString() const
+QString ClientModel::getMasternodeCountString() const
 {
-    return tr("Total: %1 (SS compatible: %2 / Enabled: %3)").arg(QString::number((int)gmineman.size()))
-            .arg(QString::number((int)gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)))
-            .arg(QString::number((int)gmineman.CountEnabled()));
+    return tr("Total: %1 (SS compatible: %2 / Enabled: %3)").arg(QString::number((int)mnodeman.size()))
+            .arg(QString::number((int)mnodeman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION)))
+            .arg(QString::number((int)mnodeman.CountEnabled()));
 }
 
 int ClientModel::getNumBlocks() const
@@ -130,13 +130,13 @@ void ClientModel::updateTimer()
     // check for changed number of blocks we have, number of blocks peers claim to have, reindexing state and importing state
     if (cachedNumBlocks != newNumBlocks ||
         cachedReindexing != fReindex || cachedImporting != fImporting ||
-            goldmineSync.RequestedGoldmineAttempt != prevAttempt || goldmineSync.RequestedGoldmineAssets != prevAssets)
+            masternodeSync.RequestedMasternodeAttempt != prevAttempt || masternodeSync.RequestedMasternodeAssets != prevAssets)
     {
         cachedNumBlocks = newNumBlocks;
         cachedReindexing = fReindex;
         cachedImporting = fImporting;
-        prevAttempt = goldmineSync.RequestedGoldmineAttempt;
-        prevAssets = goldmineSync.RequestedGoldmineAssets;
+        prevAttempt = masternodeSync.RequestedMasternodeAttempt;
+        prevAssets = masternodeSync.RequestedMasternodeAssets;
 
         emit numBlocksChanged(newNumBlocks);
     }
@@ -152,13 +152,13 @@ void ClientModel::updateMnTimer()
     TRY_LOCK(cs_main, lockMain);
     if(!lockMain)
         return;
-    QString newGoldmineCountString = getGoldmineCountString();
+    QString newMasternodeCountString = getMasternodeCountString();
 
-    if (cachedGoldmineCountString != newGoldmineCountString)
+    if (cachedMasternodeCountString != newMasternodeCountString)
     {
-        cachedGoldmineCountString = newGoldmineCountString;
+        cachedMasternodeCountString = newMasternodeCountString;
 
-        emit strGoldmineChanged(cachedGoldmineCountString);
+        emit strMasternodesChanged(cachedMasternodeCountString);
     }
 }
 

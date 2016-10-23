@@ -396,7 +396,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frameSpysend">
+        <widget class="QFrame" name="frameDarksend">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -446,7 +446,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QProgressBar" name="spysendProgress">
+            <widget class="QProgressBar" name="darksendProgress">
              <property name="maximumSize">
               <size>
                <width>154</width>
@@ -502,7 +502,7 @@
            <item row="4" column="1">
             <widget class="QLabel" name="labelSubmittedDenom">
              <property name="toolTip">
-              <string>The denominations you submitted to the Goldmine.&lt;br&gt;To mix, other users must submit the exact same denominations.</string>
+              <string>The denominations you submitted to the Masternode.&lt;br&gt;To mix, other users must submit the exact same denominations.</string>
              </property>
              <property name="text">
               <string>n/a</string>
@@ -510,7 +510,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLabel" name="spysendEnabled">
+            <widget class="QLabel" name="darksendEnabled">
              <property name="text">
               <string>Enabled/Disabled</string>
              </property>
@@ -955,7 +955,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QPushButton" name="toggleSpysend">
+         <widget class="QPushButton" name="toggleDarksend">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -987,7 +987,7 @@
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
-         <widget class="QLabel" name="spysendStatus">
+         <widget class="QLabel" name="darksendStatus">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -1012,7 +1012,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QPushButton" name="spysendAuto">
+         <widget class="QPushButton" name="darksendAuto">
           <property name="geometry">
            <rect>
             <x>230</x>
@@ -1034,7 +1034,7 @@
            <string>Try Mix</string>
           </property>
          </widget>
-         <widget class="QPushButton" name="spysendReset">
+         <widget class="QPushButton" name="darksendReset">
           <property name="geometry">
            <rect>
             <x>230</x>
@@ -1083,7 +1083,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="labelSpysendSyncStatus">
+            <widget class="QLabel" name="labelDarksendSyncStatus">
              <property name="toolTip">
               <string>The displayed information may be out of date. Your wallet automatically synchronizes with the Arctic network after a connection is established, but this process has not completed yet.</string>
              </property>

@@ -227,15 +227,15 @@ extern json_spirit::Value verifychain(const json_spirit::Array& params, bool fHe
 extern json_spirit::Value getchaintips(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value invalidateblock(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value reconsiderblock(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value spysend(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value darksend(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value spork(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value goldmine(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value goldminelist(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value goldminebroadcast(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value gmevolution(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value gmevolutionvoteraw(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value gmfinalevolution(const json_spirit::Array& params, bool fHelp);
-extern json_spirit::Value gmsync(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value masternode(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value masternodelist(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value masternodebroadcast(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value mnbudget(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value mnbudgetvoteraw(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value mnfinalbudget(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value mnsync(const json_spirit::Array& params, bool fHelp);
 
 // in rest.cpp
 extern bool HTTPReq_REST(AcceptedConnection *conn,

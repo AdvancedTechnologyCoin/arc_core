@@ -132,7 +132,7 @@ CoinControlDialog::CoinControlDialog(QWidget *parent) :
     ui->treeWidget->setColumnWidth(COLUMN_AMOUNT, 100);
     ui->treeWidget->setColumnWidth(COLUMN_LABEL, 170);
     ui->treeWidget->setColumnWidth(COLUMN_ADDRESS, 190);
-    ui->treeWidget->setColumnWidth(COLUMN_SPYSEND_ROUNDS, 88);
+    ui->treeWidget->setColumnWidth(COLUMN_DARKSEND_ROUNDS, 88);
     ui->treeWidget->setColumnWidth(COLUMN_DATE, 80);
     ui->treeWidget->setColumnWidth(COLUMN_CONFIRMATIONS, 100);
     ui->treeWidget->setColumnWidth(COLUMN_PRIORITY, 100);
@@ -443,12 +443,12 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
         else {
             coinControl->Select(outpt);
             CTxIn vin(outpt);
-            int rounds = pwalletMain->GetInputSpysendRounds(vin);
-            if(coinControl->useSpySend && rounds < nSpysendRounds) {
+            int rounds = pwalletMain->GetInputDarksendRounds(vin);
+            if(coinControl->useDarkSend && rounds < nDarksendRounds) {
                 QMessageBox::warning(this, windowTitle(),
                     tr("Non-anonymized input selected. <b>Spysend will be disabled.</b><br><br>If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again."),
                     QMessageBox::Ok, QMessageBox::Ok);
-                coinControl->useSpySend = false;
+                coinControl->useDarkSend = false;
             }
         }
 
@@ -611,8 +611,8 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
         {
             nChange = nAmount - nPayFee - nPayAmount;
 
-            // SS Fee = overpay
-            if(coinControl->useSpySend && nChange > 0)
+            // DS Fee = overpay
+            if(coinControl->useDarkSend && nChange > 0)
             {
                 nPayFee += nChange;
                 nChange = 0;
@@ -826,10 +826,10 @@ void CoinControlDialog::updateView()
 
             // ds+ rounds
             CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
-            int rounds = pwalletMain->GetInputSpysendRounds(vin);
+            int rounds = pwalletMain->GetInputDarksendRounds(vin);
 
-            if(rounds >= 0) itemOutput->setText(COLUMN_SPYSEND_ROUNDS, strPad(QString::number(rounds), 11, " "));
-            else itemOutput->setText(COLUMN_SPYSEND_ROUNDS, strPad(QString(tr("n/a")), 11, " "));
+            if(rounds >= 0) itemOutput->setText(COLUMN_DARKSEND_ROUNDS, strPad(QString::number(rounds), 11, " "));
+            else itemOutput->setText(COLUMN_DARKSEND_ROUNDS, strPad(QString(tr("n/a")), 11, " "));
 
 
             // confirmations

@@ -30,20 +30,20 @@
 
 //Arctic only features
 
-extern bool fGoldMine;
+extern bool fMasterNode;
 extern bool fLiteMode;
 extern bool fEnableInstantX;
 extern int nInstantXDepth;
-extern int nSpysendRounds;
-extern int nAnonymizeArcticcoinAmount;
+extern int nDarksendRounds;
+extern int nAnonymizeDarkcoinAmount;
 extern int nLiquidityProvider;
-extern bool fEnableSpysend;
-extern int64_t enforceGoldminePaymentsTime;
-extern std::string strGoldMineAddr;
+extern bool fEnableDarksend;
+extern int64_t enforceMasternodePaymentsTime;
+extern std::string strMasterNodeAddr;
 extern int keysLoaded;
 extern bool fSucessfullyLoaded;
-extern std::vector<int64_t> spySendDenominations;
-extern std::string strEvolutionMode;
+extern std::vector<int64_t> darkSendDenominations;
+extern std::string strBudgetMode;
 
 extern std::map<std::string, std::string> mapArgs;
 extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
@@ -113,7 +113,7 @@ bool TryCreateDirectory(const boost::filesystem::path& p);
 boost::filesystem::path GetDefaultDataDir();
 const boost::filesystem::path &GetDataDir(bool fNetSpecific = true);
 boost::filesystem::path GetConfigFile();
-boost::filesystem::path GetGoldmineConfigFile();
+boost::filesystem::path GetMasternodeConfigFile();
 #ifndef WIN32
 boost::filesystem::path GetPidFile();
 void CreatePidFile(const boost::filesystem::path &path, pid_t pid);

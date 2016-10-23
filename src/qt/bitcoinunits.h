@@ -60,7 +60,7 @@ public:
         ARC,
         mARC,
         uARC,
-        nARC
+        duffs
     };
 
     enum SeparatorStyle

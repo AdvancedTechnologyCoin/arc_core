@@ -48,7 +48,7 @@ public:
 
     //! Return number of connections, default is in- and outbound (total)
     int getNumConnections(unsigned int flags = CONNECTIONS_ALL) const;
-    QString getGoldmineCountString() const;
+    QString getMasternodeCountString() const;
     int getNumBlocks() const;
     int getNumBlocksAtStartup();
 
@@ -76,7 +76,7 @@ private:
     PeerTableModel *peerTableModel;
 
     int cachedNumBlocks;
-    QString cachedGoldmineCountString;
+    QString cachedMasternodeCountString;
     bool cachedReindexing;
     bool cachedImporting;
 
@@ -91,7 +91,7 @@ private:
 signals:
     void numConnectionsChanged(int count);
     void numBlocksChanged(int count);
-    void strGoldmineChanged(const QString &strGoldmine);
+    void strMasternodesChanged(const QString &strMasternodes);
     void alertsChanged(const QString &warnings);
     void bytesChanged(quint64 totalBytesIn, quint64 totalBytesOut);
 

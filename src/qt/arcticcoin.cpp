@@ -24,7 +24,7 @@
 #include "paymentserver.h"
 #include "walletmodel.h"
 #endif
-#include "goldmineconfig.h"
+#include "goldminenodeconfig.h"
 
 #include "init.h"
 #include "main.h"
@@ -632,9 +632,9 @@ int main(int argc, char *argv[])
 #ifdef ENABLE_WALLET
     /// 7a. parse goldmine.conf
     string strErr;
-    if(!goldmineConfig.read(strErr)) {
+    if(!masternodeConfig.read(strErr)) {
         QMessageBox::critical(0, QObject::tr("Arctic Core"),
-                              QObject::tr("Error reading goldmine configuration file: %1").arg(strErr.c_str()));
+                              QObject::tr("Error reading masternode configuration file: %1").arg(strErr.c_str()));
         return false;
     }
 

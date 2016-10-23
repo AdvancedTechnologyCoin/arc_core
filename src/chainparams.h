@@ -82,9 +82,9 @@ public:
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
     int PoolMaxTransactions() const { return nPoolMaxTransactions; }
     std::string SporkKey() const { return strSporkKey; }
-    std::string SpysendPoolDummyAddress() const { return strSpysendPoolDummyAddress; }
-    std::string GoldminePaymentPubKey() const { return strGoldminePaymentsPubKey; }
-    int64_t StartGoldminePayments() const { return nStartGoldminePayments; }
+    std::string DarksendPoolDummyAddress() const { return strDarksendPoolDummyAddress; }
+    std::string MasternodePaymentPubKey() const { return strMasternodePaymentsPubKey; }
+    int64_t StartMasternodePayments() const { return nStartMasternodePayments; }
     CBaseChainParams::Network NetworkID() const { return networkID; }
 protected:
     CChainParams() {}
@@ -118,9 +118,9 @@ protected:
     bool fTestnetToBeDeprecatedFieldRPC;
     int nPoolMaxTransactions;
     std::string strSporkKey;
-    std::string strGoldminePaymentsPubKey;
-    std::string strSpysendPoolDummyAddress;
-    int64_t nStartGoldminePayments;
+    std::string strMasternodePaymentsPubKey;
+    std::string strDarksendPoolDummyAddress;
+    int64_t nStartMasternodePayments;
 };
 
 /** 

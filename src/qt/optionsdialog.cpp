@@ -208,8 +208,8 @@ void OptionsDialog::setMapper()
 
 
     /* Spysend Rounds */
-    mapper->addMapping(ui->spysendRounds, OptionsModel::SpysendRounds);
-    mapper->addMapping(ui->anonymizeArcticcoin, OptionsModel::AnonymizeArcticcoinAmount);
+    mapper->addMapping(ui->darksendRounds, OptionsModel::DarksendRounds);
+    mapper->addMapping(ui->anonymizeDarkcoin, OptionsModel::AnonymizeDarkcoinAmount);
 
 }
 
@@ -251,7 +251,7 @@ void OptionsDialog::on_resetButton_clicked()
 void OptionsDialog::on_okButton_clicked()
 {
     mapper->submit();
-    spySendPool.cachedNumBlocks = std::numeric_limits<int>::max();
+    darkSendPool.cachedNumBlocks = std::numeric_limits<int>::max();
     pwalletMain->MarkDirty();
     accept();
 }

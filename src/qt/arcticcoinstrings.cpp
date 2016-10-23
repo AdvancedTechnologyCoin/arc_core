@@ -48,7 +48,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Delete all wallet transactions and only recover those parts of the "
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Disable all Arctic Core specific functionality (Goldmine, Spysend, InstantX, "
+"Disable all Arctic specific functionality (Goldmines, Spysend, InstantX, "
 "Evolution) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Distributed under the MIT software license, see the accompanying file "
@@ -235,7 +235,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Connect to KeePassHttp on port <port> (def
 QT_TRANSLATE_NOOP("arcticcoin-core", "Connect to a node to retrieve peer addresses, and disconnect"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Connection options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2009-%i The Bitcoin Core Developers"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2014-%i The Arctic Core Developers"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2015-%i The Arctic Core Developers"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Corrupted block database detected"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Could not parse -rpcbind value %s as network address"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Could not parse goldmine.conf"),
@@ -329,7 +329,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Maximum per-connection send buffer, <n>*10
 QT_TRANSLATE_NOOP("arcticcoin-core", "Missing input transaction information."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Mixing in progress..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Need to specify a port with -whitebind: '%s'"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "No Goldmine detected."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "No Goldmines detected."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "No compatible Goldmine found."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "No funds detected in need of denominating."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "No matching denominations found for mixing."),

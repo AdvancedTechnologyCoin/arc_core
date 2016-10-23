@@ -96,7 +96,7 @@ static inline int64_t roundint64(double d)
 CAmount AmountFromValue(const Value& value)
 {
     double dAmount = value.get_real();
-    if (dAmount <= 0.0 || dAmount > 21000000.0)
+    if (dAmount <= 0.0 || dAmount > 60000000.0)
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount");
     CAmount nAmount = roundint64(dAmount * COIN);
     if (!MoneyRange(nAmount))
@@ -309,16 +309,16 @@ static const CRPCCommand vRPCCommands[] =
     { "hidden",             "setmocktime",            &setmocktime,            true,      false,      false },
 
     /* Arctic features */
-    { "arcticcoin",               "goldmine",             &goldmine,             true,      true,       false },
-    { "arcticcoin",               "goldminelist",         &goldminelist,         true,      true,       false },
-    { "arcticcoin",               "goldminebroadcast",    &goldminebroadcast,    true,      true,       false },
-    { "arcticcoin",               "gmevolution",          &gmevolution,          true,      true,       false },
-    { "arcticcoin",               "gmevolutionvoteraw",   &gmevolutionvoteraw,   true,      true,       false },
-    { "arcticcoin",               "gmfinalevolution",     &gmfinalevolution,     true,      true,       false },
-    { "arcticcoin",               "gmsync",               &gmsync,               true,      true,       false },
-    { "arcticcoin",               "spork",                &spork,                true,      true,       false },
+    { "arcticcoin",               "goldmine",             &masternode,             true,      true,       false },
+    { "arcticcoin",               "goldminelist",         &masternodelist,         true,      true,       false },
+    { "arcticcoin",               "goldminebroadcast",    &masternodebroadcast,    true,      true,       false },
+    { "arcticcoin",               "gmevolution",          &mnbudget,               true,      true,       false },
+    { "arcticcoin",               "gmevolutionvoteraw",   &mnbudgetvoteraw,        true,      true,       false },
+    { "arcticcoin",               "gmfinalevolution",     &mnfinalbudget,          true,      true,       false },
+    { "arcticcoin",               "gmsync",               &mnsync,                 true,      true,       false },
+    { "arcticcoin",               "spork",                &spork,                  true,      true,       false },
 #ifdef ENABLE_WALLET
-    { "arcticcoin",               "spysend",               &spysend,               false,     false,      true  }, /* not threadSafe because of SendMoney */
+    { "arcticcoin",               "spysend",               &darksend,               false,     false,      true  }, /* not threadSafe because of SendMoney */
 
     /* Wallet */
     { "wallet",             "addmultisigaddress",     &addmultisigaddress,     true,      false,      true },
@@ -1052,7 +1052,7 @@ std::string HelpExampleCli(string methodname, string args){
 
 std::string HelpExampleRpc(string methodname, string args){
     return "> curl --user myusername --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", "
-        "\"method\": \"" + methodname + "\", \"params\": [" + args + "] }' -H 'content-type: text/plain;' http://127.0.0.1:9998/\n";
+        "\"method\": \"" + methodname + "\", \"params\": [" + args + "] }' -H 'content-type: text/plain;' http://127.0.0.1:7208/\n";
 }
 
 const CRPCTable tableRPC;

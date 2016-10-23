@@ -6,11 +6,11 @@
 #include "main.h"
 #include "db.h"
 #include "init.h"
-#include "activegoldmine.h"
-#include "goldmineman.h"
-#include "goldmine-payments.h"
-#include "goldmine-evolution.h"
-#include "goldmineconfig.h"
+#include "activegoldminenode.h"
+#include "goldminenodeman.h"
+#include "goldminenode-payments.h"
+#include "goldminenode-evolution.h"
+#include "goldminenodeconfig.h"
 #include "rpcserver.h"
 #include "utilmoneystr.h"
 
@@ -51,7 +51,7 @@ void SendMoney(const CTxDestination &address, CAmount nValue, CWalletTx& wtxNew,
         throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
 }
 
-Value spysend(const Array& params, bool fHelp)
+Value darksend(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() == 0)
         throw runtime_error(
@@ -64,14 +64,14 @@ Value spysend(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
 
     if(params[0].get_str() == "auto"){
-        if(fGoldMine)
-            return "SpySend is not supported from goldmines";
+        if(fMasterNode)
+            return "Spysend is not supported from goldminenodes";
 
-        return "DoAutomaticDenominating " + (spySendPool.DoAutomaticDenominating() ? "successful" : ("failed: " + spySendPool.GetStatus()));
+        return "DoAutomaticDenominating " + (darkSendPool.DoAutomaticDenominating() ? "successful" : ("failed: " + darkSendPool.GetStatus()));
     }
 
     if(params[0].get_str() == "reset"){
-        spySendPool.Reset();
+        darkSendPool.Reset();
         return "successfully reset spysend";
     }
 
@@ -108,15 +108,15 @@ Value getpoolinfo(const Array& params, bool fHelp)
             "Returns an object containing anonymous pool-related information.");
 
     Object obj;
-    obj.push_back(Pair("current_goldmine",        gmineman.GetCurrentGoldMine()->addr.ToString()));
-    obj.push_back(Pair("state",        spySendPool.GetState()));
-    obj.push_back(Pair("entries",      spySendPool.GetEntriesCount()));
-    obj.push_back(Pair("entries_accepted",      spySendPool.GetCountEntriesAccepted()));
+    obj.push_back(Pair("current_goldmine", mnodeman.GetCurrentMasterNode()->addr.ToString()));
+    obj.push_back(Pair("state",        darkSendPool.GetState()));
+    obj.push_back(Pair("entries",      darkSendPool.GetEntriesCount()));
+    obj.push_back(Pair("entries_accepted",      darkSendPool.GetCountEntriesAccepted()));
     return obj;
 }
 
 
-Value goldmine(const Array& params, bool fHelp)
+Value masternode(const Array& params, bool fHelp)
 {
     string strCommand;
     if (params.size() >= 1)
@@ -129,36 +129,36 @@ Value goldmine(const Array& params, bool fHelp)
         strCommand != "outputs" && strCommand != "status" && strCommand != "calcscore"))
         throw runtime_error(
                 "goldmine \"command\"... ( \"passphrase\" )\n"
-                "Set of commands to execute goldmine related actions\n"
+                "Set of commands to execute goldminenode related actions\n"
                 "\nArguments:\n"
                 "1. \"command\"        (string or set of strings, required) The command to execute\n"
                 "2. \"passphrase\"     (string, optional) The wallet passphrase\n"
                 "\nAvailable commands:\n"
-                "  count        - Print number of all known goldmines (optional: 'ds', 'enabled', 'all', 'qualify')\n"
-                "  current      - Print info on current goldmine winner\n"
-                "  debug        - Print goldmine status\n"
-                "  genkey       - Generate new goldmineprivkey\n"
-                "  enforce      - Enforce goldmine payments\n"
-                "  outputs      - Print goldmine compatible outputs\n"
-                "  start        - Start goldmine configured in arcticcoin.conf\n"
-                "  start-alias  - Start single goldmine by assigned alias configured in goldmine.conf\n"
-                "  start-<mode> - Start goldmines configured in goldmine.conf (<mode>: 'all', 'missing', 'disabled')\n"
-                "  status       - Print goldmine status information\n"
-                "  list         - Print list of all known goldmines (see goldminelist for more info)\n"
+                "  count        - Print number of all known goldminenodes (optional: 'ds', 'enabled', 'all', 'qualify')\n"
+                "  current      - Print info on current goldminenode winner\n"
+                "  debug        - Print goldminenode status\n"
+                "  genkey       - Generate new goldminenodeprivkey\n"
+                "  enforce      - Enforce goldminenode payments\n"
+                "  outputs      - Print goldminenode compatible outputs\n"
+                "  start        - Start goldminenode configured in arcticcoin.conf\n"
+                "  start-alias  - Start single goldminenode by assigned alias configured in goldmine.conf\n"
+                "  start-<mode> - Start goldminenodes configured in goldmine.conf (<mode>: 'all', 'missing', 'disabled')\n"
+                "  status       - Print goldminenode status information\n"
+                "  list         - Print list of all known goldminenodes (see goldminenodelist for more info)\n"
                 "  list-conf    - Print goldmine.conf in JSON format\n"
-                "  winners      - Print list of goldmine winners\n"
+                "  winners      - Print list of goldminenode winners\n"
                 );
 
     if (strCommand == "list")
     {
         Array newParams(params.size() - 1);
         std::copy(params.begin() + 1, params.end(), newParams.begin());
-        return goldminelist(newParams, fHelp);
+        return masternodelist(newParams, fHelp);
     }
 
     if (strCommand == "evolution")
     {
-        return "Show evolutions";
+        return "Show evolution";
     }
 
     if(strCommand == "connect")
@@ -167,7 +167,7 @@ Value goldmine(const Array& params, bool fHelp)
         if (params.size() == 2){
             strAddress = params[1].get_str();
         } else {
-            throw runtime_error("Goldmine address required\n");
+            throw runtime_error("Goldminenode address required\n");
         }
 
         CService addr = CService(strAddress);
@@ -191,23 +191,23 @@ Value goldmine(const Array& params, bool fHelp)
             int nCount = 0;
 
             if(chainActive.Tip())
-                gmineman.GetNextGoldmineInQueueForPayment(chainActive.Tip()->nHeight, true, nCount);
+                mnodeman.GetNextMasternodeInQueueForPayment(chainActive.Tip()->nHeight, true, nCount);
 
-            if(params[1] == "ds") return gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION);
-            if(params[1] == "enabled") return gmineman.CountEnabled();
+            if(params[1] == "ss") return mnodeman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION);
+            if(params[1] == "enabled") return mnodeman.CountEnabled();
             if(params[1] == "qualify") return nCount;
             if(params[1] == "all") return strprintf("Total: %d (SS Compatible: %d / Enabled: %d / Qualify: %d)",
-                                                    gmineman.size(),
-                                                    gmineman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION),
-                                                    gmineman.CountEnabled(),
+                                                    mnodeman.size(),
+                                                    mnodeman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION),
+                                                    mnodeman.CountEnabled(),
                                                     nCount);
         }
-        return gmineman.size();
+        return mnodeman.size();
     }
 
     if (strCommand == "current")
     {
-        CGoldmine* winner = gmineman.GetCurrentGoldMine(1);
+        CMasternode* winner = mnodeman.GetCurrentMasterNode(1);
         if(winner) {
             Object obj;
 
@@ -215,9 +215,9 @@ Value goldmine(const Array& params, bool fHelp)
             obj.push_back(Pair("protocol",      (int64_t)winner->protocolVersion));
             obj.push_back(Pair("vin",           winner->vin.prevout.hash.ToString()));
             obj.push_back(Pair("pubkey",        CBitcoinAddress(winner->pubkey.GetID()).ToString()));
-            obj.push_back(Pair("lastseen",      (winner->lastPing == CGoldminePing()) ? winner->sigTime :
+            obj.push_back(Pair("lastseen",      (winner->lastPing == CMasternodePing()) ? winner->sigTime :
                                                         (int64_t)winner->lastPing.sigTime));
-            obj.push_back(Pair("activeseconds", (winner->lastPing == CGoldminePing()) ? 0 :
+            obj.push_back(Pair("activeseconds", (winner->lastPing == CMasternodePing()) ? 0 :
                                                         (int64_t)(winner->lastPing.sigTime - winner->sigTime)));
             return obj;
         }
@@ -227,28 +227,28 @@ Value goldmine(const Array& params, bool fHelp)
 
     if (strCommand == "debug")
     {
-        if(activeGoldmine.status != ACTIVE_GOLDMINE_INITIAL || !goldmineSync.IsSynced())
-            return activeGoldmine.GetStatus();
+        if(activeMasternode.status != ACTIVE_MASTERNODE_INITIAL || !masternodeSync.IsSynced())
+            return activeMasternode.GetStatus();
 
         CTxIn vin = CTxIn();
         CPubKey pubkey = CScript();
         CKey key;
-        bool found = activeGoldmine.GetGoldMineVin(vin, pubkey, key);
+        bool found = activeMasternode.GetMasterNodeVin(vin, pubkey, key);
         if(!found){
-            throw runtime_error("Missing goldmine input, please look at the documentation for instructions on goldmine creation\n");
+            throw runtime_error("Missing goldminenode input, please look at the documentation for instructions on goldminenode creation\n");
         } else {
-            return activeGoldmine.GetStatus();
+            return activeMasternode.GetStatus();
         }
     }
 
     if(strCommand == "enforce")
     {
-        return (uint64_t)enforceGoldminePaymentsTime;
+        return (uint64_t)enforceMasternodePaymentsTime;
     }
 
     if (strCommand == "start")
     {
-        if(!fGoldMine) throw runtime_error("you must set goldmine=1 in the configuration\n");
+        if(!fMasterNode) throw runtime_error("you must set goldminenode=1 in the configuration\n");
 
         if(pwalletMain->IsLocked()) {
             SecureString strWalletPass;
@@ -265,13 +265,13 @@ Value goldmine(const Array& params, bool fHelp)
             }
         }
 
-        if(activeGoldmine.status != ACTIVE_GOLDMINE_STARTED){
-            activeGoldmine.status = ACTIVE_GOLDMINE_INITIAL; // TODO: consider better way
-            activeGoldmine.ManageStatus();
+        if(activeMasternode.status != ACTIVE_MASTERNODE_STARTED){
+            activeMasternode.status = ACTIVE_MASTERNODE_INITIAL; // TODO: consider better way
+            activeMasternode.ManageStatus();
             pwalletMain->Lock();
         }
 
-        return activeGoldmine.GetStatus();
+        return activeMasternode.GetStatus();
     }
 
     if (strCommand == "start-alias")
@@ -302,18 +302,18 @@ Value goldmine(const Array& params, bool fHelp)
         Object statusObj;
         statusObj.push_back(Pair("alias", alias));
 
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             if(mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
-                CGoldmineBroadcast gmb;
+                CMasternodeBroadcast mnb;
 
-                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb);
+                bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
 
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
                 if(result) {
-                    gmineman.UpdateGoldmineList(gmb);
-                    gmb.Relay();
+                    mnodeman.UpdateMasternodeList(mnb);
+                    mnb.Relay();
                 } else {
                     statusObj.push_back(Pair("errorMessage", errorMessage));
                 }
@@ -349,30 +349,30 @@ Value goldmine(const Array& params, bool fHelp)
         }
 
         if((strCommand == "start-missing" || strCommand == "start-disabled") &&
-         (goldmineSync.RequestedGoldmineAssets <= GOLDMINE_SYNC_LIST ||
-          goldmineSync.RequestedGoldmineAssets == GOLDMINE_SYNC_FAILED)) {
-            throw runtime_error("You can't use this command until goldmine list is synced\n");
+         (masternodeSync.RequestedMasternodeAssets <= MASTERNODE_SYNC_LIST ||
+          masternodeSync.RequestedMasternodeAssets == MASTERNODE_SYNC_FAILED)) {
+            throw runtime_error("You can't use this command until goldminenode list is synced\n");
         }
 
-        std::vector<CGoldmineConfig::CGoldmineEntry> mnEntries;
-        mnEntries = goldmineConfig.getEntries();
+        std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
+        mnEntries = masternodeConfig.getEntries();
 
         int successful = 0;
         int failed = 0;
 
         Object resultsObj;
 
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             std::string errorMessage;
 
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmine *pgm = gmineman.Find(vin);
-            CGoldmineBroadcast gmb;
+            CMasternode *pmn = mnodeman.Find(vin);
+            CMasternodeBroadcast mnb;
 
-            if(strCommand == "start-missing" && pgm) continue;
-            if(strCommand == "start-disabled" && pgm && pgm->IsEnabled()) continue;
+            if(strCommand == "start-missing" && pmn) continue;
+            if(strCommand == "start-disabled" && pmn && pmn->IsEnabled()) continue;
 
-            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb);
+            bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
 
             Object statusObj;
             statusObj.push_back(Pair("alias", mne.getAlias()));
@@ -380,8 +380,8 @@ Value goldmine(const Array& params, bool fHelp)
 
             if(result) {
                 successful++;
-                gmineman.UpdateGoldmineList(gmb);
-                gmb.Relay();
+                mnodeman.UpdateMasternodeList(mnb);
+                mnb.Relay();
             } else {
                 failed++;
                 statusObj.push_back(Pair("errorMessage", errorMessage));
@@ -392,7 +392,7 @@ Value goldmine(const Array& params, bool fHelp)
         pwalletMain->Lock();
 
         Object returnObj;
-        returnObj.push_back(Pair("overall", strprintf("Successfully started %d goldmines, failed to start %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("overall", strprintf("Successfully started %d goldminenodes, failed to start %d, total %d", successful, failed, successful + failed)));
         returnObj.push_back(Pair("detail", resultsObj));
 
         return returnObj;
@@ -401,7 +401,7 @@ Value goldmine(const Array& params, bool fHelp)
     if (strCommand == "create")
     {
 
-        throw runtime_error("Not implemented yet, please look at the documentation for instructions on goldmine creation\n");
+        throw runtime_error("Not implemented yet, please look at the documentation for instructions on goldminenode creation\n");
     }
 
     if (strCommand == "genkey")
@@ -414,16 +414,16 @@ Value goldmine(const Array& params, bool fHelp)
 
     if(strCommand == "list-conf")
     {
-        std::vector<CGoldmineConfig::CGoldmineEntry> mnEntries;
-        mnEntries = goldmineConfig.getEntries();
+        std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
+        mnEntries = masternodeConfig.getEntries();
 
         Object resultObj;
 
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmine *pgm = gmineman.Find(vin);
+            CMasternode *pmn = mnodeman.Find(vin);
 
-            std::string strStatus = pgm ? pgm->Status() : "MISSING";
+            std::string strStatus = pmn ? pmn->Status() : "MISSING";
 
             Object mnObj;
             mnObj.push_back(Pair("alias", mne.getAlias()));
@@ -440,7 +440,7 @@ Value goldmine(const Array& params, bool fHelp)
 
     if (strCommand == "outputs"){
         // Find possible candidates
-        vector<COutput> possibleCoins = activeGoldmine.SelectCoinsGoldmine();
+        vector<COutput> possibleCoins = activeMasternode.SelectCoinsMasternode();
 
         Object obj;
         BOOST_FOREACH(COutput& out, possibleCoins) {
@@ -453,15 +453,15 @@ Value goldmine(const Array& params, bool fHelp)
 
     if(strCommand == "status")
     {
-        if(!fGoldMine) throw runtime_error("This is not a goldmine\n");
+        if(!fMasterNode) throw runtime_error("This is not a goldminenode\n");
 
         Object mnObj;
-        CGoldmine *pgm = gmineman.Find(activeGoldmine.vin);
+        CMasternode *pmn = mnodeman.Find(activeMasternode.vin);
 
-        mnObj.push_back(Pair("vin", activeGoldmine.vin.ToString()));
-        mnObj.push_back(Pair("service", activeGoldmine.service.ToString()));
-        if (pgm) mnObj.push_back(Pair("pubkey", CBitcoinAddress(pgm->pubkey.GetID()).ToString()));
-        mnObj.push_back(Pair("status", activeGoldmine.GetStatus()));
+        mnObj.push_back(Pair("vin", activeMasternode.vin.ToString()));
+        mnObj.push_back(Pair("service", activeMasternode.service.ToString()));
+        if (pmn) mnObj.push_back(Pair("pubkey", CBitcoinAddress(pmn->pubkey.GetID()).ToString()));
+        mnObj.push_back(Pair("status", activeMasternode.GetStatus()));
         return mnObj;
     }
 
@@ -484,7 +484,7 @@ Value goldmine(const Array& params, bool fHelp)
     }
 
     /*
-        Shows which goldmine wins by score each block
+        Shows which goldminenode wins by score each block
     */
     if (strCommand == "calcscore")
     {
@@ -496,19 +496,19 @@ Value goldmine(const Array& params, bool fHelp)
         }
         Object obj;
 
-        std::vector<CGoldmine> vGoldmines = gmineman.GetFullGoldmineVector();
+        std::vector<CMasternode> vMasternodes = mnodeman.GetFullMasternodeVector();
         for(int nHeight = chainActive.Tip()->nHeight-nLast; nHeight < chainActive.Tip()->nHeight+20; nHeight++){
             uint256 nHigh = 0;
-            CGoldmine *pBestGoldmine = NULL;
-            BOOST_FOREACH(CGoldmine& gm, vGoldmines) {
-                uint256 n = gm.CalculateScore(1, nHeight-100);
+            CMasternode *pBestMasternode = NULL;
+            BOOST_FOREACH(CMasternode& mn, vMasternodes) {
+                uint256 n = mn.CalculateScore(1, nHeight-100);
                 if(n > nHigh){
                     nHigh = n;
-                    pBestGoldmine = &gm;
+                    pBestMasternode = &mn;
                 }
             }
-            if(pBestGoldmine)
-                obj.push_back(Pair(strprintf("%d", nHeight), pBestGoldmine->vin.prevout.ToStringShort().c_str()));
+            if(pBestMasternode)
+                obj.push_back(Pair(strprintf("%d", nHeight), pBestMasternode->vin.prevout.ToStringShort().c_str()));
         }
 
         return obj;
@@ -517,7 +517,7 @@ Value goldmine(const Array& params, bool fHelp)
     return Value::null;
 }
 
-Value goldminelist(const Array& params, bool fHelp)
+Value masternodelist(const Array& params, bool fHelp)
 {
     std::string strMode = "status";
     std::string strFilter = "";
@@ -531,60 +531,60 @@ Value goldminelist(const Array& params, bool fHelp)
     {
         throw runtime_error(
                 "goldminelist ( \"mode\" \"filter\" )\n"
-                "Get a list of goldmines in different modes\n"
+                "Get a list of goldminenodes in different modes\n"
                 "\nArguments:\n"
                 "1. \"mode\"      (string, optional/required to use filter, defaults = status) The mode to run list in\n"
                 "2. \"filter\"    (string, optional) Filter results. Partial match by IP by default in all modes,\n"
                 "                                    additional matches in some modes are also available\n"
                 "\nAvailable modes:\n"
-                "  activeseconds  - Print number of seconds goldmine recognized by the network as enabled\n"
-                "                   (since latest issued \"goldmine start/start-many/start-alias\")\n"
-                "  addr           - Print ip address associated with a goldmine (can be additionally filtered, partial match)\n"
+                "  activeseconds  - Print number of seconds goldminenode recognized by the network as enabled\n"
+                "                   (since latest issued \"goldminenode start/start-many/start-alias\")\n"
+                "  addr           - Print ip address associated with a goldminenode (can be additionally filtered, partial match)\n"
                 "  full           - Print info in format 'status protocol pubkey IP lastseen activeseconds lastpaid'\n"
                 "                   (can be additionally filtered, partial match)\n"
-                "  lastseen       - Print timestamp of when a goldmine was last seen on the network\n"
+                "  lastseen       - Print timestamp of when a goldminenode was last seen on the network\n"
                 "  lastpaid       - The last time a node was paid on the network\n"
-                "  protocol       - Print protocol of a goldmine (can be additionally filtered, exact match))\n"
-                "  pubkey         - Print public key associated with a goldmine (can be additionally filtered,\n"
+                "  protocol       - Print protocol of a goldminenode (can be additionally filtered, exact match))\n"
+                "  pubkey         - Print public key associated with a goldminenode (can be additionally filtered,\n"
                 "                   partial match)\n"
-                "  rank           - Print rank of a goldmine based on current block\n"
-                "  status         - Print goldmine status: ENABLED / EXPIRED / VIN_SPENT / REMOVE / POS_ERROR\n"
+                "  rank           - Print rank of a goldminenode based on current block\n"
+                "  status         - Print goldminenode status: ENABLED / EXPIRED / VIN_SPENT / REMOVE / POS_ERROR\n"
                 "                   (can be additionally filtered, partial match)\n"
                 );
     }
 
     Object obj;
     if (strMode == "rank") {
-        std::vector<pair<int, CGoldmine> > vGoldmineRanks = gmineman.GetGoldmineRanks(chainActive.Tip()->nHeight);
-        BOOST_FOREACH(PAIRTYPE(int, CGoldmine)& s, vGoldmineRanks) {
+        std::vector<pair<int, CMasternode> > vMasternodeRanks = mnodeman.GetMasternodeRanks(chainActive.Tip()->nHeight);
+        BOOST_FOREACH(PAIRTYPE(int, CMasternode)& s, vMasternodeRanks) {
             std::string strVin = s.second.vin.prevout.ToStringShort();
             if(strFilter !="" && strVin.find(strFilter) == string::npos) continue;
             obj.push_back(Pair(strVin,       s.first));
         }
     } else {
-        std::vector<CGoldmine> vGoldmines = gmineman.GetFullGoldmineVector();
-        BOOST_FOREACH(CGoldmine& gm, vGoldmines) {
-            std::string strVin = gm.vin.prevout.ToStringShort();
+        std::vector<CMasternode> vMasternodes = mnodeman.GetFullMasternodeVector();
+        BOOST_FOREACH(CMasternode& mn, vMasternodes) {
+            std::string strVin = mn.vin.prevout.ToStringShort();
             if (strMode == "activeseconds") {
                 if(strFilter !="" && strVin.find(strFilter) == string::npos) continue;
-                obj.push_back(Pair(strVin,       (int64_t)(gm.lastPing.sigTime - gm.sigTime)));
+                obj.push_back(Pair(strVin,       (int64_t)(mn.lastPing.sigTime - mn.sigTime)));
             } else if (strMode == "addr") {
-                if(strFilter !="" && gm.vin.prevout.hash.ToString().find(strFilter) == string::npos &&
+                if(strFilter !="" && mn.vin.prevout.hash.ToString().find(strFilter) == string::npos &&
                     strVin.find(strFilter) == string::npos) continue;
-                obj.push_back(Pair(strVin,       gm.addr.ToString()));
+                obj.push_back(Pair(strVin,       mn.addr.ToString()));
             } else if (strMode == "full") {
                 std::ostringstream addrStream;
                 addrStream << setw(21) << strVin;
 
                 std::ostringstream stringStream;
                 stringStream << setw(9) <<
-                               gm.Status() << " " <<
-                               gm.protocolVersion << " " <<
-                               CBitcoinAddress(gm.pubkey.GetID()).ToString() << " " << setw(21) <<
-                               gm.addr.ToString() << " " <<
-                               (int64_t)gm.lastPing.sigTime << " " << setw(8) <<
-                               (int64_t)(gm.lastPing.sigTime - gm.sigTime) << " " <<
-                               (int64_t)gm.GetLastPaid();
+                               mn.Status() << " " <<
+                               mn.protocolVersion << " " <<
+                               CBitcoinAddress(mn.pubkey.GetID()).ToString() << " " << setw(21) <<
+                               mn.addr.ToString() << " " <<
+                               (int64_t)mn.lastPing.sigTime << " " << setw(8) <<
+                               (int64_t)(mn.lastPing.sigTime - mn.sigTime) << " " <<
+                               (int64_t)mn.GetLastPaid();
                 std::string output = stringStream.str();
                 stringStream << " " << strVin;
                 if(strFilter !="" && stringStream.str().find(strFilter) == string::npos &&
@@ -592,23 +592,23 @@ Value goldminelist(const Array& params, bool fHelp)
                 obj.push_back(Pair(addrStream.str(), output));
             } else if (strMode == "lastseen") {
                 if(strFilter !="" && strVin.find(strFilter) == string::npos) continue;
-                obj.push_back(Pair(strVin,       (int64_t)gm.lastPing.sigTime));
+                obj.push_back(Pair(strVin,       (int64_t)mn.lastPing.sigTime));
             } else if (strMode == "lastpaid"){
-                if(strFilter !="" && gm.vin.prevout.hash.ToString().find(strFilter) == string::npos &&
+                if(strFilter !="" && mn.vin.prevout.hash.ToString().find(strFilter) == string::npos &&
                     strVin.find(strFilter) == string::npos) continue;
-                obj.push_back(Pair(strVin,      (int64_t)gm.GetLastPaid()));
+                obj.push_back(Pair(strVin,      (int64_t)mn.GetLastPaid()));
             } else if (strMode == "protocol") {
-                if(strFilter !="" && strFilter != strprintf("%d", gm.protocolVersion) &&
+                if(strFilter !="" && strFilter != strprintf("%d", mn.protocolVersion) &&
                     strVin.find(strFilter) == string::npos) continue;
-                obj.push_back(Pair(strVin,       (int64_t)gm.protocolVersion));
+                obj.push_back(Pair(strVin,       (int64_t)mn.protocolVersion));
             } else if (strMode == "pubkey") {
-                CBitcoinAddress address(gm.pubkey.GetID());
+                CBitcoinAddress address(mn.pubkey.GetID());
 
                 if(strFilter !="" && address.ToString().find(strFilter) == string::npos &&
                     strVin.find(strFilter) == string::npos) continue;
                 obj.push_back(Pair(strVin,       address.ToString()));
             } else if(strMode == "status") {
-                std::string strStatus = gm.Status();
+                std::string strStatus = mn.Status();
                 if(strFilter !="" && strVin.find(strFilter) == string::npos && strStatus.find(strFilter) == string::npos) continue;
                 obj.push_back(Pair(strVin,       strStatus));
             }
@@ -618,7 +618,7 @@ Value goldminelist(const Array& params, bool fHelp)
 
 }
 
-bool DecodeHexVecMnb(std::vector<CGoldmineBroadcast>& vecMnb, std::string strHexMnb) {
+bool DecodeHexVecMnb(std::vector<CMasternodeBroadcast>& vecMnb, std::string strHexMnb) {
 
     if (!IsHex(strHexMnb))
         return false;
@@ -635,7 +635,7 @@ bool DecodeHexVecMnb(std::vector<CGoldmineBroadcast>& vecMnb, std::string strHex
     return true;
 }
 
-Value goldminebroadcast(const Array& params, bool fHelp)
+Value masternodebroadcast(const Array& params, bool fHelp)
 {
     string strCommand;
     if (params.size() >= 1)
@@ -645,15 +645,15 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         (strCommand != "create-alias" && strCommand != "create-all" && strCommand != "decode" && strCommand != "relay"))
         throw runtime_error(
                 "goldminebroadcast \"command\"... ( \"passphrase\" )\n"
-                "Set of commands to create and relay goldmine broadcast messages\n"
+                "Set of commands to create and relay goldminenode broadcast messages\n"
                 "\nArguments:\n"
                 "1. \"command\"        (string or set of strings, required) The command to execute\n"
                 "2. \"passphrase\"     (string, optional) The wallet passphrase\n"
                 "\nAvailable commands:\n"
-                "  create-alias  - Create single remote goldmine broadcast message by assigned alias configured in goldmine.conf\n"
-                "  create-all    - Create remote goldmine broadcast messages for all goldmines configured in goldmine.conf\n"
-                "  decode        - Decode goldmine broadcast message\n"
-                "  relay         - Relay goldmine broadcast message to the network\n"
+                "  create-alias  - Create single remote goldminenode broadcast message by assigned alias configured in goldmine.conf\n"
+                "  create-all    - Create remote goldminenode broadcast messages for all goldminenodes configured in goldmine.conf\n"
+                "  decode        - Decode goldminenode broadcast message\n"
+                "  relay         - Relay goldminenode broadcast message to the network\n"
                 + HelpRequiringPassphrase());
 
     if (strCommand == "create-alias")
@@ -685,21 +685,21 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         bool found = false;
 
         Object statusObj;
-        std::vector<CGoldmineBroadcast> vecMnb;
+        std::vector<CMasternodeBroadcast> vecMnb;
 
         statusObj.push_back(Pair("alias", alias));
 
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             if(mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
-                CGoldmineBroadcast gmb;
+                CMasternodeBroadcast mnb;
 
-                bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb, true);
+                bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
 
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
                 if(result) {
-                    vecMnb.push_back(gmb);
+                    vecMnb.push_back(mnb);
                     CDataStream ssVecMnb(SER_NETWORK, PROTOCOL_VERSION);
                     ssVecMnb << vecMnb;
                     statusObj.push_back(Pair("hex", HexStr(ssVecMnb.begin(), ssVecMnb.end())));
@@ -741,22 +741,22 @@ Value goldminebroadcast(const Array& params, bool fHelp)
             }
         }
 
-        std::vector<CGoldmineConfig::CGoldmineEntry> mnEntries;
-        mnEntries = goldmineConfig.getEntries();
+        std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
+        mnEntries = masternodeConfig.getEntries();
 
         int successful = 0;
         int failed = 0;
 
         Object resultsObj;
-        std::vector<CGoldmineBroadcast> vecMnb;
+        std::vector<CMasternodeBroadcast> vecMnb;
 
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             std::string errorMessage;
 
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
-            CGoldmineBroadcast gmb;
+            CMasternodeBroadcast mnb;
 
-            bool result = activeGoldmine.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, gmb, true);
+            bool result = activeMasternode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
 
             Object statusObj;
             statusObj.push_back(Pair("alias", mne.getAlias()));
@@ -764,7 +764,7 @@ Value goldminebroadcast(const Array& params, bool fHelp)
 
             if(result) {
                 successful++;
-                vecMnb.push_back(gmb);
+                vecMnb.push_back(mnb);
             } else {
                 failed++;
                 statusObj.push_back(Pair("errorMessage", errorMessage));
@@ -777,7 +777,7 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         CDataStream ssVecMnb(SER_NETWORK, PROTOCOL_VERSION);
         ssVecMnb << vecMnb;
         Object returnObj;
-        returnObj.push_back(Pair("overall", strprintf("Successfully created broadcast messages for %d goldmines, failed to create %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("overall", strprintf("Successfully created broadcast messages for %d goldminenodes, failed to create %d, total %d", successful, failed, successful + failed)));
         returnObj.push_back(Pair("detail", resultsObj));
         returnObj.push_back(Pair("hex", HexStr(ssVecMnb.begin(), ssVecMnb.end())));
 
@@ -792,42 +792,42 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         int successful = 0;
         int failed = 0;
 
-        std::vector<CGoldmineBroadcast> vecMnb;
+        std::vector<CMasternodeBroadcast> vecMnb;
         Object returnObj;
 
         if (!DecodeHexVecMnb(vecMnb, params[1].get_str()))
-            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Goldmine broadcast message decode failed");
+            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Masternode broadcast message decode failed");
 
-        BOOST_FOREACH(CGoldmineBroadcast& gmb, vecMnb) {
+        BOOST_FOREACH(CMasternodeBroadcast& mnb, vecMnb) {
             Object resultObj;
 
-            if(gmb.VerifySignature()) {
+            if(mnb.VerifySignature()) {
                 successful++;
-                resultObj.push_back(Pair("vin", gmb.vin.ToString()));
-                resultObj.push_back(Pair("addr", gmb.addr.ToString()));
-                resultObj.push_back(Pair("pubkey", CBitcoinAddress(gmb.pubkey.GetID()).ToString()));
-                resultObj.push_back(Pair("pubkey2", CBitcoinAddress(gmb.pubkey2.GetID()).ToString()));
-                resultObj.push_back(Pair("vchSig", EncodeBase64(&gmb.sig[0], gmb.sig.size())));
-                resultObj.push_back(Pair("sigTime", gmb.sigTime));
-                resultObj.push_back(Pair("protocolVersion", gmb.protocolVersion));
-                resultObj.push_back(Pair("nLastDsq", gmb.nLastDsq));
+                resultObj.push_back(Pair("vin", mnb.vin.ToString()));
+                resultObj.push_back(Pair("addr", mnb.addr.ToString()));
+                resultObj.push_back(Pair("pubkey", CBitcoinAddress(mnb.pubkey.GetID()).ToString()));
+                resultObj.push_back(Pair("pubkey2", CBitcoinAddress(mnb.pubkey2.GetID()).ToString()));
+                resultObj.push_back(Pair("vchSig", EncodeBase64(&mnb.sig[0], mnb.sig.size())));
+                resultObj.push_back(Pair("sigTime", mnb.sigTime));
+                resultObj.push_back(Pair("protocolVersion", mnb.protocolVersion));
+                resultObj.push_back(Pair("nLastDsq", mnb.nLastDsq));
 
                 Object lastPingObj;
-                lastPingObj.push_back(Pair("vin", gmb.lastPing.vin.ToString()));
-                lastPingObj.push_back(Pair("blockHash", gmb.lastPing.blockHash.ToString()));
-                lastPingObj.push_back(Pair("sigTime", gmb.lastPing.sigTime));
-                lastPingObj.push_back(Pair("vchSig", EncodeBase64(&gmb.lastPing.vchSig[0], gmb.lastPing.vchSig.size())));
+                lastPingObj.push_back(Pair("vin", mnb.lastPing.vin.ToString()));
+                lastPingObj.push_back(Pair("blockHash", mnb.lastPing.blockHash.ToString()));
+                lastPingObj.push_back(Pair("sigTime", mnb.lastPing.sigTime));
+                lastPingObj.push_back(Pair("vchSig", EncodeBase64(&mnb.lastPing.vchSig[0], mnb.lastPing.vchSig.size())));
 
                 resultObj.push_back(Pair("lastPing", lastPingObj));
             } else {
                 failed++;
-                resultObj.push_back(Pair("errorMessage", "Goldmine broadcast signature verification failed"));
+                resultObj.push_back(Pair("errorMessage", "Masternode broadcast signature verification failed"));
             }
 
-            returnObj.push_back(Pair(gmb.GetHash().ToString(), resultObj));
+            returnObj.push_back(Pair(mnb.GetHash().ToString(), resultObj));
         }
 
-        returnObj.push_back(Pair("overall", strprintf("Successfully decoded broadcast messages for %d goldmines, failed to decode %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("overall", strprintf("Successfully decoded broadcast messages for %d goldminenodes, failed to decode %d, total %d", successful, failed, successful + failed)));
 
         return returnObj;
     }
@@ -844,45 +844,45 @@ Value goldminebroadcast(const Array& params, bool fHelp)
         int failed = 0;
         bool fSafe = params.size() == 2;
 
-        std::vector<CGoldmineBroadcast> vecMnb;
+        std::vector<CMasternodeBroadcast> vecMnb;
         Object returnObj;
 
         if (!DecodeHexVecMnb(vecMnb, params[1].get_str()))
-            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Goldmine broadcast message decode failed");
+            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Masternode broadcast message decode failed");
 
         // verify all signatures first, bailout if any of them broken
-        BOOST_FOREACH(CGoldmineBroadcast& gmb, vecMnb) {
+        BOOST_FOREACH(CMasternodeBroadcast& mnb, vecMnb) {
             Object resultObj;
 
-            resultObj.push_back(Pair("vin", gmb.vin.ToString()));
-            resultObj.push_back(Pair("addr", gmb.addr.ToString()));
+            resultObj.push_back(Pair("vin", mnb.vin.ToString()));
+            resultObj.push_back(Pair("addr", mnb.addr.ToString()));
 
             int nDos = 0;
             bool fResult;
-            if (gmb.VerifySignature()) {
+            if (mnb.VerifySignature()) {
                 if (fSafe) {
-                    fResult = gmineman.CheckMnbAndUpdateGoldmineList(gmb, nDos);
+                    fResult = mnodeman.CheckMnbAndUpdateMasternodeList(mnb, nDos);
                 } else {
-                    gmineman.UpdateGoldmineList(gmb);
-                    gmb.Relay();
+                    mnodeman.UpdateMasternodeList(mnb);
+                    mnb.Relay();
                     fResult = true;
                 }
             } else fResult = false;
 
             if(fResult) {
                 successful++;
-                gmineman.UpdateGoldmineList(gmb);
-                gmb.Relay();
-                resultObj.push_back(Pair(gmb.GetHash().ToString(), "successful"));
+                mnodeman.UpdateMasternodeList(mnb);
+                mnb.Relay();
+                resultObj.push_back(Pair(mnb.GetHash().ToString(), "successful"));
             } else {
                 failed++;
-                resultObj.push_back(Pair("errorMessage", "Goldmine broadcast signature verification failed"));
+                resultObj.push_back(Pair("errorMessage", "Masternode broadcast signature verification failed"));
             }
 
-            returnObj.push_back(Pair(gmb.GetHash().ToString(), resultObj));
+            returnObj.push_back(Pair(mnb.GetHash().ToString(), resultObj));
         }
 
-        returnObj.push_back(Pair("overall", strprintf("Successfully relayed broadcast messages for %d goldmines, failed to relay %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("overall", strprintf("Successfully relayed broadcast messages for %d goldminenodes, failed to relay %d, total %d", successful, failed, successful + failed)));
 
         return returnObj;
     }

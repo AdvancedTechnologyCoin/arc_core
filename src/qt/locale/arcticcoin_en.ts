@@ -2319,8 +2319,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+289"/>
-        <source>Number of Goldmines</source>
-        <translation>Number of Goldmines</translation>
+        <source>Number of Goldmine Nodes</source>
+        <translation>Number of Goldmine Nodes</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -4837,8 +4837,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Copyright (C) 2014-%i The Arctic Core Developers</source>
-        <translation>Copyright (C) 2014-%i The Arctic Core Developers</translation>
+        <source>Copyright (C) 2015-%i The Arctic Core Developers</source>
+        <translation>Copyright (C) 2015-%i The Arctic Core Developers</translation>
     </message>
     <message>
         <location line="+2"/>

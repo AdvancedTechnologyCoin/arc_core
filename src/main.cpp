@@ -14,9 +14,9 @@
 #include "init.h"
 #include "instantx.h"
 #include "spysend.h"
-#include "goldmineman.h"
-#include "goldmine-payments.h"
-#include "goldmine-evolution.h"
+#include "goldminenodeman.h"
+#include "goldminenode-payments.h"
+#include "goldminenode-evolution.h"
 #include "merkleblock.h"
 #include "net.h"
 #include "pow.h"
@@ -63,7 +63,7 @@ bool fCheckBlockIndex = false;
 unsigned int nCoinCacheSize = 5000;
 bool fAlerts = DEFAULT_ALERTS;
 
-/** Fees smaller than this (in nARC) are considered zero fee (for relaying and mining)
+/** Fees smaller than this (in duffs) are considered zero fee (for relaying and mining)
  * We are ~100 times smaller then bitcoin now (2015-06-23), set minRelayTxFee only 10 times higher
  * so it's still 10 times lower comparing to bitcoin.
  */
@@ -1115,7 +1115,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
 
         // Don't accept it if it can't get into a block
         // but prioritise dstx and don't check fees for it
-        if(mapSpysendBroadcastTxes.count(hash)) {
+        if(mapDarksendBroadcastTxes.count(hash)) {
             mempool.PrioritiseTransaction(hash, hash.ToString(), 1000, 0.1*COIN);
         } else if(!ignoreFees){
             CAmount txMinFee = GetMinRelayFee(tx, nSize, true);
@@ -1570,10 +1570,10 @@ int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
     return nSubsidy + nFees;
 }
 
-int64_t GetGoldminePayment(int nHeight, int64_t blockValue)
+int64_t GetMasternodePayment(int nHeight, int64_t blockValue)
 {	
 	int64_t ret = 0;
-    if(nHeight > 1) {ret =  blockValue/2;} // 50% PoS && 50% PoW
+    if(nHeight > 1) {ret =  blockValue/2;} // 50% PoS & 50% PoW
     return ret;
 }
 
@@ -1582,9 +1582,13 @@ bool IsInitialBlockDownload()
     LOCK(cs_main);
     if (fImporting || fReindex || chainActive.Height() < Checkpoints::GetTotalBlocksEstimate())
         return true;
+    static bool lockIBDState = false;
+    if (lockIBDState)
+        return false;
     bool state = (chainActive.Height() < pindexBestHeader->nHeight - 24 * 6 ||
-            pindexBestHeader->GetBlockTime() < GetTime() - 6 * 60 * 60);
-
+            pindexBestHeader->GetBlockTime() < GetTime() - 6 * 60 * 60); // ~144 blocks behind -> 2 x fork detection time
+    if (!state)
+        lockIBDState = true;
     return state;
 }
 
@@ -2007,7 +2011,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     // Now that the whole chain is irreversibly beyond that time it is applied to all blocks except the
     // two in the chain that violate it. This prevents exploiting the issue against nodes in their
     // initial block download.
-    bool fEnforceBIP30 = (!pindex->phashBlock);
+    bool fEnforceBIP30 = (!pindex->phashBlock);  // Enforce on CreateNewBlock invocations which don't have a hash.
+                          
     if (fEnforceBIP30) {
         BOOST_FOREACH(const CTransaction& tx, block.vtx) {
             const CCoins* coins = view.AccessCoins(tx.GetHash());
@@ -2017,7 +2022,11 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         }
     }
 
-    unsigned int flags = SCRIPT_VERIFY_P2SH;
+    // BIP16 didn't become active until Apr 1 2012
+    int64_t nBIP16SwitchTime = 1333238400;
+    bool fStrictPayToScriptHash = (pindex->GetBlockTime() >= nBIP16SwitchTime);
+
+    unsigned int flags = fStrictPayToScriptHash ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE;
 
     // Start enforcing the DERSIG (BIP66) rules, for block.nVersion=3 blocks, when 75% of the network has upgraded:
     if (block.nVersion >= 3 && CBlockIndex::IsSuperMajority(3, pindex->pprev, Params().EnforceBlockUpgradeMajority())) {
@@ -2052,16 +2061,17 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 return state.DoS(100, error("ConnectBlock() : inputs missing/spent"),
                                  REJECT_INVALID, "bad-txns-inputs-missingorspent");
 
-            
+            if (fStrictPayToScriptHash)
+            {
                 // Add in sigops done by pay-to-script-hash inputs;
                 // this is to prevent a "rogue miner" from creating
                 // an incredibly-expensive-to-validate block.
-                
-				nSigOps += GetP2SHSigOpCount(tx, view);
+                nSigOps += GetP2SHSigOpCount(tx, view);
                 if (nSigOps > MAX_BLOCK_SIGOPS)
                     return state.DoS(100, error("ConnectBlock() : too many sigops"),
                                      REJECT_INVALID, "bad-blk-sigops");
-        
+            }
+
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
 
             std::vector<CScriptCheck> vChecks;
@@ -2936,7 +2946,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     }
 
 
-    // ----------- goldmine payments / evolutions -----------
+    // ----------- masternode payments / budgets -----------
 
     CBlockIndex* pindexPrev = chainActive.Tip();
     if(pindexPrev != NULL)
@@ -2955,7 +2965,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
             if(!IsBlockPayeeValid(block.vtx[0], nHeight))
             {
                 mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
-                return state.DoS(100, error("CheckBlock() : Couldn't find goldmine/evolution payment"));
+                return state.DoS(100, error("CheckBlock() : Couldn't find masternode/budget payment"));
             }
         } else {
             LogPrintf("CheckBlock() : WARNING: Couldn't find previous block, skipping IsBlockPayeeValid()\n");
@@ -3002,9 +3012,19 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
                              REJECT_INVALID, "bad-diffbits");
     } else {
         // Check proof of work (Here for the architecture issues with DGW v1 and v2)
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block))
-            return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
+        if(nHeight <= 68589){
+            unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block);
+            double n1 = ConvertBitsToDouble(block.nBits);
+            double n2 = ConvertBitsToDouble(nBitsNext);
+
+            if (abs(n1-n2) > n1*0.5)
+                return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                                 REJECT_INVALID, "bad-diffbits");
+        } else {
+            if (block.nBits != GetNextWorkRequired(pindexPrev, &block))
+                return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
+                                REJECT_INVALID, "bad-diffbits");
+        }
     }
 
     // Check timestamp against prev
@@ -3247,10 +3267,10 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
         return error("%s : ActivateBestChain failed", __func__);
 
     if(!fLiteMode){
-        if (goldmineSync.RequestedGoldmineAssets > GOLDMINE_SYNC_LIST) {
-            spySendPool.NewBlock();
-            goldminePayments.ProcessBlock(GetHeight()+10);
-            evolution.NewBlock();
+        if (masternodeSync.RequestedMasternodeAssets > MASTERNODE_SYNC_LIST) {
+            darkSendPool.NewBlock();
+            masternodePayments.ProcessBlock(GetHeight()+10);
+            budget.NewBlock();
         }
     }
 
@@ -3940,7 +3960,7 @@ bool static AlreadyHave(const CInv& inv)
                 pcoinsTip->HaveCoins(inv.hash);
         }
     case MSG_DSTX:
-        return mapSpysendBroadcastTxes.count(inv.hash);
+        return mapDarksendBroadcastTxes.count(inv.hash);
     case MSG_BLOCK:
         return mapBlockIndex.count(inv.hash);
     case MSG_TXLOCK_REQUEST:
@@ -3950,44 +3970,44 @@ bool static AlreadyHave(const CInv& inv)
         return mapTxLockVote.count(inv.hash);
     case MSG_SPORK:
         return mapSporks.count(inv.hash);
-    case MSG_GOLDMINE_WINNER:
-        if(goldminePayments.mapGoldminePayeeVotes.count(inv.hash)) {
-            goldmineSync.AddedGoldmineWinner(inv.hash);
+    case MSG_MASTERNODE_WINNER:
+        if(masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
+            masternodeSync.AddedMasternodeWinner(inv.hash);
             return true;
         }
         return false;
-    case MSG_EVOLUTION_VOTE:
-        if(evolution.mapSeenGoldmineEvolutionVotes.count(inv.hash)) {
-            goldmineSync.AddedEvolutionItem(inv.hash);
+    case MSG_BUDGET_VOTE:
+        if(budget.mapSeenMasternodeBudgetVotes.count(inv.hash)) {
+            masternodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
-    case MSG_EVOLUTION_PROPOSAL:
-        if(evolution.mapSeenGoldmineEvolutionProposals.count(inv.hash)) {
-            goldmineSync.AddedEvolutionItem(inv.hash);
+    case MSG_BUDGET_PROPOSAL:
+        if(budget.mapSeenMasternodeBudgetProposals.count(inv.hash)) {
+            masternodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
-    case MSG_EVOLUTION_FINALIZED_VOTE:
-        if(evolution.mapSeenFinalizedEvolutionVotes.count(inv.hash)) {
-            goldmineSync.AddedEvolutionItem(inv.hash);
+    case MSG_BUDGET_FINALIZED_VOTE:
+        if(budget.mapSeenFinalizedBudgetVotes.count(inv.hash)) {
+            masternodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
-    case MSG_EVOLUTION_FINALIZED:
-        if(evolution.mapSeenFinalizedEvolutions.count(inv.hash)) {
-            goldmineSync.AddedEvolutionItem(inv.hash);
+    case MSG_BUDGET_FINALIZED:
+        if(budget.mapSeenFinalizedBudgets.count(inv.hash)) {
+            masternodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
-    case MSG_GOLDMINE_ANNOUNCE:
-        if(gmineman.mapSeenGoldmineBroadcast.count(inv.hash)) {
-            goldmineSync.AddedGoldmineList(inv.hash);
+    case MSG_MASTERNODE_ANNOUNCE:
+        if(mnodeman.mapSeenMasternodeBroadcast.count(inv.hash)) {
+            masternodeSync.AddedMasternodeList(inv.hash);
             return true;
         }
         return false;
-    case MSG_GOLDMINE_PING:
-        return gmineman.mapSeenGoldminePing.count(inv.hash);
+    case MSG_MASTERNODE_PING:
+        return mnodeman.mapSeenMasternodePing.count(inv.hash);
     }
     // Don't know what it is, just say we already got one
     return true;
@@ -4125,84 +4145,84 @@ void static ProcessGetData(CNode* pfrom)
                         pushed = true;
                     }
                 }
-                if (!pushed && inv.type == MSG_GOLDMINE_WINNER) {
-                    if(goldminePayments.mapGoldminePayeeVotes.count(inv.hash)){
+                if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
+                    if(masternodePayments.mapMasternodePayeeVotes.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << goldminePayments.mapGoldminePayeeVotes[inv.hash];
+                        ss << masternodePayments.mapMasternodePayeeVotes[inv.hash];
                         pfrom->PushMessage("mnw", ss);
                         pushed = true;
                     }
                 }
-                if (!pushed && inv.type == MSG_EVOLUTION_VOTE) {
-                    if(evolution.mapSeenGoldmineEvolutionVotes.count(inv.hash)){
+                if (!pushed && inv.type == MSG_BUDGET_VOTE) {
+                    if(budget.mapSeenMasternodeBudgetVotes.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << evolution.mapSeenGoldmineEvolutionVotes[inv.hash];
+                        ss << budget.mapSeenMasternodeBudgetVotes[inv.hash];
                         pfrom->PushMessage("mvote", ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_EVOLUTION_PROPOSAL) {
-                    if(evolution.mapSeenGoldmineEvolutionProposals.count(inv.hash)){
+                if (!pushed && inv.type == MSG_BUDGET_PROPOSAL) {
+                    if(budget.mapSeenMasternodeBudgetProposals.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << evolution.mapSeenGoldmineEvolutionProposals[inv.hash];
+                        ss << budget.mapSeenMasternodeBudgetProposals[inv.hash];
                         pfrom->PushMessage("mprop", ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_EVOLUTION_FINALIZED_VOTE) {
-                    if(evolution.mapSeenFinalizedEvolutionVotes.count(inv.hash)){
+                if (!pushed && inv.type == MSG_BUDGET_FINALIZED_VOTE) {
+                    if(budget.mapSeenFinalizedBudgetVotes.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << evolution.mapSeenFinalizedEvolutionVotes[inv.hash];
+                        ss << budget.mapSeenFinalizedBudgetVotes[inv.hash];
                         pfrom->PushMessage("fbvote", ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_EVOLUTION_FINALIZED) {
-                    if(evolution.mapSeenFinalizedEvolutions.count(inv.hash)){
+                if (!pushed && inv.type == MSG_BUDGET_FINALIZED) {
+                    if(budget.mapSeenFinalizedBudgets.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << evolution.mapSeenFinalizedEvolutions[inv.hash];
+                        ss << budget.mapSeenFinalizedBudgets[inv.hash];
                         pfrom->PushMessage("fbs", ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_GOLDMINE_ANNOUNCE) {
-                    if(gmineman.mapSeenGoldmineBroadcast.count(inv.hash)){
+                if (!pushed && inv.type == MSG_MASTERNODE_ANNOUNCE) {
+                    if(mnodeman.mapSeenMasternodeBroadcast.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << gmineman.mapSeenGoldmineBroadcast[inv.hash];
-                        pfrom->PushMessage("gmb", ss);
+                        ss << mnodeman.mapSeenMasternodeBroadcast[inv.hash];
+                        pfrom->PushMessage("mnb", ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_GOLDMINE_PING) {
-                    if(gmineman.mapSeenGoldminePing.count(inv.hash)){
+                if (!pushed && inv.type == MSG_MASTERNODE_PING) {
+                    if(mnodeman.mapSeenMasternodePing.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << gmineman.mapSeenGoldminePing[inv.hash];
+                        ss << mnodeman.mapSeenMasternodePing[inv.hash];
                         pfrom->PushMessage("mnp", ss);
                         pushed = true;
                     }
                 }
 
                 if (!pushed && inv.type == MSG_DSTX) {       
-                    if(mapSpysendBroadcastTxes.count(inv.hash)){
+                    if(mapDarksendBroadcastTxes.count(inv.hash)){
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
                         ss <<
-                            mapSpysendBroadcastTxes[inv.hash].tx <<
-                            mapSpysendBroadcastTxes[inv.hash].vin <<
-                            mapSpysendBroadcastTxes[inv.hash].vchSig <<
-                            mapSpysendBroadcastTxes[inv.hash].sigTime;
+                            mapDarksendBroadcastTxes[inv.hash].tx <<
+                            mapDarksendBroadcastTxes[inv.hash].vin <<
+                            mapDarksendBroadcastTxes[inv.hash].vchSig <<
+                            mapDarksendBroadcastTxes[inv.hash].sigTime;
 
                         pfrom->PushMessage("dstx", ss);
                         pushed = true;
@@ -4624,7 +4644,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         vector<uint256> vEraseQueue;
         CTransaction tx;
 
-        //goldmine signed transaction
+        //masternode signed transaction
         bool ignoreFees = false;
         CTxIn vin;
         vector<unsigned char> vchSig;
@@ -4633,40 +4653,40 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if(strCommand == "tx") {
             vRecv >> tx;
         } else if (strCommand == "dstx") {
-            //these allow goldmines to publish a limited amount of free transactions
+            //these allow masternodes to publish a limited amount of free transactions
             vRecv >> tx >> vin >> vchSig >> sigTime;
 
-            CGoldmine* pgm = gmineman.Find(vin);
-            if(pgm != NULL)
+            CMasternode* pmn = mnodeman.Find(vin);
+            if(pmn != NULL)
             {
-                if(!pgm->allowFreeTx){
-                    //multiple peers can send us a valid goldmine transaction
-                    if(fDebug) LogPrintf("dstx: Goldmine sending too many transactions %s\n", tx.GetHash().ToString());
+                if(!pmn->allowFreeTx){
+                    //multiple peers can send us a valid masternode transaction
+                    if(fDebug) LogPrintf("dstx: Masternode sending too many transactions %s\n", tx.GetHash().ToString());
                     return true;
                 }
 
                 std::string strMessage = tx.GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
 
                 std::string errorMessage = "";
-                if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchSig, strMessage, errorMessage)){
-                    LogPrintf("dstx: Got bad goldmine address signature %s \n", vin.ToString());
+                if(!darkSendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)){
+                    LogPrintf("dstx: Got bad masternode address signature %s \n", vin.ToString());
                     //pfrom->Misbehaving(20);
                     return false;
                 }
 
-                LogPrintf("dstx: Got Goldmine transaction %s\n", tx.GetHash().ToString());
+                LogPrintf("dstx: Got Masternode transaction %s\n", tx.GetHash().ToString());
 
                 ignoreFees = true;
-                pgm->allowFreeTx = false;
+                pmn->allowFreeTx = false;
 
-                if(!mapSpysendBroadcastTxes.count(tx.GetHash())){
-                    CSpysendBroadcastTx dstx;
+                if(!mapDarksendBroadcastTxes.count(tx.GetHash())){
+                    CDarksendBroadcastTx dstx;
                     dstx.tx = tx;
                     dstx.vin = vin;
                     dstx.vchSig = vchSig;
                     dstx.sigTime = sigTime;
 
-                    mapSpysendBroadcastTxes.insert(make_pair(tx.GetHash(), dstx));
+                    mapDarksendBroadcastTxes.insert(make_pair(tx.GetHash(), dstx));
                 }
             }
         }
@@ -5083,13 +5103,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     else
     {
         //probably one the extensions
-        spySendPool.ProcessMessageSpysend(pfrom, strCommand, vRecv);
-        gmineman.ProcessMessage(pfrom, strCommand, vRecv);
-        evolution.ProcessMessage(pfrom, strCommand, vRecv);
-        goldminePayments.ProcessMessageGoldminePayments(pfrom, strCommand, vRecv);
+        darkSendPool.ProcessMessageDarksend(pfrom, strCommand, vRecv);
+        mnodeman.ProcessMessage(pfrom, strCommand, vRecv);
+        budget.ProcessMessage(pfrom, strCommand, vRecv);
+        masternodePayments.ProcessMessageMasternodePayments(pfrom, strCommand, vRecv);
         ProcessMessageInstantX(pfrom, strCommand, vRecv);
         ProcessSpork(pfrom, strCommand, vRecv);
-        goldmineSync.ProcessMessage(pfrom, strCommand, vRecv);
+        masternodeSync.ProcessMessage(pfrom, strCommand, vRecv);
     }
 
 

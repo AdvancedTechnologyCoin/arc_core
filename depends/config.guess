@@ -1309,7 +1309,7 @@ EOF
     BS2000:POSIX*:*:*)
 	echo bs2000-siemens-sysv
 	exit ;;
-    SS/*:UNIX_System_V:*:*)
+    DS/*:UNIX_System_V:*:*)
 	echo ${UNAME_MACHINE}-${UNAME_SYSTEM}-${UNAME_RELEASE}
 	exit ;;
     *:Plan9:*:*)

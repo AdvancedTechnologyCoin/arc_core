@@ -353,7 +353,7 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
         return tr("Received with");
     case TransactionRecord::RecvFromOther:
         return tr("Received from");
-    case TransactionRecord::RecvWithSpysend:
+    case TransactionRecord::RecvWithDarksend:
         return tr("Received via Spysend");
     case TransactionRecord::SendToAddress:
     case TransactionRecord::SendToOther:
@@ -363,13 +363,13 @@ QString TransactionTableModel::formatTxType(const TransactionRecord *wtx) const
     case TransactionRecord::Generated:
         return tr("Mined");
 
-    case TransactionRecord::SpysendDenominate:
+    case TransactionRecord::DarksendDenominate:
         return tr("Spysend Denominate");
-    case TransactionRecord::SpysendCollateralPayment:
+    case TransactionRecord::DarksendCollateralPayment:
         return tr("Spysend Collateral Payment");
-    case TransactionRecord::SpysendMakeCollaterals:
+    case TransactionRecord::DarksendMakeCollaterals:
         return tr("Spysend Make Collateral Inputs");
-    case TransactionRecord::SpysendCreateDenominations:
+    case TransactionRecord::DarksendCreateDenominations:
         return tr("Spysend Create Denominations");
     case TransactionRecord::Darksent:
         return tr("Darksent");
@@ -385,7 +385,7 @@ QVariant TransactionTableModel::txAddressDecoration(const TransactionRecord *wtx
     {
     case TransactionRecord::Generated:
         return QIcon(":/icons/tx_mined");
-    case TransactionRecord::RecvWithSpysend:
+    case TransactionRecord::RecvWithDarksend:
     case TransactionRecord::RecvWithAddress:
     case TransactionRecord::RecvFromOther:
         return QIcon(":/icons/tx_input");
@@ -410,7 +410,7 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
     case TransactionRecord::RecvFromOther:
         return QString::fromStdString(wtx->address) + watchAddress;
     case TransactionRecord::RecvWithAddress:
-    case TransactionRecord::RecvWithSpysend:
+    case TransactionRecord::RecvWithDarksend:
     case TransactionRecord::SendToAddress:
     case TransactionRecord::Generated:
     case TransactionRecord::Darksent:
