@@ -104,22 +104,22 @@ namespace boost {
 using namespace std;
 
 //Arctic only features
-bool fGoldMine = false;
-string strGoldMinePrivKey = "";
-string strGoldMineAddr = "";
+bool fMasterNode = false;
+string strMasterNodePrivKey = "";
+string strMasterNodeAddr = "";
 bool fLiteMode = false;
 bool fEnableInstantX = true;
 int nInstantXDepth = 5;
-int nSpysendRounds = 2;
-int nAnonymizeArcticcoinAmount = 1000;
+int nDarksendRounds = 2;
+int nAnonymizeDarkcoinAmount = 1000;
 int nLiquidityProvider = 0;
 /** Spork enforcement enabled time */
-int64_t enforceGoldminePaymentsTime = 4085657524;
+int64_t enforceMasternodePaymentsTime = 4085657524;
 bool fSucessfullyLoaded = false;
-bool fEnableSpysend = false;
-/** All denominations used by spysend */
-std::vector<int64_t> spySendDenominations;
-string strEvolutionMode = "";
+bool fEnableDarksend = false;
+/** All denominations used by darksend */
+std::vector<int64_t> darkSendDenominations;
+string strBudgetMode = "";
 
 map<string, string> mapArgs;
 map<string, vector<string> > mapMultiArgs;
@@ -234,12 +234,12 @@ bool LogAcceptCategory(const char* category)
             // thread_specific_ptr automatically deletes the set when the thread ends.
             // "arcticcoin" is a composite category enabling all Arctic-related debug output
             if(ptrCategory->count(string("arcticcoin"))) {
-                ptrCategory->insert(string("spysend"));
+                ptrCategory->insert(string("darksend"));
                 ptrCategory->insert(string("instantx"));
-                ptrCategory->insert(string("goldmine"));
+                ptrCategory->insert(string("masternode"));
                 ptrCategory->insert(string("keepass"));
-                ptrCategory->insert(string("gmpayments"));
-                ptrCategory->insert(string("gmevolution"));
+                ptrCategory->insert(string("mnpayments"));
+                ptrCategory->insert(string("mnbudget"));
             }
         }
         const set<string>& setCategories = *ptrCategory.get();
@@ -492,9 +492,9 @@ boost::filesystem::path GetConfigFile()
     return pathConfigFile;
 }
 
-boost::filesystem::path GetGoldmineConfigFile()
+boost::filesystem::path GetMasternodeConfigFile()
 {
-    boost::filesystem::path pathConfigFile(GetArg("-gmconf", "goldmine.conf"));
+    boost::filesystem::path pathConfigFile(GetArg("-mnconf", "goldmine.conf"));
     if (!pathConfigFile.is_complete()) pathConfigFile = GetDataDir() / pathConfigFile;
     return pathConfigFile;
 }

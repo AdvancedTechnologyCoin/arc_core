@@ -93,12 +93,12 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "prioritisetransaction", 1 },
     { "prioritisetransaction", 2 },
     { "spork", 1 },
-    { "gmevolution", 3 },
-    { "gmevolution", 4 },
-    { "gmevolution", 6 },
-    { "gmevolution", 8 },
-    { "gmevolutionvoteraw", 1 },
-    { "gmevolutionvoteraw", 4 },
+    { "mnbudget", 3 },
+    { "mnbudget", 4 },
+    { "mnbudget", 6 },
+    { "mnbudget", 8 },
+    { "mnbudgetvoteraw", 1 },
+    { "mnbudgetvoteraw", 4 },
 };
 
 class CRPCConvertTable

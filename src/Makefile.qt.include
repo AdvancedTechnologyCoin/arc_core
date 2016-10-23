@@ -3,22 +3,8 @@ EXTRA_LIBRARIES += qt/libbitcoinqt.a
 
 # arcticcoin qt core #
 QT_TS = \
-  qt/locale/arcticcoin_bg.ts \
-  qt/locale/arcticcoin_de.ts \
   qt/locale/arcticcoin_en.ts \
-  qt/locale/arcticcoin_es.ts \
-  qt/locale/arcticcoin_fi.ts \
-  qt/locale/arcticcoin_fr.ts \
-  qt/locale/arcticcoin_it.ts \
-  qt/locale/arcticcoin_ja.ts \
-  qt/locale/arcticcoin_pl.ts \
-  qt/locale/arcticcoin_pt.ts \
-  qt/locale/arcticcoin_ru.ts \
-  qt/locale/arcticcoin_sk.ts \
-  qt/locale/arcticcoin_sv.ts \
-  qt/locale/arcticcoin_vi.ts \
-  qt/locale/arcticcoin_zh_CN.ts \
-  qt/locale/arcticcoin_zh_TW.ts
+  qt/locale/arcticcoin_ru.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \

@@ -109,7 +109,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         }
 
         if(fAllFromMeDenom && fAllToMeDenom && nFromMe * nToMe) {
-            parts.append(TransactionRecord(hash, nTime, TransactionRecord::SpysendDenominate, "", -nDebit, nCredit));
+            parts.append(TransactionRecord(hash, nTime, TransactionRecord::DarksendDenominate, "", -nDebit, nCredit));
             parts.last().involvesWatchAddress = false;   // maybe pass to TransactionRecord as constructor argument
         }
         else if (fAllFromMe && fAllToMe)
@@ -123,7 +123,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             sub.type = TransactionRecord::SendToSelf;
             sub.address = "";
 
-            if(mapValue["SS"] == "1")
+            if(mapValue["DS"] == "1")
             {
                 sub.type = TransactionRecord::Darksent;
                 CTxDestination address;
@@ -145,9 +145,9 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                     const CTxOut& txout = wtx.vout[nOut];
                     sub.idx = parts.size();
 
-                    if(wallet->IsCollateralAmount(txout.nValue)) sub.type = TransactionRecord::SpysendMakeCollaterals;
-                    if(wallet->IsDenominatedAmount(txout.nValue)) sub.type = TransactionRecord::SpysendCreateDenominations;
-                    if(nDebit - wtx.GetValueOut() == SPYSEND_COLLATERAL) sub.type = TransactionRecord::SpysendCollateralPayment;
+                    if(wallet->IsCollateralAmount(txout.nValue)) sub.type = TransactionRecord::DarksendMakeCollaterals;
+                    if(wallet->IsDenominatedAmount(txout.nValue)) sub.type = TransactionRecord::DarksendCreateDenominations;
+                    if(nDebit - wtx.GetValueOut() == DARKSEND_COLLATERAL) sub.type = TransactionRecord::DarksendCollateralPayment;
                 }
             }
 
@@ -193,7 +193,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                     sub.address = mapValue["to"];
                 }
 
-                if(mapValue["SS"] == "1")
+                if(mapValue["DS"] == "1")
                 {
                     sub.type = TransactionRecord::Darksent;
                 }

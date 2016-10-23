@@ -138,25 +138,25 @@ OverviewPage::OverviewPage(QWidget *parent) :
 
     // init "out of sync" warning labels
     ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");
-    ui->labelSpysendSyncStatus->setText("(" + tr("out of sync") + ")");
+    ui->labelDarksendSyncStatus->setText("(" + tr("out of sync") + ")");
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
 
     if(fLiteMode){
-        ui->frameSpysend->setVisible(false);
+        ui->frameDarksend->setVisible(false);
     } else {
-        if(fGoldMine){
-            ui->toggleSpysend->setText("(" + tr("Disabled") + ")");
-            ui->spysendAuto->setText("(" + tr("Disabled") + ")");
-            ui->spysendReset->setText("(" + tr("Disabled") + ")");
-            ui->frameSpysend->setEnabled(false);
+        if(fMasterNode){
+            ui->toggleDarksend->setText("(" + tr("Disabled") + ")");
+            ui->darksendAuto->setText("(" + tr("Disabled") + ")");
+            ui->darksendReset->setText("(" + tr("Disabled") + ")");
+            ui->frameDarksend->setEnabled(false);
         } else {
-            if(!fEnableSpysend){
-                ui->toggleSpysend->setText(tr("Start Spysend Mixing"));
+            if(!fEnableDarksend){
+                ui->toggleDarksend->setText(tr("Start Spysend Mixing"));
             } else {
-                ui->toggleSpysend->setText(tr("Stop Spysend Mixing"));
+                ui->toggleDarksend->setText(tr("Stop Spysend Mixing"));
             }
             timer = new QTimer(this);
-            connect(timer, SIGNAL(timeout()), this, SLOT(spySendStatus()));
+            connect(timer, SIGNAL(timeout()), this, SLOT(darkSendStatus()));
             timer->start(1000);
         }
     }
@@ -173,7 +173,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex &index)
 
 OverviewPage::~OverviewPage()
 {
-    if(!fLiteMode && !fGoldMine) disconnect(timer, SIGNAL(timeout()), this, SLOT(spySendStatus()));
+    if(!fLiteMode && !fMasterNode) disconnect(timer, SIGNAL(timeout()), this, SLOT(darkSendStatus()));
     delete ui;
 }
 
@@ -206,7 +206,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
 
-    updateSpysendProgress();
+    updateDarksendProgress();
 
     static int cachedTxLocks = 0;
 
@@ -272,9 +272,9 @@ void OverviewPage::setWalletModel(WalletModel *model)
 
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 
-        connect(ui->spysendAuto, SIGNAL(clicked()), this, SLOT(spysendAuto()));
-        connect(ui->spysendReset, SIGNAL(clicked()), this, SLOT(spysendReset()));
-        connect(ui->toggleSpysend, SIGNAL(clicked()), this, SLOT(toggleSpysend()));
+        connect(ui->darksendAuto, SIGNAL(clicked()), this, SLOT(darksendAuto()));
+        connect(ui->darksendReset, SIGNAL(clicked()), this, SLOT(darksendReset()));
+        connect(ui->toggleDarksend, SIGNAL(clicked()), this, SLOT(toggleDarksend()));
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
@@ -308,27 +308,27 @@ void OverviewPage::updateAlerts(const QString &warnings)
 void OverviewPage::showOutOfSyncWarning(bool fShow)
 {
     ui->labelWalletStatus->setVisible(fShow);
-    ui->labelSpysendSyncStatus->setVisible(fShow);
+    ui->labelDarksendSyncStatus->setVisible(fShow);
     ui->labelTransactionsStatus->setVisible(fShow);
 }
 
-void OverviewPage::updateSpysendProgress()
+void OverviewPage::updateDarksendProgress()
 {
-    if(!goldmineSync.IsBlockchainSynced() || ShutdownRequested()) return;
+    if(!masternodeSync.IsBlockchainSynced() || ShutdownRequested()) return;
 
     if(!pwalletMain) return;
 
     QString strAmountAndRounds;
-    QString strAnonymizeArcticcoinAmount = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, nAnonymizeArcticcoinAmount * COIN, false, BitcoinUnits::separatorAlways);
+    QString strAnonymizeDarkcoinAmount = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, nAnonymizeDarkcoinAmount * COIN, false, BitcoinUnits::separatorAlways);
 
     if(currentBalance == 0)
     {
-        ui->spysendProgress->setValue(0);
-        ui->spysendProgress->setToolTip(tr("No inputs detected"));
+        ui->darksendProgress->setValue(0);
+        ui->darksendProgress->setToolTip(tr("No inputs detected"));
 
         // when balance is zero just show info from settings
-        strAnonymizeArcticcoinAmount = strAnonymizeArcticcoinAmount.remove(strAnonymizeArcticcoinAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
-        strAmountAndRounds = strAnonymizeArcticcoinAmount + " / " + tr("%n Rounds", "", nSpysendRounds);
+        strAnonymizeDarkcoinAmount = strAnonymizeDarkcoinAmount.remove(strAnonymizeDarkcoinAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
+        strAmountAndRounds = strAnonymizeDarkcoinAmount + " / " + tr("%n Rounds", "", nDarksendRounds);
 
         ui->labelAmountRounds->setToolTip(tr("No inputs detected"));
         ui->labelAmountRounds->setText(strAmountAndRounds);
@@ -355,25 +355,25 @@ void OverviewPage::updateSpysendProgress()
     CAmount nMaxToAnonymize = nAnonymizableBalance + currentAnonymizedBalance + nDenominatedUnconfirmedBalance;
 
     // If it's more than the anon threshold, limit to that.
-    if(nMaxToAnonymize > nAnonymizeArcticcoinAmount*COIN) nMaxToAnonymize = nAnonymizeArcticcoinAmount*COIN;
+    if(nMaxToAnonymize > nAnonymizeDarkcoinAmount*COIN) nMaxToAnonymize = nAnonymizeDarkcoinAmount*COIN;
 
     if(nMaxToAnonymize == 0) return;
 
-    if(nMaxToAnonymize >= nAnonymizeArcticcoinAmount * COIN) {
+    if(nMaxToAnonymize >= nAnonymizeDarkcoinAmount * COIN) {
         ui->labelAmountRounds->setToolTip(tr("Found enough compatible inputs to anonymize %1")
-                                          .arg(strAnonymizeArcticcoinAmount));
-        strAnonymizeArcticcoinAmount = strAnonymizeArcticcoinAmount.remove(strAnonymizeArcticcoinAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
-        strAmountAndRounds = strAnonymizeArcticcoinAmount + " / " + tr("%n Rounds", "", nSpysendRounds);
+                                          .arg(strAnonymizeDarkcoinAmount));
+        strAnonymizeDarkcoinAmount = strAnonymizeDarkcoinAmount.remove(strAnonymizeDarkcoinAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
+        strAmountAndRounds = strAnonymizeDarkcoinAmount + " / " + tr("%n Rounds", "", nDarksendRounds);
     } else {
         QString strMaxToAnonymize = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, nMaxToAnonymize, false, BitcoinUnits::separatorAlways);
         ui->labelAmountRounds->setToolTip(tr("Not enough compatible inputs to anonymize <span style='color:red;'>%1</span>,<br>"
                                              "will anonymize <span style='color:red;'>%2</span> instead")
-                                          .arg(strAnonymizeArcticcoinAmount)
+                                          .arg(strAnonymizeDarkcoinAmount)
                                           .arg(strMaxToAnonymize));
         strMaxToAnonymize = strMaxToAnonymize.remove(strMaxToAnonymize.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
         strAmountAndRounds = "<span style='color:red;'>" +
                 QString(BitcoinUnits::factor(nDisplayUnit) == 1 ? "" : "~") + strMaxToAnonymize +
-                " / " + tr("%n Rounds", "", nSpysendRounds) + "</span>";
+                " / " + tr("%n Rounds", "", nDarksendRounds) + "</span>";
     }
     ui->labelAmountRounds->setText(strAmountAndRounds);
 
@@ -400,7 +400,7 @@ void OverviewPage::updateSpysendProgress()
 
     // apply some weights to them ...
     float denomWeight = 1;
-    float anonNormWeight = nSpysendRounds;
+    float anonNormWeight = nDarksendRounds;
     float anonFullWeight = 2;
     float fullWeight = denomWeight + anonNormWeight + anonFullWeight;
     // ... and calculate the whole progress
@@ -410,86 +410,86 @@ void OverviewPage::updateSpysendProgress()
     float progress = denomPartCalc + anonNormPartCalc + anonFullPartCalc;
     if(progress >= 100) progress = 100;
 
-    ui->spysendProgress->setValue(progress);
+    ui->darksendProgress->setValue(progress);
 
     QString strToolPip = ("<b>" + tr("Overall progress") + ": %1%</b><br/>" +
                           tr("Denominated") + ": %2%<br/>" +
                           tr("Mixed") + ": %3%<br/>" +
                           tr("Anonymized") + ": %4%<br/>" +
-                          tr("Denominated inputs have %5 of %n rounds on average", "", nSpysendRounds))
+                          tr("Denominated inputs have %5 of %n rounds on average", "", nDarksendRounds))
             .arg(progress).arg(denomPart).arg(anonNormPart).arg(anonFullPart)
             .arg(nAverageAnonymizedRounds);
-    ui->spysendProgress->setToolTip(strToolPip);
+    ui->darksendProgress->setToolTip(strToolPip);
 }
 
 
-void OverviewPage::spySendStatus()
+void OverviewPage::darkSendStatus()
 {
     static int64_t nLastDSProgressBlockTime = 0;
 
     int nBestHeight = chainActive.Tip()->nHeight;
 
     // we we're processing more then 1 block per second, we'll just leave
-    if(((nBestHeight - spySendPool.cachedNumBlocks) / (GetTimeMillis() - nLastDSProgressBlockTime + 1) > 1)) return;
+    if(((nBestHeight - darkSendPool.cachedNumBlocks) / (GetTimeMillis() - nLastDSProgressBlockTime + 1) > 1)) return;
     nLastDSProgressBlockTime = GetTimeMillis();
 
-    if(!fEnableSpysend) {
-        if(nBestHeight != spySendPool.cachedNumBlocks)
+    if(!fEnableDarksend) {
+        if(nBestHeight != darkSendPool.cachedNumBlocks)
         {
-            spySendPool.cachedNumBlocks = nBestHeight;
-            updateSpysendProgress();
+            darkSendPool.cachedNumBlocks = nBestHeight;
+            updateDarksendProgress();
 
-            ui->spysendEnabled->setText(tr("Disabled"));
-            ui->spysendStatus->setText("");
-            ui->toggleSpysend->setText(tr("Start Spysend Mixing"));
+            ui->darksendEnabled->setText(tr("Disabled"));
+            ui->darksendStatus->setText("");
+            ui->toggleDarksend->setText(tr("Start Spysend Mixing"));
         }
 
         return;
     }
 
-    // check spysend status and unlock if needed
-    if(nBestHeight != spySendPool.cachedNumBlocks)
+    // check Spysend status and unlock if needed
+    if(nBestHeight != darkSendPool.cachedNumBlocks)
     {
         // Balance and number of transactions might have changed
-        spySendPool.cachedNumBlocks = nBestHeight;
-        updateSpysendProgress();
+        darkSendPool.cachedNumBlocks = nBestHeight;
+        updateDarksendProgress();
 
-        ui->spysendEnabled->setText(tr("Enabled"));
+        ui->darksendEnabled->setText(tr("Enabled"));
     }
 
-    QString strStatus = QString(spySendPool.GetStatus().c_str());
+    QString strStatus = QString(darkSendPool.GetStatus().c_str());
 
     QString s = tr("Last Spysend message:\n") + strStatus;
 
-    if(s != ui->spysendStatus->text())
+    if(s != ui->darksendStatus->text())
         LogPrintf("Last Spysend message: %s\n", strStatus.toStdString());
 
-    ui->spysendStatus->setText(s);
+    ui->darksendStatus->setText(s);
 
-    if(spySendPool.sessionDenom == 0){
+    if(darkSendPool.sessionDenom == 0){
         ui->labelSubmittedDenom->setText(tr("N/A"));
     } else {
         std::string out;
-        spySendPool.GetDenominationsToString(spySendPool.sessionDenom, out);
+        darkSendPool.GetDenominationsToString(darkSendPool.sessionDenom, out);
         QString s2(out.c_str());
         ui->labelSubmittedDenom->setText(s2);
     }
 
 }
 
-void OverviewPage::spysendAuto(){
-    spySendPool.DoAutomaticDenominating();
+void OverviewPage::darksendAuto(){
+    darkSendPool.DoAutomaticDenominating();
 }
 
-void OverviewPage::spysendReset(){
-    spySendPool.Reset();
+void OverviewPage::darksendReset(){
+    darkSendPool.Reset();
 
     QMessageBox::warning(this, tr("Spysend"),
         tr("Spysend was successfully reset."),
         QMessageBox::Ok, QMessageBox::Ok);
 }
 
-void OverviewPage::toggleSpysend(){
+void OverviewPage::toggleDarksend(){
     QSettings settings;
     // Popup some information on first mixing
     QString hasMixed = settings.value("hasMixed").toString();
@@ -499,7 +499,7 @@ void OverviewPage::toggleSpysend(){
                 QMessageBox::Ok, QMessageBox::Ok);
         settings.setValue("hasMixed", "hasMixed");
     }
-    if(!fEnableSpysend){
+    if(!fEnableDarksend){
         int64_t balance = currentBalance;
         float minAmount = 1.49 * COIN;
         if(balance < minAmount){
@@ -517,7 +517,7 @@ void OverviewPage::toggleSpysend(){
             if(!ctx.isValid())
             {
                 //unlock was cancelled
-                spySendPool.cachedNumBlocks = std::numeric_limits<int>::max();
+                darkSendPool.cachedNumBlocks = std::numeric_limits<int>::max();
                 QMessageBox::warning(this, tr("Spysend"),
                     tr("Wallet is locked and user declined to unlock. Disabling Spysend."),
                     QMessageBox::Ok, QMessageBox::Ok);
@@ -528,19 +528,19 @@ void OverviewPage::toggleSpysend(){
 
     }
 
-    fEnableSpysend = !fEnableSpysend;
-    spySendPool.cachedNumBlocks = std::numeric_limits<int>::max();
+    fEnableDarksend = !fEnableDarksend;
+    darkSendPool.cachedNumBlocks = std::numeric_limits<int>::max();
 
-    if(!fEnableSpysend){
-        ui->toggleSpysend->setText(tr("Start Spysend Mixing"));
-        spySendPool.UnlockCoins();
+    if(!fEnableDarksend){
+        ui->toggleDarksend->setText(tr("Start Spysend Mixing"));
+        darkSendPool.UnlockCoins();
     } else {
-        ui->toggleSpysend->setText(tr("Stop Spysend Mixing"));
+        ui->toggleDarksend->setText(tr("Stop Spysend Mixing"));
 
-        /* show spysend configuration if client has defaults set */
+        /* show Spysend configuration if client has defaults set */
 
-        if(nAnonymizeArcticcoinAmount == 0){
-            SpysendConfig dlg(this);
+        if(nAnonymizeDarkcoinAmount == 0){
+            DarksendConfig dlg(this);
             dlg.setModel(walletModel);
             dlg.exec();
         }

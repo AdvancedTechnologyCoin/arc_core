@@ -23,11 +23,11 @@
 #include "txdb.h"
 #include "ui_interface.h"
 #include "util.h"
-#include "activegoldmine.h"
-#include "goldmine-evolution.h"
-#include "goldmine-payments.h"
-#include "goldmineman.h"
-#include "goldmineconfig.h"
+#include "activegoldminenode.h"
+#include "goldminenode-evolution.h"
+#include "goldminenode-payments.h"
+#include "goldminenodeman.h"
+#include "goldminenodeconfig.h"
 #include "spork.h"
 #include "utilmoneystr.h"
 #ifdef ENABLE_WALLET
@@ -169,9 +169,9 @@ void PrepareShutdown()
     GenerateBitcoins(false, NULL, 0);
 #endif
     StopNode();
-    DumpGoldmines();
-    DumpEvolutions();
-    DumpGoldminePayments();
+    DumpMasternodes();
+    DumpBudgets();
+    DumpMasternodePayments();
     UnregisterNodeSignals(GetNodeSignals());
 
     if (fFeeEstimatesInitialized)
@@ -407,12 +407,12 @@ std::string HelpMessage(HelpMessageMode mode)
     }
     strUsage += "  -shrinkdebugfile       " + _("Shrink debug.log file on client startup (default: 1 when no -debug)") + "\n";
     strUsage += "  -testnet               " + _("Use the test network") + "\n";
-    strUsage += "  -litemode=<n>          " + strprintf(_("Disable all Arctic Core specific functionality (Goldmine, Spysend, InstantX, Evolution) (0-1, default: %u)"), 0) + "\n";
+    strUsage += "  -litemode=<n>          " + strprintf(_("Disable all Arctic specific functionality (Goldmines, Spysend, InstantX, Budgeting) (0-1, default: %u)"), 0) + "\n";
 
     strUsage += "\n" + _("Goldmine options:") + "\n";
     strUsage += "  -goldmine=<n>            " + strprintf(_("Enable the client to act as a goldmine (0-1, default: %u)"), 0) + "\n";
-    strUsage += "  -gmconf=<file>             " + strprintf(_("Specify goldmine configuration file (default: %s)"), "goldmine.conf") + "\n";
-    strUsage += "  -gmconflock=<n>            " + strprintf(_("Lock goldmines from goldmine configuration file (default: %u)"), 1) + "\n";
+    strUsage += "  -mnconf=<file>             " + strprintf(_("Specify goldmine configuration file (default: %s)"), "goldmine.conf") + "\n";
+    strUsage += "  -mnconflock=<n>            " + strprintf(_("Lock goldmines from goldmine configuration file (default: %u)"), 1) + "\n";
     strUsage += "  -goldmineprivkey=<n>     " + _("Set the goldmine private key") + "\n";
     strUsage += "  -goldmineaddr=<n>        " + strprintf(_("Set external address:port to get to this goldmine (example: %s)"), "128.127.106.235:7209") + "\n";
     strUsage += "  -evolutionvotemode=<mode>     " + _("Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)") + "\n";
@@ -460,7 +460,7 @@ std::string LicenseInfo()
 {
     return FormatParagraph(strprintf(_("Copyright (C) 2009-%i The Bitcoin Core Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
-           FormatParagraph(strprintf(_("Copyright (C) 2014-%i The Arctic Core Developers"), COPYRIGHT_YEAR)) + "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2015-%i The Arctic Core Developers"), COPYRIGHT_YEAR)) + "\n" +
            "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +
            "\n" +
@@ -1414,18 +1414,18 @@ bool AppInit2(boost::thread_group& threadGroup)
             MilliSleep(10);
     }
 
-    // ********************************************************* Step 10: setup SpySend
+    // ********************************************************* Step 10: setup DarkSend
 
     uiInterface.InitMessage(_("Loading goldmine cache..."));
 
-    CGoldmineDB gmdb;
-    CGoldmineDB::ReadResult readResult = gmdb.Read(gmineman);
-    if (readResult == CGoldmineDB::FileError)
+    CMasternodeDB mndb;
+    CMasternodeDB::ReadResult readResult = mndb.Read(mnodeman);
+    if (readResult == CMasternodeDB::FileError)
         LogPrintf("Missing goldmine cache file - gmcache.dat, will try to recreate\n");
-    else if (readResult != CGoldmineDB::Ok)
+    else if (readResult != CMasternodeDB::Ok)
     {
         LogPrintf("Error reading gmcache.dat: ");
-        if(readResult == CGoldmineDB::IncorrectFormat)
+        if(readResult == CMasternodeDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
             LogPrintf("file format is unknown or invalid, please fix it manually\n");
@@ -1433,74 +1433,74 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     uiInterface.InitMessage(_("Loading evolution cache..."));
 
-    CEvolutionDB evolutiondb;
-    CEvolutionDB::ReadResult readResult2 = evolutiondb.Read(evolution);
+    CBudgetDB budgetdb;
+    CBudgetDB::ReadResult readResult2 = budgetdb.Read(budget);
     
-    if (readResult2 == CEvolutionDB::FileError)
+    if (readResult2 == CBudgetDB::FileError)
         LogPrintf("Missing evolution cache - evolution.dat, will try to recreate\n");
-    else if (readResult2 != CEvolutionDB::Ok)
+    else if (readResult2 != CBudgetDB::Ok)
     {
         LogPrintf("Error reading evolution.dat: ");
-        if(readResult2 == CEvolutionDB::IncorrectFormat)
+        if(readResult2 == CBudgetDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
             LogPrintf("file format is unknown or invalid, please fix it manually\n");
     }
 
     //flag our cached items so we send them to our peers
-    evolution.ResetSync();
-    evolution.ClearSeen();
+    budget.ResetSync();
+    budget.ClearSeen();
 
 
     uiInterface.InitMessage(_("Loading goldmine payment cache..."));
 
-    CGoldminePaymentDB gmpayments;
-    CGoldminePaymentDB::ReadResult readResult3 = gmpayments.Read(goldminePayments);
+    CMasternodePaymentDB mnpayments;
+    CMasternodePaymentDB::ReadResult readResult3 = mnpayments.Read(masternodePayments);
     
-    if (readResult3 == CGoldminePaymentDB::FileError)
+    if (readResult3 == CMasternodePaymentDB::FileError)
         LogPrintf("Missing goldmine payment cache - gmpayments.dat, will try to recreate\n");
-    else if (readResult3 != CGoldminePaymentDB::Ok)
+    else if (readResult3 != CMasternodePaymentDB::Ok)
     {
         LogPrintf("Error reading gmpayments.dat: ");
-        if(readResult3 == CGoldminePaymentDB::IncorrectFormat)
+        if(readResult3 == CMasternodePaymentDB::IncorrectFormat)
             LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
         else
             LogPrintf("file format is unknown or invalid, please fix it manually\n");
     }
 
-    fGoldMine = GetBoolArg("-goldmine", false);
+    fMasterNode = GetBoolArg("-goldmine", false);
 
-    if((fGoldMine || goldmineConfig.getCount() > -1) && fTxIndex == false) {
+    if((fMasterNode || masternodeConfig.getCount() > -1) && fTxIndex == false) {
         return InitError("Enabling Goldmine support requires turning on transaction indexing."
                   "Please add txindex=1 to your configuration and start with -reindex");
     }
 
-    if(fGoldMine) {
+    if(fMasterNode) {
         LogPrintf("IS SPYSEND MASTER NODE\n");
-        strGoldMineAddr = GetArg("-goldmineaddr", "");
+        strMasterNodeAddr = GetArg("-goldmineaddr", "");
 
-        LogPrintf(" addr %s\n", strGoldMineAddr.c_str());
+        LogPrintf(" addr %s\n", strMasterNodeAddr.c_str());
 
-        if(!strGoldMineAddr.empty()){
-            CService addrTest = CService(strGoldMineAddr);
+        if(!strMasterNodeAddr.empty()){
+            CService addrTest = CService(strMasterNodeAddr);
             if (!addrTest.IsValid()) {
-                return InitError("Invalid -goldmineaddr address: " + strGoldMineAddr);
+                return InitError("Invalid -goldmineaddr address: " + strMasterNodeAddr);
             }
         }
 
-        strGoldMinePrivKey = GetArg("-goldmineprivkey", "");
-        if(!strGoldMinePrivKey.empty()){
+        strMasterNodePrivKey = GetArg("-goldmineprivkey", "");
+        if(!strMasterNodePrivKey.empty()){
             std::string errorMessage;
 
             CKey key;
             CPubKey pubkey;
 
-            if(!spySendSigner.SetKey(strGoldMinePrivKey, errorMessage, key, pubkey))
+            if(!darkSendSigner.SetKey(strMasterNodePrivKey, errorMessage, key, pubkey))
             {
                 return InitError(_("Invalid goldmineprivkey. Please see documenation."));
             }
 
-            activeGoldmine.pubKeyGoldmine = pubkey;
+            activeMasternode.pubKeyMasternode = pubkey;
 
         } else {
             return InitError(_("You must specify a goldmineprivkey in the configuration. Please see documentation for help."));
@@ -1508,13 +1508,13 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
     
     //get the mode of evolution voting for this goldmine
-    strEvolutionMode = GetArg("-evolutionvotemode", "auto");
+    strBudgetMode = GetArg("-evolutionvotemode", "auto");
 
-    if(GetBoolArg("-gmconflock", true) && pwalletMain) {
+    if(GetBoolArg("-mnconflock", true) && pwalletMain) {
         LOCK(pwalletMain->cs_wallet);
-        LogPrintf("Locking Goldmine:\n");
+        LogPrintf("Locking Goldmines:\n");
         uint256 mnTxHash;
-        BOOST_FOREACH(CGoldmineConfig::CGoldmineEntry mne, goldmineConfig.getEntries()) {
+        BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries()) {
             LogPrintf("  %s %s\n", mne.getTxHash(), mne.getOutputIndex());
             mnTxHash.SetHex(mne.getTxHash());
             COutPoint outpoint = COutPoint(mnTxHash, boost::lexical_cast<unsigned int>(mne.getOutputIndex()));
@@ -1522,22 +1522,22 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
     }
 
-    fEnableSpysend = GetBoolArg("-enablespysend", false);
+    fEnableDarksend = GetBoolArg("-enablespysend", false);
 
-    nSpysendRounds = GetArg("-spysendrounds", 2);
-    if(nSpysendRounds > 16) nSpysendRounds = 16;
-    if(nSpysendRounds < 1) nSpysendRounds = 1;
+    nDarksendRounds = GetArg("-spysendrounds", 2);
+    if(nDarksendRounds > 16) nDarksendRounds = 16;
+    if(nDarksendRounds < 1) nDarksendRounds = 1;
 
     nLiquidityProvider = GetArg("-liquidityprovider", 0); //0-100
     if(nLiquidityProvider != 0) {
-        spySendPool.SetMinBlockSpacing(std::min(nLiquidityProvider,100)*15);
-        fEnableSpysend = true;
-        nSpysendRounds = 99999;
+        darkSendPool.SetMinBlockSpacing(std::min(nLiquidityProvider,100)*15);
+        fEnableDarksend = true;
+        nDarksendRounds = 99999;
     }
 
-    nAnonymizeArcticcoinAmount = GetArg("-anonymizearcticcoinamount", 0);
-    if(nAnonymizeArcticcoinAmount > 999999) nAnonymizeArcticcoinAmount = 999999;
-    if(nAnonymizeArcticcoinAmount < 2) nAnonymizeArcticcoinAmount = 2;
+    nAnonymizeDarkcoinAmount = GetArg("-anonymizearcticcoinamount", 0);
+    if(nAnonymizeDarkcoinAmount > 999999) nAnonymizeDarkcoinAmount = 999999;
+    if(nAnonymizeDarkcoinAmount < 2) nAnonymizeDarkcoinAmount = 2;
 
     fEnableInstantX = GetBoolArg("-enableinstantx", fEnableInstantX);
     nInstantXDepth = GetArg("-instantxdepth", nInstantXDepth);
@@ -1545,15 +1545,15 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     //lite mode disables all Goldmine and Spysend related functionality
     fLiteMode = GetBoolArg("-litemode", false);
-    if(fGoldMine && fLiteMode){
+    if(fMasterNode && fLiteMode){
         return InitError("You can not start a goldmine in litemode");
     }
 
     LogPrintf("fLiteMode %d\n", fLiteMode);
     LogPrintf("nInstantXDepth %d\n", nInstantXDepth);
-    LogPrintf("Spysend rounds %d\n", nSpysendRounds);
-    LogPrintf("Anonymize Arctic Amount %d\n", nAnonymizeArcticcoinAmount);
-    LogPrintf("Evolution Mode %s\n", strEvolutionMode.c_str());
+    LogPrintf("Spysend rounds %d\n", nDarksendRounds);
+    LogPrintf("Anonymize Arctic Amount %d\n", nAnonymizeDarkcoinAmount);
+    LogPrintf("Budget Mode %s\n", strBudgetMode.c_str());
 
     /* Denominations
 
@@ -1561,21 +1561,21 @@ bool AppInit2(boost::thread_group& threadGroup)
        is convertable to another.
 
        For example:
-       1ARC+1000 == (.1ARC+100)*10
-       10ARC+10000 == (1ARC+1000)*10
+       1DRK+1000 == (.1DRK+100)*10
+       10DRK+10000 == (1DRK+1000)*10
     */
-    spySendDenominations.push_back( (100      * COIN)+100000 );
-    spySendDenominations.push_back( (10       * COIN)+10000 );
-    spySendDenominations.push_back( (1        * COIN)+1000 );
-    spySendDenominations.push_back( (.1       * COIN)+100 );
+    darkSendDenominations.push_back( (100      * COIN)+100000 );
+    darkSendDenominations.push_back( (10       * COIN)+10000 );
+    darkSendDenominations.push_back( (1        * COIN)+1000 );
+    darkSendDenominations.push_back( (.1       * COIN)+100 );
     /* Disabled till we need them
-    spySendDenominations.push_back( (.01      * COIN)+10 );
-    spySendDenominations.push_back( (.001     * COIN)+1 );
+    darkSendDenominations.push_back( (.01      * COIN)+10 );
+    darkSendDenominations.push_back( (.001     * COIN)+1 );
     */
 
-    spySendPool.InitCollateralAddress();
+    darkSendPool.InitCollateralAddress();
 
-    threadGroup.create_thread(boost::bind(&ThreadCheckSpySendPool));
+    threadGroup.create_thread(boost::bind(&ThreadCheckDarkSendPool));
 
     // ********************************************************* Step 11: start node
 

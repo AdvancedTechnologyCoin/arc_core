@@ -22,7 +22,7 @@ QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits()
     unitlist.append(ARC);
     unitlist.append(mARC);
     unitlist.append(uARC);
-    unitlist.append(nARC);
+    unitlist.append(duffs);
     return unitlist;
 }
 
@@ -33,7 +33,7 @@ bool BitcoinUnits::valid(int unit)
     case ARC:
     case mARC:
     case uARC:
-    case nARC:
+    case duffs:
         return true;
     default:
         return false;
@@ -47,7 +47,7 @@ QString BitcoinUnits::id(int unit)
         case ARC: return QString("arcticcoin");
         case mARC: return QString("marcticcoin");
         case uARC: return QString::fromUtf8("uarcticcoin");
-        case nARC: return QString("nARC");
+        case duffs: return QString("duffs");
         default: return QString("???");
     }
 }
@@ -61,7 +61,7 @@ QString BitcoinUnits::name(int unit)
             case ARC: return QString("ARC");
             case mARC: return QString("mARC");
             case uARC: return QString::fromUtf8("μARC");
-            case nARC: return QString("nARC");
+            case duffs: return QString("duffs");
             default: return QString("???");
         }
     }
@@ -72,7 +72,7 @@ QString BitcoinUnits::name(int unit)
             case ARC: return QString("tARC");
             case mARC: return QString("mtARC");
             case uARC: return QString::fromUtf8("μtARC");
-            case nARC: return QString("tnARC");
+            case duffs: return QString("tduffs");
             default: return QString("???");
         }
     }
@@ -87,7 +87,7 @@ QString BitcoinUnits::description(int unit)
             case ARC: return QString("Arctic");
             case mARC: return QString("Milli-Arctic (1 / 1" THIN_SP_UTF8 "000)");
             case uARC: return QString("Micro-Arctic (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-            case nARC: return QString("Ten Nano-Arctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case duffs: return QString("Ten Nano-Arctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
     }
@@ -98,7 +98,7 @@ QString BitcoinUnits::description(int unit)
             case ARC: return QString("TestArctics");
             case mARC: return QString("Milli-TestArctic (1 / 1" THIN_SP_UTF8 "000)");
             case uARC: return QString("Micro-TestArctic (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-            case nARC: return QString("Ten Nano-TestArctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case duffs: return QString("Ten Nano-TestArctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
     }
@@ -111,7 +111,7 @@ qint64 BitcoinUnits::factor(int unit)
     case ARC:  return 100000000;
     case mARC: return 100000;
     case uARC: return 100;
-    case nARC: return 1;
+    case duffs: return 1;
     default:   return 100000000;
     }
 }
@@ -123,7 +123,7 @@ int BitcoinUnits::decimals(int unit)
     case ARC: return 8;
     case mARC: return 5;
     case uARC: return 2;
-    case nARC: return 0;
+    case duffs: return 0;
     default: return 0;
     }
 }

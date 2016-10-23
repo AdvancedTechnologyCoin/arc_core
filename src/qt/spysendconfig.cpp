@@ -12,9 +12,9 @@
 #include <QKeyEvent>
 #include <QSettings>
 
-SpysendConfig::SpysendConfig(QWidget *parent) :
+DarksendConfig::DarksendConfig(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SpysendConfig),
+    ui(new Ui::DarksendConfig),
     model(0)
 {
     ui->setupUi(this);
@@ -24,17 +24,17 @@ SpysendConfig::SpysendConfig(QWidget *parent) :
     connect(ui->buttonMax, SIGNAL(clicked()), this, SLOT(clickMax()));
 }
 
-SpysendConfig::~SpysendConfig()
+DarksendConfig::~DarksendConfig()
 {
     delete ui;
 }
 
-void SpysendConfig::setModel(WalletModel *model)
+void DarksendConfig::setModel(WalletModel *model)
 {
     this->model = model;
 }
 
-void SpysendConfig::clickBasic()
+void DarksendConfig::clickBasic()
 {
     configure(true, 1000, 2);
 
@@ -49,7 +49,7 @@ void SpysendConfig::clickBasic()
     close();
 }
 
-void SpysendConfig::clickHigh()
+void DarksendConfig::clickHigh()
 {
     configure(true, 1000, 8);
 
@@ -64,7 +64,7 @@ void SpysendConfig::clickHigh()
     close();
 }
 
-void SpysendConfig::clickMax()
+void DarksendConfig::clickMax()
 {
     configure(true, 1000, 16);
 
@@ -79,13 +79,13 @@ void SpysendConfig::clickMax()
     close();
 }
 
-void SpysendConfig::configure(bool enabled, int coins, int rounds) {
+void DarksendConfig::configure(bool enabled, int coins, int rounds) {
 
     QSettings settings;
 
-    settings.setValue("nSpysendRounds", rounds);
-    settings.setValue("nAnonymizeArcticcoinAmount", coins);
+    settings.setValue("nDarksendRounds", rounds);
+    settings.setValue("nAnonymizeDarkcoinAmount", coins);
 
-    nSpysendRounds = rounds;
-    nAnonymizeArcticcoinAmount = coins;
+    nDarksendRounds = rounds;
+    nAnonymizeDarkcoinAmount = coins;
 }

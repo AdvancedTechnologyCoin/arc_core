@@ -148,8 +148,8 @@ private:
 
 public:
 //    bool SelectCoins(int64_t nTargetValue, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX = true) const;
-    bool SelectCoinsDark(int64_t nValueMin, int64_t nValueMax, std::vector<CTxIn>& setCoinsRet, int64_t& nValueRet, int nSpysendRoundsMin, int nSpysendRoundsMax) const;
-    bool SelectCoinsByDenominations(int nDenom, int64_t nValueMin, int64_t nValueMax, std::vector<CTxIn>& vCoinsRet, std::vector<COutput>& vCoinsRet2, int64_t& nValueRet, int nSpysendRoundsMin, int nSpysendRoundsMax);
+    bool SelectCoinsDark(int64_t nValueMin, int64_t nValueMax, std::vector<CTxIn>& setCoinsRet, int64_t& nValueRet, int nDarksendRoundsMin, int nDarksendRoundsMax) const;
+    bool SelectCoinsByDenominations(int nDenom, int64_t nValueMin, int64_t nValueMax, std::vector<CTxIn>& vCoinsRet, std::vector<COutput>& vCoinsRet2, int64_t& nValueRet, int nDarksendRoundsMin, int nDarksendRoundsMax);
     bool SelectCoinsDarkDenominated(int64_t nTargetValue, std::vector<CTxIn>& setCoinsRet, int64_t& nValueRet) const;
     bool HasCollateralInputs(bool fOnlyConfirmed = true) const;
     bool IsCollateralAmount(int64_t nInputAmount) const;
@@ -321,8 +321,8 @@ public:
     bool CreateTransaction(CScript scriptPubKey, const CAmount& nValue,
                            CWalletTx& wtxNew, CReserveKey& reservekey, CAmount& nFeeRet, std::string& strFailReason, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX=false, CAmount nFeePay=0);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey, std::string strCommand="tx");
-    std::string PrepareSpysendDenominate(int minRounds, int maxRounds);
-    int GenerateSpysendOutputs(int nTotalValue, std::vector<CTxOut>& vout);
+    std::string PrepareDarksendDenominate(int minRounds, int maxRounds);
+    int GenerateDarksendOutputs(int nTotalValue, std::vector<CTxOut>& vout);
     bool CreateCollateralTransaction(CMutableTransaction& txCollateral, std::string& strReason);
     bool ConvertList(std::vector<CTxIn> vCoins, std::vector<int64_t>& vecAmounts);
 
@@ -343,13 +343,13 @@ public:
 
     std::set<CTxDestination> GetAccountAddresses(std::string strAccount) const;
 
-    bool GetEvolutionSystemCollateralTX(CTransaction& tx, uint256 hash, bool useIX);
-    bool GetEvolutionSystemCollateralTX(CWalletTx& tx, uint256 hash, bool useIX);
+    bool GetBudgetSystemCollateralTX(CTransaction& tx, uint256 hash, bool useIX);
+    bool GetBudgetSystemCollateralTX(CWalletTx& tx, uint256 hash, bool useIX);
 
     // get the Spysend chain depth for a given input
-    int GetRealInputSpysendRounds(CTxIn in, int rounds) const;
+    int GetRealInputDarksendRounds(CTxIn in, int rounds) const;
     // respect current settings
-    int GetInputSpysendRounds(CTxIn in) const;
+    int GetInputDarksendRounds(CTxIn in) const;
 
     bool IsDenominated(const CTxIn &txin) const;
     bool IsDenominated(const CTransaction& tx) const;
@@ -900,10 +900,10 @@ public:
             const CTxIn vin = CTxIn(hashTx, i);
 
             if(pwallet->IsSpent(hashTx, i) || pwallet->IsLockedCoin(hashTx, i)) continue;
-            if(fGoldMine && vout[i].nValue == 1000*COIN) continue; // do not count MN-like outputs
+            if(fMasterNode && vout[i].nValue == 1000*COIN) continue; // do not count MN-like outputs
 
-            const int rounds = pwallet->GetInputSpysendRounds(vin);
-            if(rounds >=-2 && rounds < nSpysendRounds) {
+            const int rounds = pwallet->GetInputDarksendRounds(vin);
+            if(rounds >=-2 && rounds < nDarksendRounds) {
                 nCredit += pwallet->GetCredit(txout, ISMINE_SPENDABLE);
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAnonamizableCredit() : value out of range");
@@ -936,8 +936,8 @@ public:
 
             if(pwallet->IsSpent(hashTx, i) || !pwallet->IsDenominated(vin)) continue;
 
-            const int rounds = pwallet->GetInputSpysendRounds(vin);
-            if(rounds >= nSpysendRounds){
+            const int rounds = pwallet->GetInputDarksendRounds(vin);
+            if(rounds >= nDarksendRounds){
                 nCredit += pwallet->GetCredit(txout, ISMINE_SPENDABLE);
                 if (!MoneyRange(nCredit))
                     throw std::runtime_error("CWalletTx::GetAnonymizedCredit() : value out of range");
@@ -1113,7 +1113,7 @@ public:
     //Used with Spysend. Will return largest nondenom, then denominations, then very small inputs
     int Priority() const
     {
-        BOOST_FOREACH(int64_t d, spySendDenominations)
+        BOOST_FOREACH(int64_t d, darkSendDenominations)
             if(tx->vout[i].nValue == d) return 10000;
         if(tx->vout[i].nValue < 1*COIN) return 20000;
 

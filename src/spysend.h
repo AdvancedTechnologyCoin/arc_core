@@ -1,26 +1,26 @@
-// Copyright (c) 2014-2015 The Arctic developers
+// Copyright (c) 2015-2016 The Arctic developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SPYSEND_H
-#define SPYSEND_H
+#ifndef DARKSEND_H
+#define DARKSEND_H
 
 #include "main.h"
 #include "sync.h"
-#include "activegoldmine.h"
-#include "goldmineman.h"
-#include "goldmine-payments.h"
+#include "activegoldminenode.h"
+#include "goldminenodeman.h"
+#include "goldminenode-payments.h"
 #include "spysend-relay.h"
-#include "goldmine-sync.h"
+#include "goldminenode-sync.h"
 
 class CTxIn;
-class CSpysendPool;
-class CSpySendSigner;
-class CGoldMineVote;
+class CDarksendPool;
+class CDarkSendSigner;
+class CMasterNodeVote;
 class CBitcoinAddress;
-class CSpysendQueue;
-class CSpysendBroadcastTx;
-class CActiveGoldmine;
+class CDarksendQueue;
+class CDarksendBroadcastTx;
+class CActiveMasternode;
 
 // pool states for mixing
 #define POOL_STATUS_UNKNOWN                    0 // waiting for update
@@ -34,27 +34,27 @@ class CActiveGoldmine;
 #define POOL_STATUS_SUCCESS                    8 // success
 
 // status update message constants
-#define GOLDMINE_ACCEPTED                    1
-#define GOLDMINE_REJECTED                    0
-#define GOLDMINE_RESET                       -1
+#define MASTERNODE_ACCEPTED                    1
+#define MASTERNODE_REJECTED                    0
+#define MASTERNODE_RESET                       -1
 
-#define SPYSEND_QUEUE_TIMEOUT                 30
-#define SPYSEND_SIGNING_TIMEOUT               15
+#define DARKSEND_QUEUE_TIMEOUT                 30
+#define DARKSEND_SIGNING_TIMEOUT               15
 
 // used for anonymous relaying of inputs/outputs/sigs
-#define SPYSEND_RELAY_IN                 1
-#define SPYSEND_RELAY_OUT                2
-#define SPYSEND_RELAY_SIG                3
+#define DARKSEND_RELAY_IN                 1
+#define DARKSEND_RELAY_OUT                2
+#define DARKSEND_RELAY_SIG                3
 
-static const int64_t SPYSEND_COLLATERAL = (0.01*COIN);
-static const int64_t SPYSEND_POOL_MAX = (999.99*COIN);
+static const int64_t DARKSEND_COLLATERAL = (0.01*COIN);
+static const int64_t DARKSEND_POOL_MAX = (999.99*COIN);
 
-extern CSpysendPool spySendPool;
-extern CSpySendSigner spySendSigner;
-extern std::vector<CSpysendQueue> vecSpysendQueue;
-extern std::string strGoldMinePrivKey;
-extern map<uint256, CSpysendBroadcastTx> mapSpysendBroadcastTxes;
-extern CActiveGoldmine activeGoldmine;
+extern CDarksendPool darkSendPool;
+extern CDarkSendSigner darkSendSigner;
+extern std::vector<CDarksendQueue> vecDarksendQueue;
+extern std::string strMasterNodePrivKey;
+extern map<uint256, CDarksendBroadcastTx> mapDarksendBroadcastTxes;
+extern CActiveMasternode activeMasternode;
 
 /** Holds an Spysend input
  */
@@ -91,8 +91,8 @@ public:
     }
 };
 
-// A clients transaction in the spysend pool
-class CSpySendEntry
+// A clients transaction in the darksend pool
+class CDarkSendEntry
 {
 public:
     bool isSet;
@@ -103,7 +103,7 @@ public:
     CTransaction txSupporting;
     int64_t addedTime; // time in UTC milliseconds
 
-    CSpySendEntry()
+    CDarkSendEntry()
     {
         isSet = false;
         collateral = CTransaction();
@@ -147,7 +147,7 @@ public:
 
     bool IsExpired()
     {
-        return (GetTime() - addedTime) > SPYSEND_QUEUE_TIMEOUT;// 120 seconds
+        return (GetTime() - addedTime) > DARKSEND_QUEUE_TIMEOUT;// 120 seconds
     }
 };
 
@@ -155,7 +155,7 @@ public:
 /**
  * A currently inprogress Spysend merge and denomination information
  */
-class CSpysendQueue
+class CDarksendQueue
 {
 public:
     CTxIn vin;
@@ -164,7 +164,7 @@ public:
     bool ready; //ready for submit
     std::vector<unsigned char> vchSig;
 
-    CSpysendQueue()
+    CDarksendQueue()
     {
         nDenom = 0;
         vin = CTxIn();
@@ -186,10 +186,10 @@ public:
 
     bool GetAddress(CService &addr)
     {
-        CGoldmine* pgm = gmineman.Find(vin);
-        if(pgm != NULL)
+        CMasternode* pmn = mnodeman.Find(vin);
+        if(pmn != NULL)
         {
-            addr = pgm->addr;
+            addr = pmn->addr;
             return true;
         }
         return false;
@@ -198,10 +198,10 @@ public:
     /// Get the protocol version
     bool GetProtocolVersion(int &protocolVersion)
     {
-        CGoldmine* pgm = gmineman.Find(vin);
-        if(pgm != NULL)
+        CMasternode* pmn = mnodeman.Find(vin);
+        if(pmn != NULL)
         {
-            protocolVersion = pgm->protocolVersion;
+            protocolVersion = pmn->protocolVersion;
             return true;
         }
         return false;
@@ -209,8 +209,8 @@ public:
 
     /** Sign this Spysend transaction
      *  \return true if all conditions are met:
-     *     1) we have an active Goldmine,
-     *     2) we have a valid Goldmine private key,
+     *     1) we have an active Masternode,
+     *     2) we have a valid Masternode private key,
      *     3) we signed the message successfully, and
      *     4) we verified the message successfully
      */
@@ -221,17 +221,17 @@ public:
     /// Is this Spysend expired?
     bool IsExpired()
     {
-        return (GetTime() - time) > SPYSEND_QUEUE_TIMEOUT;// 120 seconds
+        return (GetTime() - time) > DARKSEND_QUEUE_TIMEOUT;// 120 seconds
     }
 
-    /// Check if we have a valid Goldmine address
+    /// Check if we have a valid Masternode address
     bool CheckSignature();
 
 };
 
 /** Helper class to store Spysend transaction (tx) information.
  */
-class CSpysendBroadcastTx
+class CDarksendBroadcastTx
 {
 public:
     CTransaction tx;
@@ -242,10 +242,10 @@ public:
 
 /** Helper object for signing and checking signatures
  */
-class CSpySendSigner
+class CDarkSendSigner
 {
 public:
-    /// Is the inputs associated with this public key? (and there is 1000 ARC - checking if valid goldmine)
+    /// Is the inputs associated with this public key? (and there is 1000 ARC - checking if valid masternode)
     bool IsVinAssociatedWithPubkey(CTxIn& vin, CPubKey& pubkey);
     /// Set the private/public key values, returns true if successful
     bool SetKey(std::string strSecret, std::string& errorMessage, CKey& key, CPubKey& pubkey);
@@ -257,12 +257,12 @@ public:
 
 /** Used to keep track of current status of Spysend pool
  */
-class CSpysendPool
+class CDarksendPool
 {
 private:
-    mutable CCriticalSection cs_spysend;
+    mutable CCriticalSection cs_darksend;
 
-    std::vector<CSpySendEntry> entries; // Goldmine/clients entries
+    std::vector<CDarkSendEntry> entries; // Masternode/clients entries
     CMutableTransaction finalTransaction; // the finalized transaction ready for signing
 
     int64_t lastTimeChanged; // last time the 'state' changed, in UTC milliseconds
@@ -280,7 +280,7 @@ private:
     int sessionID;
 
     int sessionUsers; //N Users have said they'll join
-    bool sessionFoundGoldmine; //If we've found a compatible Goldmine
+    bool sessionFoundMasternode; //If we've found a compatible Masternode
     std::vector<CTransaction> vecSessionCollateral;
 
     int cachedLastSuccess;
@@ -322,11 +322,11 @@ public:
     // where collateral should be made out to
     CScript collateralPubKey;
 
-    CGoldmine* pSubmittedToGoldmine;
+    CMasternode* pSubmittedToMasternode;
     int sessionDenom; //Users must submit an denom matching this
     int cachedNumBlocks; //used for the overview screen
 
-    CSpysendPool()
+    CDarksendPool()
     {
         /* Spysend uses collateral addresses to trust parties entering the pool
             to behave themselves. If they don't it takes their money. */
@@ -356,10 +356,10 @@ public:
      *        dssub    | Spysend Subscribe To
      * \param vRecv
      */
-    void ProcessMessageSpysend(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    void ProcessMessageDarksend(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
 
     void InitCollateralAddress(){
-        SetCollateralAddress(Params().SpysendPoolDummyAddress());
+        SetCollateralAddress(Params().DarksendPoolDummyAddress());
     }
 
     void SetMinBlockSpacing(int minBlockSpacingIn){
@@ -404,7 +404,7 @@ public:
     // Set the 'state' value, with some logging and capturing when the state changed
     void UpdateState(unsigned int newState)
     {
-        if (fGoldMine && (newState == POOL_STATUS_ERROR || newState == POOL_STATUS_SUCCESS)){
+        if (fMasterNode && (newState == POOL_STATUS_ERROR || newState == POOL_STATUS_SUCCESS)){
             LogPrint("spysend", "CSpysendPool::UpdateState() - Can't set state to ERROR or SUCCESS as a Goldmine. \n");
             return;
         }
@@ -412,8 +412,8 @@ public:
         LogPrintf("CSpysendPool::UpdateState() == %d | %d \n", state, newState);
         if(state != newState){
             lastTimeChanged = GetTimeMillis();
-            if(fGoldMine) {
-                RelayStatus(spySendPool.sessionID, spySendPool.GetState(), spySendPool.GetEntriesCount(), GOLDMINE_RESET);
+            if(fMasterNode) {
+                RelayStatus(darkSendPool.sessionID, darkSendPool.GetState(), darkSendPool.GetEntriesCount(), MASTERNODE_RESET);
             }
         }
         state = newState;
@@ -438,7 +438,7 @@ public:
 
     /// Passively run Spysend in the background according to the configuration in settings (only for QT)
     bool DoAutomaticDenominating(bool fDryRun=false);
-    bool PrepareSpysendDenominate();
+    bool PrepareDarksendDenominate();
 
     /// Check for process in Spysend
     void Check();
@@ -459,9 +459,9 @@ public:
     bool AddScriptSig(const CTxIn& newVin);
     /// Check that all inputs are signed. (Are all inputs signed?)
     bool SignaturesComplete();
-    /// As a client, send a transaction to a Goldmine to start the denomination process
-    void SendSpysendDenominate(std::vector<CTxIn>& vin, std::vector<CTxOut>& vout, int64_t amount);
-    /// Get Goldmine updates about the progress of Spysend
+    /// As a client, send a transaction to a Masternode to start the denomination process
+    void SendDarksendDenominate(std::vector<CTxIn>& vin, std::vector<CTxOut>& vout, int64_t amount);
+    /// Get Masternode updates about the progress of Spysend
     bool StatusUpdate(int newState, int newEntriesCount, int newAccepted, int &errorID, int newSessionID=0);
 
     /// As a client, check and sign the final transaction
@@ -504,6 +504,6 @@ public:
     void RelayCompletedTransaction(const int sessionID, const bool error, const int errorID);
 };
 
-void ThreadCheckSpySendPool();
+void ThreadCheckDarkSendPool();
 
 #endif

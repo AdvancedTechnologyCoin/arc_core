@@ -80,11 +80,11 @@ public:
         RecvWithAddress,
         RecvFromOther,
         SendToSelf,
-        RecvWithSpysend,
-        SpysendDenominate,
-        SpysendCollateralPayment,
-        SpysendMakeCollaterals,
-        SpysendCreateDenominations,
+        RecvWithDarksend,
+        DarksendDenominate,
+        DarksendCollateralPayment,
+        DarksendMakeCollaterals,
+        DarksendCreateDenominations,
         Darksent
     };
 

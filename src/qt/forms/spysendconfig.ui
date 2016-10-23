@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SpysendConfig</class>
- <widget class="QDialog" name="SpysendConfig">
+ <class>DarksendConfig</class>
+ <widget class="QDialog" name="DarksendConfig">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -75,7 +75,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Use 2 separate goldmines to mix funds up to 1000 ARC</string>
+    <string>Use 2 separate masternodes to mix funds up to 1000 ARC</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -88,7 +88,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Use 8 separate goldmines to mix funds up to 1000 ARC</string>
+    <string>Use 8 separate masternodes to mix funds up to 1000 ARC</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
@@ -101,7 +101,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Use 16 separate goldmines</string>
+    <string>Use 16 separate masternodes</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_6">

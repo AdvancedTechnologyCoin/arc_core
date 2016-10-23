@@ -19,7 +19,7 @@
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
-#include "goldmine-payments.h"
+#include "goldminenode-payments.h"
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -318,7 +318,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             }
         }
 
-        // Goldmine and general evolution payments
+        // Masternode and general budget payments
         FillBlockPayee(txNew, nFees);
 
         // Make payee

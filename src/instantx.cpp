@@ -8,8 +8,8 @@
 #include "base58.h"
 #include "protocol.h"
 #include "instantx.h"
-#include "activegoldmine.h"
-#include "goldmineman.h"
+#include "activegoldminenode.h"
+#include "goldminenodeman.h"
 #include "spysend.h"
 #include "spork.h"
 #include <boost/lexical_cast.hpp>
@@ -34,9 +34,9 @@ int nCompleteTXLocks;
 
 void ProcessMessageInstantX(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
-    if(fLiteMode) return; //disable all spysend/goldmine related functionality
+    if(fLiteMode) return; //disable all darksend/goldmine related functionality
     if(!IsSporkActive(SPORK_2_INSTANTX)) return;
-    if(!goldmineSync.IsBlockchainSynced()) return;
+    if(!masternodeSync.IsBlockchainSynced()) return;
 
     if (strCommand == "ix")
     {
@@ -57,7 +57,7 @@ void ProcessMessageInstantX(CNode* pfrom, std::string& strCommand, CDataStream& 
         }
 
         BOOST_FOREACH(const CTxOut o, tx.vout){
-            // IX supports normal scripts and unspendable scripts (used in SS collateral and Evolution collateral).
+            // IX supports normal scripts and unspendable scripts (used in DS collateral and Budget collateral).
             // TODO: Look into other script types that are normal and can be included
             if(!o.scriptPubKey.IsNormalPaymentScript() && !o.scriptPubKey.IsUnspendable()){
                 LogPrintf("ProcessMessageInstantX::ix - Invalid Script %s\n", tx.ToString().c_str());
@@ -141,24 +141,24 @@ void ProcessMessageInstantX(CNode* pfrom, std::string& strCommand, CDataStream& 
         if(ProcessConsensusVote(pfrom, ctx)){
             //Spam/Dos protection
             /*
-                Goldmine will sometimes propagate votes before the transaction is known to the client.
+                Masternodes will sometimes propagate votes before the transaction is known to the client.
                 This tracks those messages and allows it at the same rate of the rest of the network, if
                 a peer violates it, it will simply be ignored
             */
             if(!mapTxLockReq.count(ctx.txHash) && !mapTxLockReqRejected.count(ctx.txHash)){
-                if(!mapUnknownVotes.count(ctx.vinGoldmine.prevout.hash)){
-                    mapUnknownVotes[ctx.vinGoldmine.prevout.hash] = GetTime()+(60*10);
+                if(!mapUnknownVotes.count(ctx.vinMasternode.prevout.hash)){
+                    mapUnknownVotes[ctx.vinMasternode.prevout.hash] = GetTime()+(60*10);
                 }
 
-                if(mapUnknownVotes[ctx.vinGoldmine.prevout.hash] > GetTime() &&
-                    mapUnknownVotes[ctx.vinGoldmine.prevout.hash] - GetAverageVoteTime() > 60*10){
+                if(mapUnknownVotes[ctx.vinMasternode.prevout.hash] > GetTime() &&
+                    mapUnknownVotes[ctx.vinMasternode.prevout.hash] - GetAverageVoteTime() > 60*10){
                         LogPrintf("ProcessMessageInstantX::ix - goldmine is spamming transaction votes: %s %s\n",
-                            ctx.vinGoldmine.ToString().c_str(),
+                            ctx.vinMasternode.ToString().c_str(),
                             ctx.txHash.ToString().c_str()
                         );
                         return;
                 } else {
-                    mapUnknownVotes[ctx.vinGoldmine.prevout.hash] = GetTime()+(60*10);
+                    mapUnknownVotes[ctx.vinMasternode.prevout.hash] = GetTime()+(60*10);
                 }
             }
             RelayInv(inv);
@@ -256,19 +256,19 @@ int64_t CreateNewLock(CTransaction tx)
 // check if we need to vote on this transaction
 void DoConsensusVote(CTransaction& tx, int64_t nBlockHeight)
 {
-    if(!fGoldMine) return;
+    if(!fMasterNode) return;
 
-    int n = gmineman.GetGoldmineRank(activeGoldmine.vin, nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
+    int n = mnodeman.GetMasternodeRank(activeMasternode.vin, nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
 
     if(n == -1)
     {
-        LogPrint("instantx", "InstantX::DoConsensusVote - Unknown Goldmine\n");
+        LogPrint("instantx", "InstantX::DoConsensusVote - Unknown Masternode\n");
         return;
     }
 
     if(n > INSTANTX_SIGNATURES_TOTAL)
     {
-        LogPrint("instantx", "InstantX::DoConsensusVote - Goldmine not in the top %d (%d)\n", INSTANTX_SIGNATURES_TOTAL, n);
+        LogPrint("instantx", "InstantX::DoConsensusVote - Masternode not in the top %d (%d)\n", INSTANTX_SIGNATURES_TOTAL, n);
         return;
     }
     /*
@@ -278,7 +278,7 @@ void DoConsensusVote(CTransaction& tx, int64_t nBlockHeight)
     LogPrint("instantx", "InstantX::DoConsensusVote - In the top %d (%d)\n", INSTANTX_SIGNATURES_TOTAL, n);
 
     CConsensusVote ctx;
-    ctx.vinGoldmine = activeGoldmine.vin;
+    ctx.vinMasternode = activeMasternode.vin;
     ctx.txHash = tx.GetHash();
     ctx.nBlockHeight = nBlockHeight;
     if(!ctx.Sign()){
@@ -299,30 +299,30 @@ void DoConsensusVote(CTransaction& tx, int64_t nBlockHeight)
 //received a consensus vote
 bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
 {
-    int n = gmineman.GetGoldmineRank(ctx.vinGoldmine, ctx.nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
+    int n = mnodeman.GetMasternodeRank(ctx.vinMasternode, ctx.nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
 
-    CGoldmine* pgm = gmineman.Find(ctx.vinGoldmine);
-    if(pgm != NULL)
-        LogPrint("instantx", "InstantX::ProcessConsensusVote - Goldmine ADDR %s %d\n", pgm->addr.ToString().c_str(), n);
+    CMasternode* pmn = mnodeman.Find(ctx.vinMasternode);
+    if(pmn != NULL)
+        LogPrint("instantx", "InstantX::ProcessConsensusVote - Masternode ADDR %s %d\n", pmn->addr.ToString().c_str(), n);
 
     if(n == -1)
     {
         //can be caused by past versions trying to vote with an invalid protocol
-        LogPrint("instantx", "InstantX::ProcessConsensusVote - Unknown Goldmine\n");
-        gmineman.AskForGM(pnode, ctx.vinGoldmine);
+        LogPrint("instantx", "InstantX::ProcessConsensusVote - Unknown Masternode\n");
+        mnodeman.AskForMN(pnode, ctx.vinMasternode);
         return false;
     }
 
     if(n > INSTANTX_SIGNATURES_TOTAL)
     {
-        LogPrint("instantx", "InstantX::ProcessConsensusVote - Goldmine not in the top %d (%d) - %s\n", INSTANTX_SIGNATURES_TOTAL, n, ctx.GetHash().ToString().c_str());
+        LogPrint("instantx", "InstantX::ProcessConsensusVote - Masternode not in the top %d (%d) - %s\n", INSTANTX_SIGNATURES_TOTAL, n, ctx.GetHash().ToString().c_str());
         return false;
     }
 
     if(!ctx.SignatureValid()) {
         LogPrintf("InstantX::ProcessConsensusVote - Signature invalid\n");
         // don't ban, it could just be a non-synced goldmine
-        gmineman.AskForGM(pnode, ctx.vinGoldmine);
+        mnodeman.AskForMN(pnode, ctx.vinMasternode);
         return false;
     }
 
@@ -462,7 +462,7 @@ void CleanTransactionLocksList()
 
 uint256 CConsensusVote::GetHash() const
 {
-    return vinGoldmine.prevout.hash + vinGoldmine.prevout.n + txHash;
+    return vinMasternode.prevout.hash + vinMasternode.prevout.n + txHash;
 }
 
 
@@ -472,15 +472,15 @@ bool CConsensusVote::SignatureValid()
     std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
     //LogPrintf("verify strMessage %s \n", strMessage.c_str());
 
-    CGoldmine* pgm = gmineman.Find(vinGoldmine);
+    CMasternode* pmn = mnodeman.Find(vinMasternode);
 
-    if(pgm == NULL)
+    if(pmn == NULL)
     {
-        LogPrintf("InstantX::CConsensusVote::SignatureValid() - Unknown Goldmine\n");
+        LogPrintf("InstantX::CConsensusVote::SignatureValid() - Unknown Masternode\n");
         return false;
     }
 
-    if(!spySendSigner.VerifyMessage(pgm->pubkey2, vchGoldMineSignature, strMessage, errorMessage)) {
+    if(!darkSendSigner.VerifyMessage(pmn->pubkey2, vchMasterNodeSignature, strMessage, errorMessage)) {
         LogPrintf("InstantX::CConsensusVote::SignatureValid() - Verify message failed\n");
         return false;
     }
@@ -496,20 +496,20 @@ bool CConsensusVote::Sign()
     CPubKey pubkey2;
     std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
     //LogPrintf("signing strMessage %s \n", strMessage.c_str());
-    //LogPrintf("signing privkey %s \n", strGoldMinePrivKey.c_str());
+    //LogPrintf("signing privkey %s \n", strMasterNodePrivKey.c_str());
 
-    if(!spySendSigner.SetKey(strGoldMinePrivKey, errorMessage, key2, pubkey2))
+    if(!darkSendSigner.SetKey(strMasterNodePrivKey, errorMessage, key2, pubkey2))
     {
         LogPrintf("CConsensusVote::Sign() - ERROR: Invalid goldmineprivkey: '%s'\n", errorMessage.c_str());
         return false;
     }
 
-    if(!spySendSigner.SignMessage(strMessage, errorMessage, vchGoldMineSignature, key2)) {
+    if(!darkSendSigner.SignMessage(strMessage, errorMessage, vchMasterNodeSignature, key2)) {
         LogPrintf("CConsensusVote::Sign() - Sign message failed");
         return false;
     }
 
-    if(!spySendSigner.VerifyMessage(pubkey2, vchGoldMineSignature, strMessage, errorMessage)) {
+    if(!darkSendSigner.VerifyMessage(pubkey2, vchMasterNodeSignature, strMessage, errorMessage)) {
         LogPrintf("CConsensusVote::Sign() - Verify message failed");
         return false;
     }
@@ -523,17 +523,17 @@ bool CTransactionLock::SignaturesValid()
 
     BOOST_FOREACH(CConsensusVote vote, vecConsensusVotes)
     {
-        int n = gmineman.GetGoldmineRank(vote.vinGoldmine, vote.nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
+        int n = mnodeman.GetMasternodeRank(vote.vinMasternode, vote.nBlockHeight, MIN_INSTANTX_PROTO_VERSION);
 
         if(n == -1)
         {
-            LogPrintf("CTransactionLock::SignaturesValid() - Unknown Goldmine\n");
+            LogPrintf("CTransactionLock::SignaturesValid() - Unknown Masternode\n");
             return false;
         }
 
         if(n > INSTANTX_SIGNATURES_TOTAL)
         {
-            LogPrintf("CTransactionLock::SignaturesValid() - Goldmine not in the top %s\n", INSTANTX_SIGNATURES_TOTAL);
+            LogPrintf("CTransactionLock::SignaturesValid() - Masternode not in the top %s\n", INSTANTX_SIGNATURES_TOTAL);
             return false;
         }
 

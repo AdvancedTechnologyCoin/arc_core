@@ -2,8 +2,8 @@
 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef GOLDMINE_EVOLUTION_H
-#define GOLDMINE_EVOLUTION_H
+#ifndef MASTERNODE_BUDGET_H
+#define MASTERNODE_BUDGET_H
 
 #include "main.h"
 #include "sync.h"
@@ -11,46 +11,46 @@
 #include "key.h"
 #include "util.h"
 #include "base58.h"
-#include "goldmine.h"
+#include "goldminenode.h"
 #include <boost/lexical_cast.hpp>
 #include "init.h"
 
 using namespace std;
 
-extern CCriticalSection cs_evolution;
+extern CCriticalSection cs_budget;
 
-class CEvolutionManager;
-class CFinalizedEvolutionBroadcast;
-class CFinalizedEvolution;
-class CFinalizedEvolutionVote;
-class CEvolutionProposal;
-class CEvolutionProposalBroadcast;
-class CEvolutionVote;
-class CTxEvolutionPayment;
+class CBudgetManager;
+class CFinalizedBudgetBroadcast;
+class CFinalizedBudget;
+class CFinalizedBudgetVote;
+class CBudgetProposal;
+class CBudgetProposalBroadcast;
+class CBudgetVote;
+class CTxBudgetPayment;
 
 #define VOTE_ABSTAIN  0
 #define VOTE_YES      1
 #define VOTE_NO       2
 
-static const CAmount EVOLUTION_FEE_TX = (5*COIN);
-static const int64_t EVOLUTION_FEE_CONFIRMATIONS = 6;
-static const int64_t EVOLUTION_VOTE_UPDATE_MIN = 60*60;
+static const CAmount BUDGET_FEE_TX = (5*COIN);
+static const int64_t BUDGET_FEE_CONFIRMATIONS = 6;
+static const int64_t BUDGET_VOTE_UPDATE_MIN = 60*60;
 
-extern std::vector<CEvolutionProposalBroadcast> vecImmatureEvolutionProposals;
-extern std::vector<CFinalizedEvolutionBroadcast> vecImmatureFinalizedEvolutions;
+extern std::vector<CBudgetProposalBroadcast> vecImmatureBudgetProposals;
+extern std::vector<CFinalizedBudgetBroadcast> vecImmatureFinalizedBudgets;
 
-extern CEvolutionManager evolution;
-void DumpEvolutions();
+extern CBudgetManager budget;
+void DumpBudgets();
 
-// Define amount of blocks in evolution payment cycle
-int GetEvolutionPaymentCycleBlocks();
+// Define amount of blocks in budget payment cycle
+int GetBudgetPaymentCycleBlocks();
 
-//Check the collateral transaction for the evolution proposal/finalized evolution
-bool IsEvolutionCollateralValid(uint256 nTxCollateralHash, uint256 nExpectedHash, std::string& strError, int64_t& nTime, int& nConf);
+//Check the collateral transaction for the budget proposal/finalized budget
+bool IsBudgetCollateralValid(uint256 nTxCollateralHash, uint256 nExpectedHash, std::string& strError, int64_t& nTime, int& nConf);
 
-/** Save Evolution Manager (evolution.dat)
+/** Save Budget Manager (evolution.dat)
  */
-class CEvolutionDB
+class CBudgetDB
 {
 private:
     boost::filesystem::path pathDB;
@@ -66,50 +66,50 @@ public:
         IncorrectFormat
     };
 
-    CEvolutionDB();
-    bool Write(const CEvolutionManager &objToSave);
-    ReadResult Read(CEvolutionManager& objToLoad, bool fDryRun = false);
+    CBudgetDB();
+    bool Write(const CBudgetManager &objToSave);
+    ReadResult Read(CBudgetManager& objToLoad, bool fDryRun = false);
 };
 
 
 //
-// Evolution Manager : Contains all proposals for the evolution
+// Budget Manager : Contains all proposals for the budget
 //
-class CEvolutionManager
+class CBudgetManager
 {
 private:
 
     //hold txes until they mature enough to use
-    map<uint256, uint256> mapCollateralTxids;
+    map<uint256, CTransaction> mapCollateral;
 
 public:
     // critical section to protect the inner data structures
     mutable CCriticalSection cs;
     
     // keep track of the scanning errors I've seen
-    map<uint256, CEvolutionProposal> mapProposals;
-    map<uint256, CFinalizedEvolution> mapFinalizedEvolutions;
+    map<uint256, CBudgetProposal> mapProposals;
+    map<uint256, CFinalizedBudget> mapFinalizedBudgets;
 
-    std::map<uint256, CEvolutionProposalBroadcast> mapSeenGoldmineEvolutionProposals;
-    std::map<uint256, CEvolutionVote> mapSeenGoldmineEvolutionVotes;
-    std::map<uint256, CEvolutionVote> mapOrphanGoldmineEvolutionVotes;
-    std::map<uint256, CFinalizedEvolutionBroadcast> mapSeenFinalizedEvolutions;
-    std::map<uint256, CFinalizedEvolutionVote> mapSeenFinalizedEvolutionVotes;
-    std::map<uint256, CFinalizedEvolutionVote> mapOrphanFinalizedEvolutionVotes;
+    std::map<uint256, CBudgetProposalBroadcast> mapSeenMasternodeBudgetProposals;
+    std::map<uint256, CBudgetVote> mapSeenMasternodeBudgetVotes;
+    std::map<uint256, CBudgetVote> mapOrphanMasternodeBudgetVotes;
+    std::map<uint256, CFinalizedBudgetBroadcast> mapSeenFinalizedBudgets;
+    std::map<uint256, CFinalizedBudgetVote> mapSeenFinalizedBudgetVotes;
+    std::map<uint256, CFinalizedBudgetVote> mapOrphanFinalizedBudgetVotes;
 
-    CEvolutionManager() {
+    CBudgetManager() {
         mapProposals.clear();
-        mapFinalizedEvolutions.clear();
+        mapFinalizedBudgets.clear();
     }
 
     void ClearSeen() {
-        mapSeenGoldmineEvolutionProposals.clear();
-        mapSeenGoldmineEvolutionVotes.clear();
-        mapSeenFinalizedEvolutions.clear();
-        mapSeenFinalizedEvolutionVotes.clear();
+        mapSeenMasternodeBudgetProposals.clear();
+        mapSeenMasternodeBudgetVotes.clear();
+        mapSeenFinalizedBudgets.clear();
+        mapSeenFinalizedBudgetVotes.clear();
     }
 
-    int sizeFinalized() {return (int)mapFinalizedEvolutions.size();}
+    int sizeFinalized() {return (int)mapFinalizedBudgets.size();}
     int sizeProposals() {return (int)mapProposals.size();}
 
     void ResetSync();
@@ -119,23 +119,23 @@ public:
     void Calculate();
     void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
     void NewBlock();
-    CEvolutionProposal *FindProposal(const std::string &strProposalName);
-    CEvolutionProposal *FindProposal(uint256 nHash);
-    CFinalizedEvolution *FindFinalizedEvolution(uint256 nHash);
+    CBudgetProposal *FindProposal(const std::string &strProposalName);
+    CBudgetProposal *FindProposal(uint256 nHash);
+    CFinalizedBudget *FindFinalizedBudget(uint256 nHash);
     std::pair<std::string, std::string> GetVotes(std::string strProposalName);
 
-    CAmount GetTotalEvolution(int nHeight);
-    std::vector<CEvolutionProposal*> GetEvolution();
-    std::vector<CEvolutionProposal*> GetAllProposals();
-    std::vector<CFinalizedEvolution*> GetFinalizedEvolutions();
-    bool IsEvolutionPaymentBlock(int nBlockHeight);
-    bool AddProposal(CEvolutionProposal& evolutionProposal);
-    bool AddFinalizedEvolution(CFinalizedEvolution& finalizedEvolution);
-    void SubmitFinalEvolution();
-    bool HasNextFinalizedEvolution();
+    CAmount GetTotalBudget(int nHeight);
+    std::vector<CBudgetProposal*> GetBudget();
+    std::vector<CBudgetProposal*> GetAllProposals();
+    std::vector<CFinalizedBudget*> GetFinalizedBudgets();
+    bool IsBudgetPaymentBlock(int nBlockHeight);
+    bool AddProposal(CBudgetProposal& budgetProposal);
+    bool AddFinalizedBudget(CFinalizedBudget& finalizedBudget);
+    void SubmitFinalBudget();
+    bool HasNextFinalizedBudget();
 
-    bool UpdateProposal(CEvolutionVote& vote, CNode* pfrom, std::string& strError);
-    bool UpdateFinalizedEvolution(CFinalizedEvolutionVote& vote, CNode* pfrom, std::string& strError);
+    bool UpdateProposal(CBudgetVote& vote, CNode* pfrom, std::string& strError);
+    bool UpdateFinalizedBudget(CFinalizedBudgetVote& vote, CNode* pfrom, std::string& strError);
     bool PropExists(uint256 nHash);
     bool IsTransactionValid(const CTransaction& txNew, int nBlockHeight);
     std::string GetRequiredPaymentsString(int nBlockHeight);
@@ -145,15 +145,15 @@ public:
     void Clear(){
         LOCK(cs);
 
-        LogPrintf("Evolution object cleared\n");
+        LogPrintf("Budget object cleared\n");
         mapProposals.clear();
-        mapFinalizedEvolutions.clear();
-        mapSeenGoldmineEvolutionProposals.clear();
-        mapSeenGoldmineEvolutionVotes.clear();
-        mapSeenFinalizedEvolutions.clear();
-        mapSeenFinalizedEvolutionVotes.clear();
-        mapOrphanGoldmineEvolutionVotes.clear();
-        mapOrphanFinalizedEvolutionVotes.clear();
+        mapFinalizedBudgets.clear();
+        mapSeenMasternodeBudgetProposals.clear();
+        mapSeenMasternodeBudgetVotes.clear();
+        mapSeenFinalizedBudgets.clear();
+        mapSeenFinalizedBudgetVotes.clear();
+        mapOrphanMasternodeBudgetVotes.clear();
+        mapOrphanFinalizedBudgetVotes.clear();
     }
     void CheckAndRemove();
     std::string ToString() const;
@@ -163,27 +163,27 @@ public:
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(mapSeenGoldmineEvolutionProposals);
-        READWRITE(mapSeenGoldmineEvolutionVotes);
-        READWRITE(mapSeenFinalizedEvolutions);
-        READWRITE(mapSeenFinalizedEvolutionVotes);
-        READWRITE(mapOrphanGoldmineEvolutionVotes);
-        READWRITE(mapOrphanFinalizedEvolutionVotes);
+        READWRITE(mapSeenMasternodeBudgetProposals);
+        READWRITE(mapSeenMasternodeBudgetVotes);
+        READWRITE(mapSeenFinalizedBudgets);
+        READWRITE(mapSeenFinalizedBudgetVotes);
+        READWRITE(mapOrphanMasternodeBudgetVotes);
+        READWRITE(mapOrphanFinalizedBudgetVotes);
 
         READWRITE(mapProposals);
-        READWRITE(mapFinalizedEvolutions);
+        READWRITE(mapFinalizedBudgets);
     }
 };
 
 
-class CTxEvolutionPayment
+class CTxBudgetPayment
 {
 public:
     uint256 nProposalHash;
     CScript payee;
     CAmount nAmount;
 
-    CTxEvolutionPayment() {
+    CTxBudgetPayment() {
         payee = CScript();
         nAmount = 0;
         nProposalHash = 0;
@@ -201,50 +201,50 @@ public:
 };
 
 //
-// Finalized Evolution : Contains the suggested proposals to pay on a given block
+// Finalized Budget : Contains the suggested proposals to pay on a given block
 //
 
-class CFinalizedEvolution
+class CFinalizedBudget
 {
 
 private:
     // critical section to protect the inner data structures
     mutable CCriticalSection cs;
-    bool fAutoChecked; //If it matches what we see, we'll auto vote for it (goldmine only)
+    bool fAutoChecked; //If it matches what we see, we'll auto vote for it (masternode only)
 
 public:
     bool fValid;
-    std::string strEvolutionName;
+    std::string strBudgetName;
     int nBlockStart;
-    std::vector<CTxEvolutionPayment> vecEvolutionPayments;
-    map<uint256, CFinalizedEvolutionVote> mapVotes;
+    std::vector<CTxBudgetPayment> vecBudgetPayments;
+    map<uint256, CFinalizedBudgetVote> mapVotes;
     uint256 nFeeTXHash;
     int64_t nTime;
 
-    CFinalizedEvolution();
-    CFinalizedEvolution(const CFinalizedEvolution& other);
+    CFinalizedBudget();
+    CFinalizedBudget(const CFinalizedBudget& other);
 
     void CleanAndRemove(bool fSignatureCheck);
-    bool AddOrUpdateVote(CFinalizedEvolutionVote& vote, std::string& strError);
+    bool AddOrUpdateVote(CFinalizedBudgetVote& vote, std::string& strError);
     double GetScore();
     bool HasMinimumRequiredSupport();
 
     bool IsValid(std::string& strError, bool fCheckCollateral=true);
 
-    std::string GetName() {return strEvolutionName; }
+    std::string GetName() {return strBudgetName; }
     std::string GetProposals();
     int GetBlockStart() {return nBlockStart;}
-    int GetBlockEnd() {return nBlockStart + (int)(vecEvolutionPayments.size() - 1);}
+    int GetBlockEnd() {return nBlockStart + (int)(vecBudgetPayments.size() - 1);}
     int GetVoteCount() {return (int)mapVotes.size();}
     bool IsTransactionValid(const CTransaction& txNew, int nBlockHeight);
-    bool GetEvolutionPaymentByBlock(int64_t nBlockHeight, CTxEvolutionPayment& payment)
+    bool GetBudgetPaymentByBlock(int64_t nBlockHeight, CTxBudgetPayment& payment)
     {
         LOCK(cs);
 
         int i = nBlockHeight - GetBlockStart();
         if(i < 0) return false;
-        if(i > (int)vecEvolutionPayments.size() - 1) return false;
-        payment = vecEvolutionPayments[i];
+        if(i > (int)vecBudgetPayments.size() - 1) return false;
+        payment = vecBudgetPayments[i];
         return true;
     }
     bool GetPayeeAndAmount(int64_t nBlockHeight, CScript& payee, CAmount& nAmount)
@@ -253,17 +253,17 @@ public:
 
         int i = nBlockHeight - GetBlockStart();
         if(i < 0) return false;
-        if(i > (int)vecEvolutionPayments.size() - 1) return false;
-        payee = vecEvolutionPayments[i].payee;
-        nAmount = vecEvolutionPayments[i].nAmount;
+        if(i > (int)vecBudgetPayments.size() - 1) return false;
+        payee = vecBudgetPayments[i].payee;
+        nAmount = vecBudgetPayments[i].nAmount;
         return true;
     }
 
     //check to see if we should vote on this
     void AutoCheck();
-    //total arcticcoin paid out by this evolution
+    //total arcticcoin paid out by this budget
     CAmount GetTotalPayout();
-    //vote on this finalized evolution as a goldmine
+    //vote on this finalized budget as a masternode
     void SubmitVote();
 
     //checks the hashes to make sure we know about them
@@ -271,9 +271,9 @@ public:
 
     uint256 GetHash(){
         CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        ss << strEvolutionName;
+        ss << strBudgetName;
         ss << nBlockStart;
-        ss << vecEvolutionPayments;
+        ss << vecBudgetPayments;
 
         uint256 h1 = ss.GetHash();
         return h1;
@@ -284,44 +284,44 @@ public:
     //for saving to the serialized db
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(LIMITED_STRING(strEvolutionName, 20));
+        READWRITE(LIMITED_STRING(strBudgetName, 20));
         READWRITE(nFeeTXHash);
         READWRITE(nTime);
         READWRITE(nBlockStart);
-        READWRITE(vecEvolutionPayments);
+        READWRITE(vecBudgetPayments);
         READWRITE(fAutoChecked);
 
         READWRITE(mapVotes);
     }
 };
 
-// FinalizedEvolution are cast then sent to peers with this object, which leaves the votes out
-class CFinalizedEvolutionBroadcast : public CFinalizedEvolution
+// FinalizedBudget are cast then sent to peers with this object, which leaves the votes out
+class CFinalizedBudgetBroadcast : public CFinalizedBudget
 {
 private:
     std::vector<unsigned char> vchSig;
 
 public:
-    CFinalizedEvolutionBroadcast();
-    CFinalizedEvolutionBroadcast(const CFinalizedEvolution& other);
-    CFinalizedEvolutionBroadcast(std::string strEvolutionNameIn, int nBlockStartIn, std::vector<CTxEvolutionPayment> vecEvolutionPaymentsIn, uint256 nFeeTXHashIn);
+    CFinalizedBudgetBroadcast();
+    CFinalizedBudgetBroadcast(const CFinalizedBudget& other);
+    CFinalizedBudgetBroadcast(std::string strBudgetNameIn, int nBlockStartIn, std::vector<CTxBudgetPayment> vecBudgetPaymentsIn, uint256 nFeeTXHashIn);
 
-    void swap(CFinalizedEvolutionBroadcast& first, CFinalizedEvolutionBroadcast& second) // nothrow
+    void swap(CFinalizedBudgetBroadcast& first, CFinalizedBudgetBroadcast& second) // nothrow
     {
         // enable ADL (not necessary in our case, but good practice)
         using std::swap;
 
         // by swapping the members of two classes,
         // the two classes are effectively swapped
-        swap(first.strEvolutionName, second.strEvolutionName);
+        swap(first.strBudgetName, second.strBudgetName);
         swap(first.nBlockStart, second.nBlockStart);
         first.mapVotes.swap(second.mapVotes);
-        first.vecEvolutionPayments.swap(second.vecEvolutionPayments);
+        first.vecBudgetPayments.swap(second.vecBudgetPayments);
         swap(first.nFeeTXHash, second.nFeeTXHash);
         swap(first.nTime, second.nTime);
     }
 
-    CFinalizedEvolutionBroadcast& operator=(CFinalizedEvolutionBroadcast from)
+    CFinalizedBudgetBroadcast& operator=(CFinalizedBudgetBroadcast from)
     {
         swap(*this, from);
         return *this;
@@ -335,38 +335,38 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         //for syncing with other clients
-        READWRITE(LIMITED_STRING(strEvolutionName, 20));
+        READWRITE(LIMITED_STRING(strBudgetName, 20));
         READWRITE(nBlockStart);
-        READWRITE(vecEvolutionPayments);
+        READWRITE(vecBudgetPayments);
         READWRITE(nFeeTXHash);
     }
 };
 
 //
-// CFinalizedEvolutionVote - Allow a goldmine node to vote and broadcast throughout the network
+// CFinalizedBudgetVote - Allow a masternode node to vote and broadcast throughout the network
 //
 
-class CFinalizedEvolutionVote
+class CFinalizedBudgetVote
 {
 public:
     bool fValid; //if the vote is currently valid / counted
     bool fSynced; //if we've sent this to our peers
     CTxIn vin;
-    uint256 nEvolutionHash;
+    uint256 nBudgetHash;
     int64_t nTime;
     std::vector<unsigned char> vchSig;
 
-    CFinalizedEvolutionVote();
-    CFinalizedEvolutionVote(CTxIn vinIn, uint256 nEvolutionHashIn);
+    CFinalizedBudgetVote();
+    CFinalizedBudgetVote(CTxIn vinIn, uint256 nBudgetHashIn);
 
-    bool Sign(CKey& keyGoldmine, CPubKey& pubKeyGoldmine);
+    bool Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode);
     bool SignatureValid(bool fSignatureCheck);
     void Relay();
 
     uint256 GetHash(){
         CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
         ss << vin;
-        ss << nEvolutionHash;
+        ss << nBudgetHash;
         ss << nTime;
         return ss.GetHash();
     }
@@ -376,7 +376,7 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(vin);
-        READWRITE(nEvolutionHash);
+        READWRITE(nBudgetHash);
         READWRITE(nTime);
         READWRITE(vchSig);
     }
@@ -384,10 +384,10 @@ public:
 };
 
 //
-// Evolution Proposal : Contains the goldmine votes for each evolution
+// Budget Proposal : Contains the masternode votes for each budget
 //
 
-class CEvolutionProposal
+class CBudgetProposal
 {
 private:
     // critical section to protect the inner data structures
@@ -410,22 +410,22 @@ public:
     int64_t nTime;
     uint256 nFeeTXHash;
 
-    map<uint256, CEvolutionVote> mapVotes;
+    map<uint256, CBudgetVote> mapVotes;
     //cache object
 
-    CEvolutionProposal();
-    CEvolutionProposal(const CEvolutionProposal& other);
-    CEvolutionProposal(std::string strProposalNameIn, std::string strURLIn, int nBlockStartIn, int nBlockEndIn, CScript addressIn, CAmount nAmountIn, uint256 nFeeTXHashIn);
+    CBudgetProposal();
+    CBudgetProposal(const CBudgetProposal& other);
+    CBudgetProposal(std::string strProposalNameIn, std::string strURLIn, int nBlockStartIn, int nBlockEndIn, CScript addressIn, CAmount nAmountIn, uint256 nFeeTXHashIn);
 
     void Calculate();
-    bool AddOrUpdateVote(CEvolutionVote& vote, std::string& strError);
+    bool AddOrUpdateVote(CBudgetVote& vote, std::string& strError);
     bool HasMinimumRequiredSupport();
     std::pair<std::string, std::string> GetVotes();
 
     bool IsValid(std::string& strError, bool fCheckCollateral=true);
 
     bool IsEstablished() {
-        //Proposals must be at least a day old to make it into a evolution
+        //Proposals must be at least a day old to make it into a budget
         if(Params().NetworkID() == CBaseChainParams::MAIN) return (nTime < GetTime() - (60*60*24));
 
         //for testing purposes - 4 hours
@@ -486,15 +486,15 @@ public:
 };
 
 // Proposals are cast then sent to peers with this object, which leaves the votes out
-class CEvolutionProposalBroadcast : public CEvolutionProposal
+class CBudgetProposalBroadcast : public CBudgetProposal
 {
 public:
-    CEvolutionProposalBroadcast() : CEvolutionProposal(){}
-    CEvolutionProposalBroadcast(const CEvolutionProposal& other) : CEvolutionProposal(other){}
-    CEvolutionProposalBroadcast(const CEvolutionProposalBroadcast& other) : CEvolutionProposal(other){}
-    CEvolutionProposalBroadcast(std::string strProposalNameIn, std::string strURLIn, int nPaymentCount, CScript addressIn, CAmount nAmountIn, int nBlockStartIn, uint256 nFeeTXHashIn);
+    CBudgetProposalBroadcast() : CBudgetProposal(){}
+    CBudgetProposalBroadcast(const CBudgetProposal& other) : CBudgetProposal(other){}
+    CBudgetProposalBroadcast(const CBudgetProposalBroadcast& other) : CBudgetProposal(other){}
+    CBudgetProposalBroadcast(std::string strProposalNameIn, std::string strURLIn, int nPaymentCount, CScript addressIn, CAmount nAmountIn, int nBlockStartIn, uint256 nFeeTXHashIn);
 
-    void swap(CEvolutionProposalBroadcast& first, CEvolutionProposalBroadcast& second) // nothrow
+    void swap(CBudgetProposalBroadcast& first, CBudgetProposalBroadcast& second) // nothrow
     {
         // enable ADL (not necessary in our case, but good practice)
         using std::swap;
@@ -512,7 +512,7 @@ public:
         first.mapVotes.swap(second.mapVotes);
     }
 
-    CEvolutionProposalBroadcast& operator=(CEvolutionProposalBroadcast from)
+    CBudgetProposalBroadcast& operator=(CBudgetProposalBroadcast from)
     {
         swap(*this, from);
         return *this;
@@ -538,10 +538,10 @@ public:
 };
 
 //
-// CEvolutionVote - Allow a goldmine node to vote and broadcast throughout the network
+// CBudgetVote - Allow a masternode node to vote and broadcast throughout the network
 //
 
-class CEvolutionVote
+class CBudgetVote
 {
 public:
     bool fValid; //if the vote is currently valid / counted
@@ -552,10 +552,10 @@ public:
     int64_t nTime;
     std::vector<unsigned char> vchSig;
 
-    CEvolutionVote();
-    CEvolutionVote(CTxIn vin, uint256 nProposalHash, int nVoteIn);
+    CBudgetVote();
+    CBudgetVote(CTxIn vin, uint256 nProposalHash, int nVoteIn);
 
-    bool Sign(CKey& keyGoldmine, CPubKey& pubKeyGoldmine);
+    bool Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode);
     bool SignatureValid(bool fSignatureCheck);
     void Relay();
 

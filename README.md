@@ -1,32 +1,27 @@
-Arctic Core 
-============
+Arctic Core staging tree 0.12
+===============================
+
+`master:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=master)](https://travis-ci.org/ArcticCore/arcticcoin) `v0.12.0.x:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=v0.12.0.x)](https://travis-ci.org/ArcticCore/arcticcoin/branches) `v0.12.1.x:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=v0.12.1.x)](https://travis-ci.org/ArcticCore/arcticcoin/branches)
 
 https://www.arcticcoin.org
 
 Copyright (c) 2009-2015 Bitcoin Core Developers
+
 Copyright (c) 2015-2016 Arctic Core Developers
 
 
 What is Arctic?
 ----------------
 
-«ArcticCoin» the first national cryptocurrency,
-created to improve the welfare of citizens
-and support to the national economy.
-ArcticCoin is a cryptocurrency and open source. 
-With the help of the ArcticCoin, you will be able to make payments and transfers instantly, with no restrictions anywhere in the world, 
-while maintaining anonymity and security, as in the calculations in cash.
+Arctic is an experimental new digital currency that enables anonymous, instant
+payments to anyone, anywhere in the world. Arctic uses peer-to-peer technology
+to operate with no central authority: managing transactions and issuing money
+are carried out collectively by the network. Arctic Core is the name of open
+source software which enables the use of this currency.
 
-For more information, about «ArcticCoin», see https://www.arcticcoin.org
+For more information, as well as an immediately useable, binary version of
+the Arctic Core software, see https://www.arcticcoin.org/downloads.
 
-«ArcticCoin» первая национальная криптовалюта,
-созданная для улучшения благосостояния граждан
-и помощи национальной экономике.
-ArcticCoin - это криптовалюта с открытым исходным кодом. 
-С помощью ArcticCoin вы сможете производить платежи и переводы мгновенно, без ограничений в любую точку мира, 
-при этом сохраняя анонимность и безопасность, как при расчётах наличными деньгами.
-
-Вся дополнительная информация о «ArcticCoin» на сайте https://www.arcticcoin.org
 
 License
 -------

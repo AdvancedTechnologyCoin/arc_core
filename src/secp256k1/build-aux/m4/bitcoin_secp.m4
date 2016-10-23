@@ -93,3 +93,4 @@ if test x"$set_bignum" = x"gmp" && test x"$has_gmp" != x"yes"; then
     AC_MSG_ERROR([$set_bignum field support explicitly requested but libgmp was not found])
 fi
 ])
+

@@ -56,7 +56,7 @@ INCLUDEPATH += . \
                src/secp256k1/src/java
 
 # Input
-HEADERS += src/activegoldmine.h \
+HEADERS += src/activegoldminenode.h \
            src/addrman.h \
            src/alert.h \
            src/allocators.h \
@@ -91,12 +91,12 @@ HEADERS += src/activegoldmine.h \
            src/leveldbwrapper.h \
            src/limitedmap.h \
            src/main.h \
-           src/goldmine-evolution.h \
-           src/goldmine-payments.h \
-           src/goldmine-sync.h \
-           src/goldmine.h \
-           src/goldmineconfig.h \
-           src/goldmineman.h \
+           src/goldminenode-evolution.h \
+           src/goldminenode-payments.h \
+           src/goldminenode-sync.h \
+           src/goldminenode.h \
+           src/goldminenodeconfig.h \
+           src/goldminenodeman.h \
            src/merkleblock.h \
            src/miner.h \
            src/mruset.h \
@@ -355,7 +355,7 @@ FORMS += src/qt/forms/addressbookpage.ui \
          src/qt/forms/sendcoinsentry.ui \
          src/qt/forms/signverifymessagedialog.ui \
          src/qt/forms/transactiondescdialog.ui
-SOURCES += src/activegoldmine.cpp \
+SOURCES += src/activegoldminenode.cpp \
            src/addrman.cpp \
            src/alert.cpp \
            src/allocators.cpp \
@@ -389,12 +389,12 @@ SOURCES += src/activegoldmine.cpp \
            src/keystore.cpp \
            src/leveldbwrapper.cpp \
            src/main.cpp \
-           src/goldmine-evolution.cpp \
-           src/goldmine-payments.cpp \
-           src/goldmine-sync.cpp \
-           src/goldmine.cpp \
-           src/goldmineconfig.cpp \
-           src/goldmineman.cpp \
+           src/goldminenode-evolution.cpp \
+           src/goldminenode-payments.cpp \
+           src/goldminenode-sync.cpp \
+           src/goldminenode.cpp \
+           src/goldminenodeconfig.cpp \
+           src/goldminenodeman.cpp \
            src/merkleblock.cpp \
            src/miner.cpp \
            src/net.cpp \
@@ -642,19 +642,5 @@ SOURCES += src/activegoldmine.cpp \
            src/leveldb/helpers/memenv/memenv_test.cc \
            src/secp256k1/src/java/org_bitcoin_NativeSecp256k1.c
 RESOURCES += src/qt/arcticcoin.qrc src/qt/arcticcoin_locale.qrc
-TRANSLATIONS += src/qt/locale/arcticcoin_bg.ts \
-                src/qt/locale/arcticcoin_de.ts \
-                src/qt/locale/arcticcoin_en.ts \
-                src/qt/locale/arcticcoin_es.ts \
-                src/qt/locale/arcticcoin_fi.ts \
-                src/qt/locale/arcticcoin_fr.ts \
-                src/qt/locale/arcticcoin_it.ts \
-                src/qt/locale/arcticcoin_ja.ts \
-                src/qt/locale/arcticcoin_pl.ts \
-                src/qt/locale/arcticcoin_pt.ts \
-                src/qt/locale/arcticcoin_ru.ts \
-                src/qt/locale/arcticcoin_sk.ts \
-                src/qt/locale/arcticcoin_sv.ts \
-                src/qt/locale/arcticcoin_vi.ts \
-                src/qt/locale/arcticcoin_zh_CN.ts \
-                src/qt/locale/arcticcoin_zh_TW.ts
+TRANSLATIONS += src/qt/locale/arcticcoin_en.ts \
+			src/qt/locale/arcticcoin_ru.ts

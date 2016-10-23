@@ -3,8 +3,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SRC_GOLDMINECONFIG_H_
-#define SRC_GOLDMINECONFIG_H_
+#ifndef SRC_MASTERNODECONFIG_H_
+#define SRC_MASTERNODECONFIG_H_
 
 #include <string>
 #include <vector>
@@ -12,15 +12,15 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-class CGoldmineConfig;
-extern CGoldmineConfig goldmineConfig;
+class CMasternodeConfig;
+extern CMasternodeConfig masternodeConfig;
 
-class CGoldmineConfig
+class CMasternodeConfig
 {
 
 public:
 
-    class CGoldmineEntry {
+    class CMasternodeEntry {
 
     private:
         std::string alias;
@@ -30,7 +30,7 @@ public:
         std::string outputIndex;
     public:
 
-        CGoldmineEntry(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
+        CMasternodeEntry(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
             this->alias = alias;
             this->ip = ip;
             this->privKey = privKey;
@@ -79,31 +79,31 @@ public:
         }
     };
 
-    CGoldmineConfig() {
-        entries = std::vector<CGoldmineEntry>();
+    CMasternodeConfig() {
+        entries = std::vector<CMasternodeEntry>();
     }
 
     void clear();
     bool read(std::string& strErr);
     void add(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex);
 
-    std::vector<CGoldmineEntry>& getEntries() {
+    std::vector<CMasternodeEntry>& getEntries() {
         return entries;
     }
 
     int getCount() {
         int c = -1;
-        BOOST_FOREACH(CGoldmineEntry e, entries) {
+        BOOST_FOREACH(CMasternodeEntry e, entries) {
             if(e.getAlias() != "") c++;
         }
         return c;
     }
 
 private:
-    std::vector<CGoldmineEntry> entries;
+    std::vector<CMasternodeEntry> entries;
 
 
 };
 
 
-#endif /* SRC_GOLDMINECONFIG_H_ */
+#endif /* SRC_MASTERNODECONFIG_H_ */

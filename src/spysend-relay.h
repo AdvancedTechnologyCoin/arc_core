@@ -1,20 +1,20 @@
 
-// Copyright (c) 2014-2015 The Arctic developers
+// Copyright (c) 2015-2016 The Arctic developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SPYSEND_RELAY_H
-#define SPYSEND_RELAY_H
+#ifndef DARKSEND_RELAY_H
+#define DARKSEND_RELAY_H
 
 #include "main.h"
-#include "activegoldmine.h"
-#include "goldmineman.h"
+#include "activegoldminenode.h"
+#include "goldminenodeman.h"
 
 
-class CSpySendRelay
+class CDarkSendRelay
 {
 public:
-    CTxIn vinGoldmine;
+    CTxIn vinMasternode;
     vector<unsigned char> vchSig;
     vector<unsigned char> vchSig2;
     int nBlockHeight;
@@ -22,14 +22,14 @@ public:
     CTxIn in;
     CTxOut out;
 
-    CSpySendRelay();
-    CSpySendRelay(CTxIn& vinGoldmineIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2);
+    CDarkSendRelay();
+    CDarkSendRelay(CTxIn& vinMasternodeIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2);
     
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(vinGoldmine);
+        READWRITE(vinMasternode);
         READWRITE(vchSig);
         READWRITE(vchSig2);
         READWRITE(nBlockHeight);

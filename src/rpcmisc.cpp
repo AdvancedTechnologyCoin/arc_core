@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2016 The Arctic developers
+// Copyright (c) 2015-2016 The Dash developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,7 +14,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "spork.h"
-#include "goldmine-sync.h"
+#include "goldminenode-sync.h"
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
@@ -109,7 +109,7 @@ Value getinfo(const Array& params, bool fHelp)
     return obj;
 }
 
-Value gmsync(const Array& params, bool fHelp)
+Value mnsync(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
@@ -122,22 +122,22 @@ Value gmsync(const Array& params, bool fHelp)
     if(strMode == "status") {
         Object obj;
 
-        obj.push_back(Pair("IsBlockchainSynced", goldmineSync.IsBlockchainSynced()));
-        obj.push_back(Pair("lastGoldmineList", goldmineSync.lastGoldmineList));
-        obj.push_back(Pair("lastGoldmineWinner", goldmineSync.lastGoldmineWinner));
-        obj.push_back(Pair("lastEvolutionItem", goldmineSync.lastEvolutionItem));
-        obj.push_back(Pair("lastFailure", goldmineSync.lastFailure));
-        obj.push_back(Pair("nCountFailures", goldmineSync.nCountFailures));
-        obj.push_back(Pair("sumGoldmineList", goldmineSync.sumGoldmineList));
-        obj.push_back(Pair("sumGoldmineWinner", goldmineSync.sumGoldmineWinner));
-        obj.push_back(Pair("sumEvolutionItemProp", goldmineSync.sumEvolutionItemProp));
-        obj.push_back(Pair("sumEvolutionItemFin", goldmineSync.sumEvolutionItemFin));
-        obj.push_back(Pair("countGoldmineList", goldmineSync.countGoldmineList));
-        obj.push_back(Pair("countGoldmineWinner", goldmineSync.countGoldmineWinner));
-        obj.push_back(Pair("countEvolutionItemProp", goldmineSync.countEvolutionItemProp));
-        obj.push_back(Pair("countEvolutionItemFin", goldmineSync.countEvolutionItemFin));
-        obj.push_back(Pair("RequestedGoldmineAssets", goldmineSync.RequestedGoldmineAssets));
-        obj.push_back(Pair("RequestedGoldmineAttempt", goldmineSync.RequestedGoldmineAttempt));
+        obj.push_back(Pair("IsBlockchainSynced", masternodeSync.IsBlockchainSynced()));
+        obj.push_back(Pair("lastGoldmineList", masternodeSync.lastMasternodeList));
+        obj.push_back(Pair("lastGoldmineWinner", masternodeSync.lastMasternodeWinner));
+        obj.push_back(Pair("lastEvolutionItem", masternodeSync.lastBudgetItem));
+        obj.push_back(Pair("lastFailure", masternodeSync.lastFailure));
+        obj.push_back(Pair("nCountFailures", masternodeSync.nCountFailures));
+        obj.push_back(Pair("sumGoldmineList", masternodeSync.sumMasternodeList));
+        obj.push_back(Pair("sumGoldmineWinner", masternodeSync.sumMasternodeWinner));
+        obj.push_back(Pair("sumEvolutionItemProp", masternodeSync.sumBudgetItemProp));
+        obj.push_back(Pair("sumEvolutionItemFin", masternodeSync.sumBudgetItemFin));
+        obj.push_back(Pair("countGoldmineList", masternodeSync.countMasternodeList));
+        obj.push_back(Pair("countGoldmineWinner", masternodeSync.countMasternodeWinner));
+        obj.push_back(Pair("countEvolutionItemProp", masternodeSync.countBudgetItemProp));
+        obj.push_back(Pair("countEvolutionItemFin", masternodeSync.countBudgetItemFin));
+        obj.push_back(Pair("RequestedGoldmineAssets", masternodeSync.RequestedMasternodeAssets));
+        obj.push_back(Pair("RequestedGoldmineAttempt", masternodeSync.RequestedMasternodeAttempt));
 
 
         return obj;
@@ -145,7 +145,7 @@ Value gmsync(const Array& params, bool fHelp)
 
     if(strMode == "reset")
     {
-        goldmineSync.Reset();
+        masternodeSync.Reset();
         return "success";
     }
     return "failure";
@@ -314,7 +314,7 @@ CScript _createmultisig_redeemScript(const Array& params)
     {
         const std::string& ks = keys[i].get_str();
 #ifdef ENABLE_WALLET
-        // Case 1: Arctic address and we have full public key:
+        // Case 1: Dash address and we have full public key:
         CBitcoinAddress address(ks);
         if (pwalletMain && address.IsValid())
         {

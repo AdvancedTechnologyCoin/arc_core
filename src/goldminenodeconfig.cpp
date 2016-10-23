@@ -1,28 +1,28 @@
 
 #include "net.h"
-#include "goldmineconfig.h"
+#include "goldminenodeconfig.h"
 #include "util.h"
 #include "ui_interface.h"
 #include <base58.h>
 
-CGoldmineConfig goldmineConfig;
+CMasternodeConfig masternodeConfig;
 
-void CGoldmineConfig::add(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
-    CGoldmineEntry cme(alias, ip, privKey, txHash, outputIndex);
+void CMasternodeConfig::add(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
+    CMasternodeEntry cme(alias, ip, privKey, txHash, outputIndex);
     entries.push_back(cme);
 }
 
-bool CGoldmineConfig::read(std::string& strErr) {
+bool CMasternodeConfig::read(std::string& strErr) {
     int linenumber = 1;
-    boost::filesystem::path pathGoldmineConfigFile = GetGoldmineConfigFile();
-    boost::filesystem::ifstream streamConfig(pathGoldmineConfigFile);
+    boost::filesystem::path pathMasternodeConfigFile = GetMasternodeConfigFile();
+    boost::filesystem::ifstream streamConfig(pathMasternodeConfigFile);
 
     if (!streamConfig.good()) {
-        FILE* configFile = fopen(pathGoldmineConfigFile.string().c_str(), "a");
+        FILE* configFile = fopen(pathMasternodeConfigFile.string().c_str(), "a");
         if (configFile != NULL) {
             std::string strHeader = "# Goldmine config file\n"
                           "# Format: alias IP:port goldmineprivkey collateral_output_txid collateral_output_index\n"
-                          "# Example: gm1 127.0.0.2:17209 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
+                          "# Example: mn1 127.0.0.2:7209 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
             fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
             fclose(configFile);
         }

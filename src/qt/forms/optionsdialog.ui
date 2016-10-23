@@ -135,7 +135,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="toolTip">
-            <string>This setting determines the amount of individual goldmines that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</string>
+            <string>This setting determines the amount of individual masternodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</string>
            </property>
            <property name="text">
             <string>Spysend rounds to use</string>
@@ -143,7 +143,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spysendRounds">
+          <widget class="QSpinBox" name="darksendRounds">
            <property name="minimum">
             <number>2</number>
            </property>
@@ -182,7 +182,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="anonymizeArcticcoin">
+          <widget class="QSpinBox" name="anonymizeDarkcoin">
            <property name="minimum">
             <number>2</number>
            </property>

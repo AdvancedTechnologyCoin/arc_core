@@ -70,7 +70,7 @@ endif
 .PHONY: FORCE
 # arcticcoin core #
 BITCOIN_CORE_H = \
-  activegoldmine.h \
+  activegoldminenode.h \
   addrman.h \
   alert.h \
   allocators.h \
@@ -106,12 +106,12 @@ BITCOIN_CORE_H = \
   leveldbwrapper.h \
   limitedmap.h \
   main.h \
-  goldmine.h \
-  goldmine-payments.h \
-  goldmine-evolution.h \
-  goldmine-sync.h \
-  goldmineman.h \
-  goldmineconfig.h \
+  goldminenode.h \
+  goldminenode-payments.h \
+  goldminenode-evolution.h \
+  goldminenode-sync.h \
+  goldminenodeman.h \
+  goldminenodeconfig.h \
   merkleblock.h \
   miner.h \
   mruset.h \
@@ -206,18 +206,18 @@ libbitcoin_server_a_SOURCES = \
 # when wallet enabled
 libbitcoin_wallet_a_CPPFLAGS = $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_SOURCES = \
-  activegoldmine.cpp \
+  activegoldminenode.cpp \
   spysend.cpp \
   spysend-relay.cpp \
   db.cpp \
   crypter.cpp \
   instantx.cpp \
-  goldmine.cpp \
-  goldmine-evolution.cpp \
-  goldmine-payments.cpp \
-  goldmine-sync.cpp \
-  goldmineconfig.cpp \
-  goldmineman.cpp \
+  goldminenode.cpp \
+  goldminenode-evolution.cpp \
+  goldminenode-payments.cpp \
+  goldminenode-sync.cpp \
+  goldminenodeconfig.cpp \
+  goldminenodeman.cpp \
   rpcdump.cpp \
   rpcwallet.cpp \
   wallet.cpp \

@@ -2,8 +2,8 @@
 // Copyright (c) 2015-2016 The Arctic developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef GOLDMINE_H
-#define GOLDMINE_H
+#ifndef MASTERNODE_H
+#define MASTERNODE_H
 
 #include "sync.h"
 #include "net.h"
@@ -13,40 +13,40 @@
 #include "main.h"
 #include "timedata.h"
 
-#define GOLDMINE_MIN_CONFIRMATIONS           15
-#define GOLDMINE_MIN_MNP_SECONDS             (10*60)
-#define GOLDMINE_MIN_MNB_SECONDS             (5*60)
-#define GOLDMINE_PING_SECONDS                (5*60)
-#define GOLDMINE_EXPIRATION_SECONDS          (65*60)
-#define GOLDMINE_REMOVAL_SECONDS             (75*60)
-#define GOLDMINE_CHECK_SECONDS               5
+#define MASTERNODE_MIN_CONFIRMATIONS           15
+#define MASTERNODE_MIN_MNP_SECONDS             (10*60)
+#define MASTERNODE_MIN_MNB_SECONDS             (5*60)
+#define MASTERNODE_PING_SECONDS                (5*60)
+#define MASTERNODE_EXPIRATION_SECONDS          (65*60)
+#define MASTERNODE_REMOVAL_SECONDS             (75*60)
+#define MASTERNODE_CHECK_SECONDS               5
 
 using namespace std;
 
-class CGoldmine;
-class CGoldmineBroadcast;
-class CGoldminePing;
+class CMasternode;
+class CMasternodeBroadcast;
+class CMasternodePing;
 extern map<int64_t, uint256> mapCacheBlockHashes;
 
 bool GetBlockHash(uint256& hash, int nBlockHeight);
 
 
 //
-// The Goldmine Ping Class : Contains a different serialize method for sending pings from goldmines throughout the network
+// The Masternode Ping Class : Contains a different serialize method for sending pings from masternodes throughout the network
 //
 
-class CGoldminePing
+class CMasternodePing
 {
 public:
 
     CTxIn vin;
     uint256 blockHash;
-    int64_t sigTime; //gmb message times
+    int64_t sigTime; //mnb message times
     std::vector<unsigned char> vchSig;
     //removed stop
 
-    CGoldminePing();
-    CGoldminePing(CTxIn& newVin);
+    CMasternodePing();
+    CMasternodePing(CTxIn& newVin);
 
     ADD_SERIALIZE_METHODS;
 
@@ -59,8 +59,8 @@ public:
     }
 
     bool CheckAndUpdate(int& nDos, bool fRequireEnabled = true, bool fCheckSigTimeOnly = false);
-    bool Sign(CKey& keyGoldmine, CPubKey& pubKeyGoldmine);
-    bool VerifySignature(CPubKey& pubKeyGoldmine, int &nDos);
+    bool Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode);
+    bool VerifySignature(CPubKey& pubKeyMasternode, int &nDos);
     void Relay();
 
     uint256 GetHash(){
@@ -70,7 +70,7 @@ public:
         return ss.GetHash();
     }
 
-    void swap(CGoldminePing& first, CGoldminePing& second) // nothrow
+    void swap(CMasternodePing& first, CMasternodePing& second) // nothrow
     {
         // enable ADL (not necessary in our case, but good practice)
         using std::swap;
@@ -83,16 +83,16 @@ public:
         swap(first.vchSig, second.vchSig);
     }
 
-    CGoldminePing& operator=(CGoldminePing from)
+    CMasternodePing& operator=(CMasternodePing from)
     {
         swap(*this, from);
         return *this;
     }
-    friend bool operator==(const CGoldminePing& a, const CGoldminePing& b)
+    friend bool operator==(const CMasternodePing& a, const CMasternodePing& b)
     {
         return a.vin == b.vin && a.blockHash == b.blockHash;
     }
-    friend bool operator!=(const CGoldminePing& a, const CGoldminePing& b)
+    friend bool operator!=(const CMasternodePing& a, const CMasternodePing& b)
     {
         return !(a == b);
     }
@@ -101,10 +101,10 @@ public:
 
 
 //
-// The Goldmine Class. For managing the Spysend process. It contains the input of the 1000ARC, signature to prove
+// The Masternode Class. For managing the Spysend process. It contains the input of the 1000DRK, signature to prove
 // it's the one who own that ip address and code for calculating the payment election.
 //
-class CGoldmine
+class CMasternode
 {
 private:
     // critical section to protect the inner data structures
@@ -112,11 +112,11 @@ private:
     int64_t lastTimeChecked;
 public:
     enum state {
-        GOLDMINE_ENABLED = 1,
-        GOLDMINE_EXPIRED = 2,
-        GOLDMINE_VIN_SPENT = 3,
-        GOLDMINE_REMOVE = 4,
-        GOLDMINE_POS_ERROR = 5
+        MASTERNODE_ENABLED = 1,
+        MASTERNODE_EXPIRED = 2,
+        MASTERNODE_VIN_SPENT = 3,
+        MASTERNODE_REMOVE = 4,
+        MASTERNODE_POS_ERROR = 5
     };
 
     CTxIn vin;
@@ -125,7 +125,7 @@ public:
     CPubKey pubkey2;
     std::vector<unsigned char> sig;
     int activeState;
-    int64_t sigTime; //gmb message time
+    int64_t sigTime; //mnb message time
     int cacheInputAge;
     int cacheInputAgeBlock;
     bool unitTest;
@@ -134,14 +134,14 @@ public:
     int64_t nLastDsq; //the dsq count from the last dsq broadcast of this node
     int nScanningErrorCount;
     int nLastScanningErrorBlockHeight;
-    CGoldminePing lastPing;
+    CMasternodePing lastPing;
 
-    CGoldmine();
-    CGoldmine(const CGoldmine& other);
-    CGoldmine(const CGoldmineBroadcast& gmb);
+    CMasternode();
+    CMasternode(const CMasternode& other);
+    CMasternode(const CMasternodeBroadcast& mnb);
 
 
-    void swap(CGoldmine& first, CGoldmine& second) // nothrow
+    void swap(CMasternode& first, CMasternode& second) // nothrow
     {
         // enable ADL (not necessary in our case, but good practice)
         using std::swap;
@@ -166,16 +166,16 @@ public:
         swap(first.nLastScanningErrorBlockHeight, second.nLastScanningErrorBlockHeight);
     }
 
-    CGoldmine& operator=(CGoldmine from)
+    CMasternode& operator=(CMasternode from)
     {
         swap(*this, from);
         return *this;
     }
-    friend bool operator==(const CGoldmine& a, const CGoldmine& b)
+    friend bool operator==(const CMasternode& a, const CMasternode& b)
     {
         return a.vin == b.vin;
     }
-    friend bool operator!=(const CGoldmine& a, const CGoldmine& b)
+    friend bool operator!=(const CMasternode& a, const CMasternode& b)
     {
         return !(a.vin == b.vin);
     }
@@ -208,7 +208,7 @@ public:
 
     int64_t SecondsSincePayment();
 
-    bool UpdateFromNewBroadcast(CGoldmineBroadcast& gmb);
+    bool UpdateFromNewBroadcast(CMasternodeBroadcast& mnb);
 
     inline uint64_t SliceHash(uint256& hash, int slice)
     {
@@ -228,7 +228,7 @@ public:
     {
         now == -1 ? now = GetAdjustedTime() : now;
 
-        return (lastPing == CGoldminePing())
+        return (lastPing == CMasternodePing())
                 ? false
                 : now - lastPing.sigTime < seconds;
     }
@@ -236,15 +236,15 @@ public:
     void Disable()
     {
         sigTime = 0;
-        lastPing = CGoldminePing();
+        lastPing = CMasternodePing();
     }
 
     bool IsEnabled()
     {
-        return activeState == GOLDMINE_ENABLED;
+        return activeState == MASTERNODE_ENABLED;
     }
 
-    int GetGoldmineInputAge()
+    int GetMasternodeInputAge()
     {
         if(chainActive.Tip() == NULL) return 0;
 
@@ -259,11 +259,11 @@ public:
     std::string Status() {
         std::string strStatus = "ACTIVE";
 
-        if(activeState == CGoldmine::GOLDMINE_ENABLED) strStatus   = "ENABLED";
-        if(activeState == CGoldmine::GOLDMINE_EXPIRED) strStatus   = "EXPIRED";
-        if(activeState == CGoldmine::GOLDMINE_VIN_SPENT) strStatus = "VIN_SPENT";
-        if(activeState == CGoldmine::GOLDMINE_REMOVE) strStatus    = "REMOVE";
-        if(activeState == CGoldmine::GOLDMINE_POS_ERROR) strStatus = "POS_ERROR";
+        if(activeState == CMasternode::MASTERNODE_ENABLED) strStatus   = "ENABLED";
+        if(activeState == CMasternode::MASTERNODE_EXPIRED) strStatus   = "EXPIRED";
+        if(activeState == CMasternode::MASTERNODE_VIN_SPENT) strStatus = "VIN_SPENT";
+        if(activeState == CMasternode::MASTERNODE_REMOVE) strStatus    = "REMOVE";
+        if(activeState == CMasternode::MASTERNODE_POS_ERROR) strStatus = "POS_ERROR";
 
         return strStatus;
     }
@@ -274,15 +274,15 @@ public:
 
 
 //
-// The Goldmine Broadcast Class : Contains a different serialize method for sending goldmines through the network
+// The Masternode Broadcast Class : Contains a different serialize method for sending masternodes through the network
 //
 
-class CGoldmineBroadcast : public CGoldmine
+class CMasternodeBroadcast : public CMasternode
 {
 public:
-    CGoldmineBroadcast();
-    CGoldmineBroadcast(CService newAddr, CTxIn newVin, CPubKey newPubkey, CPubKey newPubkey2, int protocolVersionIn);
-    CGoldmineBroadcast(const CGoldmine& gm);
+    CMasternodeBroadcast();
+    CMasternodeBroadcast(CService newAddr, CTxIn newVin, CPubKey newPubkey, CPubKey newPubkey2, int protocolVersionIn);
+    CMasternodeBroadcast(const CMasternode& mn);
 
     bool CheckAndUpdate(int& nDoS);
     bool CheckInputsAndAdd(int& nDos);

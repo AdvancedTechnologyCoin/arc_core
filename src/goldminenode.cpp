@@ -2,8 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "goldmine.h"
-#include "goldmineman.h"
+#include "goldminenode.h"
+#include "goldminenodeman.h"
 #include "spysend.h"
 #include "util.h"
 #include "sync.h"
@@ -11,7 +11,7 @@
 #include <boost/lexical_cast.hpp>
 
 // keep track of the scanning errors I've seen
-map<uint256, int> mapSeenGoldmineScanningErrors;
+map<uint256, int> mapSeenMasternodeScanningErrors;
 // cache block hashes as we calculate them
 std::map<int64_t, uint256> mapCacheBlockHashes;
 
@@ -53,7 +53,7 @@ bool GetBlockHash(uint256& hash, int nBlockHeight)
     return false;
 }
 
-CGoldmine::CGoldmine()
+CMasternode::CMasternode()
 {
     LOCK(cs);
     vin = CTxIn();
@@ -61,9 +61,9 @@ CGoldmine::CGoldmine()
     pubkey = CPubKey();
     pubkey2 = CPubKey();
     sig = std::vector<unsigned char>();
-    activeState = GOLDMINE_ENABLED;
+    activeState = MASTERNODE_ENABLED;
     sigTime = GetAdjustedTime();
-    lastPing = CGoldminePing();
+    lastPing = CMasternodePing();
     cacheInputAge = 0;
     cacheInputAgeBlock = 0;
     unitTest = false;
@@ -75,7 +75,7 @@ CGoldmine::CGoldmine()
     lastTimeChecked = 0;
 }
 
-CGoldmine::CGoldmine(const CGoldmine& other)
+CMasternode::CMasternode(const CMasternode& other)
 {
     LOCK(cs);
     vin = other.vin;
@@ -97,23 +97,23 @@ CGoldmine::CGoldmine(const CGoldmine& other)
     lastTimeChecked = 0;
 }
 
-CGoldmine::CGoldmine(const CGoldmineBroadcast& gmb)
+CMasternode::CMasternode(const CMasternodeBroadcast& mnb)
 {
     LOCK(cs);
-    vin = gmb.vin;
-    addr = gmb.addr;
-    pubkey = gmb.pubkey;
-    pubkey2 = gmb.pubkey2;
-    sig = gmb.sig;
-    activeState = GOLDMINE_ENABLED;
-    sigTime = gmb.sigTime;
-    lastPing = gmb.lastPing;
+    vin = mnb.vin;
+    addr = mnb.addr;
+    pubkey = mnb.pubkey;
+    pubkey2 = mnb.pubkey2;
+    sig = mnb.sig;
+    activeState = MASTERNODE_ENABLED;
+    sigTime = mnb.sigTime;
+    lastPing = mnb.lastPing;
     cacheInputAge = 0;
     cacheInputAgeBlock = 0;
     unitTest = false;
     allowFreeTx = true;
-    protocolVersion = gmb.protocolVersion;
-    nLastDsq = gmb.nLastDsq;
+    protocolVersion = mnb.protocolVersion;
+    nLastDsq = mnb.nLastDsq;
     nScanningErrorCount = 0;
     nLastScanningErrorBlockHeight = 0;
     lastTimeChecked = 0;
@@ -122,19 +122,19 @@ CGoldmine::CGoldmine(const CGoldmineBroadcast& gmb)
 //
 // When a new goldmine broadcast is sent, update our information
 //
-bool CGoldmine::UpdateFromNewBroadcast(CGoldmineBroadcast& gmb)
+bool CMasternode::UpdateFromNewBroadcast(CMasternodeBroadcast& mnb)
 {
-    if(gmb.sigTime > sigTime) {    
-        pubkey2 = gmb.pubkey2;
-        sigTime = gmb.sigTime;
-        sig = gmb.sig;
-        protocolVersion = gmb.protocolVersion;
-        addr = gmb.addr;
+    if(mnb.sigTime > sigTime) {    
+        pubkey2 = mnb.pubkey2;
+        sigTime = mnb.sigTime;
+        sig = mnb.sig;
+        protocolVersion = mnb.protocolVersion;
+        addr = mnb.addr;
         lastTimeChecked = 0;
         int nDoS = 0;
-        if(gmb.lastPing == CGoldminePing() || (gmb.lastPing != CGoldminePing() && gmb.lastPing.CheckAndUpdate(nDoS, false))) {
-            lastPing = gmb.lastPing;
-            gmineman.mapSeenGoldminePing.insert(make_pair(lastPing.GetHash(), lastPing));
+        if(mnb.lastPing == CMasternodePing() || (mnb.lastPing != CMasternodePing() && mnb.lastPing.CheckAndUpdate(nDoS, false))) {
+            lastPing = mnb.lastPing;
+            mnodeman.mapSeenMasternodePing.insert(make_pair(lastPing.GetHash(), lastPing));
         }
         return true;
     }
@@ -146,7 +146,7 @@ bool CGoldmine::UpdateFromNewBroadcast(CGoldmineBroadcast& gmb)
 // the proof of work for that block. The further away they are the better, the furthest will win the election
 // and get paid this block
 //
-uint256 CGoldmine::CalculateScore(int mod, int64_t nBlockHeight)
+uint256 CMasternode::CalculateScore(int mod, int64_t nBlockHeight)
 {
     if(chainActive.Tip() == NULL) return 0;
 
@@ -172,32 +172,32 @@ uint256 CGoldmine::CalculateScore(int mod, int64_t nBlockHeight)
     return r;
 }
 
-void CGoldmine::Check(bool forceCheck)
+void CMasternode::Check(bool forceCheck)
 {
     if(ShutdownRequested()) return;
 
-    if(!forceCheck && (GetTime() - lastTimeChecked < GOLDMINE_CHECK_SECONDS)) return;
+    if(!forceCheck && (GetTime() - lastTimeChecked < MASTERNODE_CHECK_SECONDS)) return;
     lastTimeChecked = GetTime();
 
 
     //once spent, stop doing the checks
-    if(activeState == GOLDMINE_VIN_SPENT) return;
+    if(activeState == MASTERNODE_VIN_SPENT) return;
 
 
-    if(!IsPingedWithin(GOLDMINE_REMOVAL_SECONDS)){
-        activeState = GOLDMINE_REMOVE;
+    if(!IsPingedWithin(MASTERNODE_REMOVAL_SECONDS)){
+        activeState = MASTERNODE_REMOVE;
         return;
     }
 
-    if(!IsPingedWithin(GOLDMINE_EXPIRATION_SECONDS)){
-        activeState = GOLDMINE_EXPIRED;
+    if(!IsPingedWithin(MASTERNODE_EXPIRATION_SECONDS)){
+        activeState = MASTERNODE_EXPIRED;
         return;
     }
 
     if(!unitTest){
         CValidationState state;
         CMutableTransaction tx = CMutableTransaction();
-        CTxOut vout = CTxOut(999.99*COIN, spySendPool.collateralPubKey);
+        CTxOut vout = CTxOut(999.99*COIN, darkSendPool.collateralPubKey);
         tx.vin.push_back(vin);
         tx.vout.push_back(vout);
 
@@ -206,17 +206,17 @@ void CGoldmine::Check(bool forceCheck)
             if(!lockMain) return;
 
             if(!AcceptableInputs(mempool, state, CTransaction(tx), false, NULL)){
-                activeState = GOLDMINE_VIN_SPENT;
+                activeState = MASTERNODE_VIN_SPENT;
                 return;
 
             }
         }
     }
 
-    activeState = GOLDMINE_ENABLED; // OK
+    activeState = MASTERNODE_ENABLED; // OK
 }
 
-int64_t CGoldmine::SecondsSincePayment() {
+int64_t CMasternode::SecondsSincePayment() {
     CScript pubkeyScript;
     pubkeyScript = GetScriptForDestination(pubkey.GetID());
 
@@ -233,12 +233,12 @@ int64_t CGoldmine::SecondsSincePayment() {
     return month + hash.GetCompact(false);
 }
 
-int64_t CGoldmine::GetLastPaid() {
+int64_t CMasternode::GetLastPaid() {
     CBlockIndex* pindexPrev = chainActive.Tip();
     if(pindexPrev == NULL) return false;
 
-    CScript gmpayee;
-    gmpayee = GetScriptForDestination(pubkey.GetID());
+    CScript mnpayee;
+    mnpayee = GetScriptForDestination(pubkey.GetID());
 
     CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
     ss << vin;
@@ -252,7 +252,7 @@ int64_t CGoldmine::GetLastPaid() {
 
     const CBlockIndex *BlockReading = chainActive.Tip();
 
-    int nMnCount = gmineman.CountEnabled()*1.25;
+    int nMnCount = mnodeman.CountEnabled()*1.25;
     int n = 0;
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
         if(n >= nMnCount){
@@ -260,12 +260,12 @@ int64_t CGoldmine::GetLastPaid() {
         }
         n++;
 
-        if(goldminePayments.mapGoldmineBlocks.count(BlockReading->nHeight)){
+        if(masternodePayments.mapMasternodeBlocks.count(BlockReading->nHeight)){
             /*
                 Search for this payee, with at least 2 votes. This will aid in consensus allowing the network 
                 to converge on the same payees quickly, then keep the same schedule.
             */
-            if(goldminePayments.mapGoldmineBlocks[BlockReading->nHeight].HasPayeeWithVotes(gmpayee, 2)){
+            if(masternodePayments.mapMasternodeBlocks[BlockReading->nHeight].HasPayeeWithVotes(mnpayee, 2)){
                 return BlockReading->nTime + nOffset;
             }
         }
@@ -277,16 +277,16 @@ int64_t CGoldmine::GetLastPaid() {
     return 0;
 }
 
-CGoldmineBroadcast::CGoldmineBroadcast()
+CMasternodeBroadcast::CMasternodeBroadcast()
 {
     vin = CTxIn();
     addr = CService();
     pubkey = CPubKey();
     pubkey2 = CPubKey();
     sig = std::vector<unsigned char>();
-    activeState = GOLDMINE_ENABLED;
+    activeState = MASTERNODE_ENABLED;
     sigTime = GetAdjustedTime();
-    lastPing = CGoldminePing();
+    lastPing = CMasternodePing();
     cacheInputAge = 0;
     cacheInputAgeBlock = 0;
     unitTest = false;
@@ -297,16 +297,16 @@ CGoldmineBroadcast::CGoldmineBroadcast()
     nLastScanningErrorBlockHeight = 0;
 }
 
-CGoldmineBroadcast::CGoldmineBroadcast(CService newAddr, CTxIn newVin, CPubKey newPubkey, CPubKey newPubkey2, int protocolVersionIn)
+CMasternodeBroadcast::CMasternodeBroadcast(CService newAddr, CTxIn newVin, CPubKey newPubkey, CPubKey newPubkey2, int protocolVersionIn)
 {
     vin = newVin;
     addr = newAddr;
     pubkey = newPubkey;
     pubkey2 = newPubkey2;
     sig = std::vector<unsigned char>();
-    activeState = GOLDMINE_ENABLED;
+    activeState = MASTERNODE_ENABLED;
     sigTime = GetAdjustedTime();
-    lastPing = CGoldminePing();
+    lastPing = CMasternodePing();
     cacheInputAge = 0;
     cacheInputAgeBlock = 0;
     unitTest = false;
@@ -317,39 +317,39 @@ CGoldmineBroadcast::CGoldmineBroadcast(CService newAddr, CTxIn newVin, CPubKey n
     nLastScanningErrorBlockHeight = 0;
 }
 
-CGoldmineBroadcast::CGoldmineBroadcast(const CGoldmine& gm)
+CMasternodeBroadcast::CMasternodeBroadcast(const CMasternode& mn)
 {
-    vin = gm.vin;
-    addr = gm.addr;
-    pubkey = gm.pubkey;
-    pubkey2 = gm.pubkey2;
-    sig = gm.sig;
-    activeState = gm.activeState;
-    sigTime = gm.sigTime;
-    lastPing = gm.lastPing;
-    cacheInputAge = gm.cacheInputAge;
-    cacheInputAgeBlock = gm.cacheInputAgeBlock;
-    unitTest = gm.unitTest;
-    allowFreeTx = gm.allowFreeTx;
-    protocolVersion = gm.protocolVersion;
-    nLastDsq = gm.nLastDsq;
-    nScanningErrorCount = gm.nScanningErrorCount;
-    nLastScanningErrorBlockHeight = gm.nLastScanningErrorBlockHeight;
+    vin = mn.vin;
+    addr = mn.addr;
+    pubkey = mn.pubkey;
+    pubkey2 = mn.pubkey2;
+    sig = mn.sig;
+    activeState = mn.activeState;
+    sigTime = mn.sigTime;
+    lastPing = mn.lastPing;
+    cacheInputAge = mn.cacheInputAge;
+    cacheInputAgeBlock = mn.cacheInputAgeBlock;
+    unitTest = mn.unitTest;
+    allowFreeTx = mn.allowFreeTx;
+    protocolVersion = mn.protocolVersion;
+    nLastDsq = mn.nLastDsq;
+    nScanningErrorCount = mn.nScanningErrorCount;
+    nLastScanningErrorBlockHeight = mn.nLastScanningErrorBlockHeight;
 }
 
-bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
+bool CMasternodeBroadcast::CheckAndUpdate(int& nDos)
 {
     nDos = 0;
 
     // make sure signature isn't in the future (past is OK)
     if (sigTime > GetAdjustedTime() + 60 * 60) {
-        LogPrintf("gmb - Signature rejected, too far into the future %s\n", vin.ToString());
+        LogPrintf("mnb - Signature rejected, too far into the future %s\n", vin.ToString());
         nDos = 1;
         return false;
     }
 
-    if(protocolVersion < goldminePayments.GetMinGoldminePaymentsProto()) {
-        LogPrintf("gmb - ignoring outdated Goldmine %s protocol version %d\n", vin.ToString(), protocolVersion);
+    if(protocolVersion < masternodePayments.GetMinMasternodePaymentsProto()) {
+        LogPrintf("mnb - ignoring outdated Goldmine %s protocol version %d\n", vin.ToString(), protocolVersion);
         return false;
     }
 
@@ -357,7 +357,7 @@ bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
     pubkeyScript = GetScriptForDestination(pubkey.GetID());
 
     if(pubkeyScript.size() != 25) {
-        LogPrintf("gmb - pubkey the wrong size\n");
+        LogPrintf("mnb - pubkey the wrong size\n");
         nDos = 100;
         return false;
     }
@@ -366,18 +366,18 @@ bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
     pubkeyScript2 = GetScriptForDestination(pubkey2.GetID());
 
     if(pubkeyScript2.size() != 25) {
-        LogPrintf("gmb - pubkey2 the wrong size\n");
+        LogPrintf("mnb - pubkey2 the wrong size\n");
         nDos = 100;
         return false;
     }
 
     if(!vin.scriptSig.empty()) {
-        LogPrintf("gmb - Ignore Not Empty ScriptSig %s\n",vin.ToString());
+        LogPrintf("mnb - Ignore Not Empty ScriptSig %s\n",vin.ToString());
         return false;
     }
 
     // incorrect ping or its sigTime
-    if(lastPing == CGoldminePing() || !lastPing.CheckAndUpdate(nDos, false, true))
+    if(lastPing == CMasternodePing() || !lastPing.CheckAndUpdate(nDos, false, true))
         return false;
 
     std::string strMessage;
@@ -389,30 +389,30 @@ bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
         strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) +
                         vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-        LogPrint("goldmine", "gmb - sanitized strMessage: %s, pubkey address: %s, sig: %s\n",
+        LogPrint("goldmine", "mnb - sanitized strMessage: %s, pubkey address: %s, sig: %s\n",
             SanitizeString(strMessage), CBitcoinAddress(pubkey.GetID()).ToString(),
             EncodeBase64(&sig[0], sig.size()));
 
-        if(!spySendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
+        if(!darkSendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
             if (addr.ToString() != addr.ToString(false))
             {
                 // maybe it's wrong format, try again with the old one
                 strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) +
                                 vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-                LogPrint("goldmine", "gmb - sanitized strMessage: %s, pubkey address: %s, sig: %s\n",
+                LogPrint("goldmine", "mnb - sanitized strMessage: %s, pubkey address: %s, sig: %s\n",
                     SanitizeString(strMessage), CBitcoinAddress(pubkey.GetID()).ToString(),
                     EncodeBase64(&sig[0], sig.size()));
 
-                if(!spySendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
+                if(!darkSendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
                     // didn't work either
-                    LogPrintf("gmb - Got bad Goldmine address signature, sanitized error: %s\n", SanitizeString(errorMessage));
+                    LogPrintf("mnb - Got bad Goldmine address signature, sanitized error: %s\n", SanitizeString(errorMessage));
                     // there is a bug in old MN signatures, ignore such MN but do not ban the peer we got this from
                     return false;
                 }
             } else {
                 // nope, sig is actually wrong
-                LogPrintf("gmb - Got bad Goldmine address signature, sanitized error: %s\n", SanitizeString(errorMessage));
+                LogPrintf("mnb - Got bad Goldmine address signature, sanitized error: %s\n", SanitizeString(errorMessage));
                 // there is a bug in old MN signatures, ignore such MN but do not ban the peer we got this from
                 return false;
             }
@@ -422,11 +422,11 @@ bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
                         pubkey.GetID().ToString() + pubkey2.GetID().ToString() +
                         boost::lexical_cast<std::string>(protocolVersion);
 
-        LogPrint("goldmine", "gmb - strMessage: %s, pubkey address: %s, sig: %s\n",
+        LogPrint("goldmine", "mnb - strMessage: %s, pubkey address: %s, sig: %s\n",
             strMessage, CBitcoinAddress(pubkey.GetID()).ToString(), EncodeBase64(&sig[0], sig.size()));
 
-        if(!spySendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
-            LogPrintf("gmb - Got bad Goldmine address signature, error: %s\n", errorMessage);
+        if(!darkSendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)){
+            LogPrintf("mnb - Got bad Goldmine address signature, error: %s\n", errorMessage);
             nDos = 100;
             return false;
         }
@@ -436,72 +436,72 @@ bool CGoldmineBroadcast::CheckAndUpdate(int& nDos)
         if(addr.GetPort() != 7209) return false;
     } else if(addr.GetPort() == 7209) return false;
 
-    //search existing Goldmine list, this is where we update existing Goldmines with new gmb broadcasts
-    CGoldmine* pgm = gmineman.Find(vin);
+    //search existing Goldmine list, this is where we update existing Goldmines with new mnb broadcasts
+    CMasternode* pmn = mnodeman.Find(vin);
 
     // no such goldmine, nothing to update
-    if(pgm == NULL) return true;
+    if(pmn == NULL) return true;
 
     // this broadcast is older or equal than the one that we already have - it's bad and should never happen
     // unless someone is doing something fishy
     // (mapSeenGoldmineBroadcast in CGoldmineMan::ProcessMessage should filter legit duplicates)
-    if(pgm->sigTime >= sigTime) {
+    if(pmn->sigTime >= sigTime) {
         LogPrintf("CGoldmineBroadcast::CheckAndUpdate - Bad sigTime %d for Goldmine %20s %105s (existing broadcast is at %d)\n",
-                      sigTime, addr.ToString(), vin.ToString(), pgm->sigTime);
+                      sigTime, addr.ToString(), vin.ToString(), pmn->sigTime);
         return false;
     }
 
     // goldmine is not enabled yet/already, nothing to update
-    if(!pgm->IsEnabled()) return true;
+    if(!pmn->IsEnabled()) return true;
 
-    // gm.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
+    // mn.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
     //   after that they just need to match
-    if(pgm->pubkey == pubkey && !pgm->IsBroadcastedWithin(GOLDMINE_MIN_MNB_SECONDS)) {
+    if(pmn->pubkey == pubkey && !pmn->IsBroadcastedWithin(MASTERNODE_MIN_MNB_SECONDS)) {
         //take the newest entry
-        LogPrintf("gmb - Got updated entry for %s\n", addr.ToString());
-        if(pgm->UpdateFromNewBroadcast((*this))){
-            pgm->Check();
-            if(pgm->IsEnabled()) Relay();
+        LogPrintf("mnb - Got updated entry for %s\n", addr.ToString());
+        if(pmn->UpdateFromNewBroadcast((*this))){
+            pmn->Check();
+            if(pmn->IsEnabled()) Relay();
         }
-        goldmineSync.AddedGoldmineList(GetHash());
+        masternodeSync.AddedMasternodeList(GetHash());
     }
 
     return true;
 }
 
-bool CGoldmineBroadcast::CheckInputsAndAdd(int& nDoS)
+bool CMasternodeBroadcast::CheckInputsAndAdd(int& nDoS)
 {
-    // we are a goldmine with the same vin (i.e. already activated) and this gmb is ours (matches our Goldmine privkey)
+    // we are a goldmine with the same vin (i.e. already activated) and this mnb is ours (matches our Goldmine privkey)
     // so nothing to do here for us
-    if(fGoldMine && vin.prevout == activeGoldmine.vin.prevout && pubkey2 == activeGoldmine.pubKeyGoldmine)
+    if(fMasterNode && vin.prevout == activeMasternode.vin.prevout && pubkey2 == activeMasternode.pubKeyMasternode)
         return true;
 
     // incorrect ping or its sigTime
-    if(lastPing == CGoldminePing() || !lastPing.CheckAndUpdate(nDoS, false, true))
+    if(lastPing == CMasternodePing() || !lastPing.CheckAndUpdate(nDoS, false, true))
         return false;
 
     // search existing Goldmine list
-    CGoldmine* pgm = gmineman.Find(vin);
+    CMasternode* pmn = mnodeman.Find(vin);
 
-    if(pgm != NULL) {
+    if(pmn != NULL) {
         // nothing to do here if we already know about this goldmine and it's enabled
-        if(pgm->IsEnabled()) return true;
+        if(pmn->IsEnabled()) return true;
         // if it's not enabled, remove old MN first and continue
-        else gmineman.Remove(pgm->vin);
+        else mnodeman.Remove(pmn->vin);
     }
 
     CValidationState state;
     CMutableTransaction tx = CMutableTransaction();
-    CTxOut vout = CTxOut(999.99*COIN, spySendPool.collateralPubKey);
+    CTxOut vout = CTxOut(999.99*COIN, darkSendPool.collateralPubKey);
     tx.vin.push_back(vin);
     tx.vout.push_back(vout);
 
     {
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain) {
-            // not gmb fault, let it to be checked again later
-            gmineman.mapSeenGoldmineBroadcast.erase(GetHash());
-            goldmineSync.mapSeenSyncMNB.erase(GetHash());
+            // not mnb fault, let it to be checked again later
+            mnodeman.mapSeenMasternodeBroadcast.erase(GetHash());
+            masternodeSync.mapSeenSyncMNB.erase(GetHash());
             return false;
         }
 
@@ -512,18 +512,18 @@ bool CGoldmineBroadcast::CheckInputsAndAdd(int& nDoS)
         }
     }
 
-    LogPrint("goldmine", "gmb - Accepted Goldmine entry\n");
+    LogPrint("goldmine", "mnb - Accepted Goldmine entry\n");
 
-    if(GetInputAge(vin) < GOLDMINE_MIN_CONFIRMATIONS){
-        LogPrintf("gmb - Input must have at least %d confirmations\n", GOLDMINE_MIN_CONFIRMATIONS);
-        // maybe we miss few blocks, let this gmb to be checked again later
-        gmineman.mapSeenGoldmineBroadcast.erase(GetHash());
-        goldmineSync.mapSeenSyncMNB.erase(GetHash());
+    if(GetInputAge(vin) < MASTERNODE_MIN_CONFIRMATIONS){
+        LogPrintf("mnb - Input must have at least %d confirmations\n", MASTERNODE_MIN_CONFIRMATIONS);
+        // maybe we miss few blocks, let this mnb to be checked again later
+        mnodeman.mapSeenMasternodeBroadcast.erase(GetHash());
+        masternodeSync.mapSeenSyncMNB.erase(GetHash());
         return false;
     }
 
     // verify that sig time is legit in past
-    // should be at least not earlier than block when 1000 ARC tx got GOLDMINE_MIN_CONFIRMATIONS
+    // should be at least not earlier than block when 1000 ARC tx got MASTERNODE_MIN_CONFIRMATIONS
     uint256 hashBlock = 0;
     CTransaction tx2;
     GetTransaction(vin.prevout.hash, tx2, hashBlock, true);
@@ -531,22 +531,22 @@ bool CGoldmineBroadcast::CheckInputsAndAdd(int& nDoS)
     if (mi != mapBlockIndex.end() && (*mi).second)
     {
         CBlockIndex* pMNIndex = (*mi).second; // block for 1000 ARC tx -> 1 confirmation
-        CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + GOLDMINE_MIN_CONFIRMATIONS - 1]; // block where tx got GOLDMINE_MIN_CONFIRMATIONS
+        CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + MASTERNODE_MIN_CONFIRMATIONS - 1]; // block where tx got MASTERNODE_MIN_CONFIRMATIONS
         if(pConfIndex->GetBlockTime() > sigTime)
         {
-            LogPrintf("gmb - Bad sigTime %d for Goldmine %20s %105s (%i conf block is at %d)\n",
-                      sigTime, addr.ToString(), vin.ToString(), GOLDMINE_MIN_CONFIRMATIONS, pConfIndex->GetBlockTime());
+            LogPrintf("mnb - Bad sigTime %d for Goldmine %20s %105s (%i conf block is at %d)\n",
+                      sigTime, addr.ToString(), vin.ToString(), MASTERNODE_MIN_CONFIRMATIONS, pConfIndex->GetBlockTime());
             return false;
         }
     }
 
-    LogPrintf("gmb - Got NEW Goldmine entry - %s - %s - %s - %lli \n", GetHash().ToString(), addr.ToString(), vin.ToString(), sigTime);
-    CGoldmine gm(*this);
-    gmineman.Add(gm);
+    LogPrintf("mnb - Got NEW Goldmine entry - %s - %s - %s - %lli \n", GetHash().ToString(), addr.ToString(), vin.ToString(), sigTime);
+    CMasternode mn(*this);
+    mnodeman.Add(mn);
 
     // if it matches our Goldmine privkey, then we've been remotely activated
-    if(pubkey2 == activeGoldmine.pubKeyGoldmine && protocolVersion == PROTOCOL_VERSION){
-        activeGoldmine.EnableHotColdGoldMine(vin, addr);
+    if(pubkey2 == activeMasternode.pubKeyMasternode && protocolVersion == PROTOCOL_VERSION){
+        activeMasternode.EnableHotColdMasterNode(vin, addr);
     }
 
     bool isLocal = addr.IsRFC1918() || addr.IsLocal();
@@ -557,13 +557,13 @@ bool CGoldmineBroadcast::CheckInputsAndAdd(int& nDoS)
     return true;
 }
 
-void CGoldmineBroadcast::Relay()
+void CMasternodeBroadcast::Relay()
 {
-    CInv inv(MSG_GOLDMINE_ANNOUNCE, GetHash());
+    CInv inv(MSG_MASTERNODE_ANNOUNCE, GetHash());
     RelayInv(inv);
 }
 
-bool CGoldmineBroadcast::Sign(CKey& keyCollateralAddress)
+bool CMasternodeBroadcast::Sign(CKey& keyCollateralAddress)
 {
     std::string errorMessage;
 
@@ -574,7 +574,7 @@ bool CGoldmineBroadcast::Sign(CKey& keyCollateralAddress)
 
     std::string strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-    if(!spySendSigner.SignMessage(strMessage, errorMessage, sig, keyCollateralAddress)) {
+    if(!darkSendSigner.SignMessage(strMessage, errorMessage, sig, keyCollateralAddress)) {
         LogPrintf("CGoldmineBroadcast::Sign() - Error: %s\n", errorMessage);
         return false;
     }
@@ -582,7 +582,7 @@ bool CGoldmineBroadcast::Sign(CKey& keyCollateralAddress)
     return true;
 }
 
-bool CGoldmineBroadcast::VerifySignature()
+bool CMasternodeBroadcast::VerifySignature()
 {
     std::string errorMessage;
 
@@ -591,7 +591,7 @@ bool CGoldmineBroadcast::VerifySignature()
 
     std::string strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-    if(!spySendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)) {
+    if(!darkSendSigner.VerifyMessage(pubkey, sig, strMessage, errorMessage)) {
         LogPrintf("CGoldmineBroadcast::VerifySignature() - Error: %s\n", errorMessage);
         return false;
     }
@@ -599,7 +599,7 @@ bool CGoldmineBroadcast::VerifySignature()
     return true;
 }
 
-CGoldminePing::CGoldminePing()
+CMasternodePing::CMasternodePing()
 {
     vin = CTxIn();
     blockHash = uint256(0);
@@ -607,7 +607,7 @@ CGoldminePing::CGoldminePing()
     vchSig = std::vector<unsigned char>();
 }
 
-CGoldminePing::CGoldminePing(CTxIn& newVin)
+CMasternodePing::CMasternodePing(CTxIn& newVin)
 {
     vin = newVin;
     blockHash = chainActive[chainActive.Height() - 12]->GetBlockHash();
@@ -616,20 +616,20 @@ CGoldminePing::CGoldminePing(CTxIn& newVin)
 }
 
 
-bool CGoldminePing::Sign(CKey& keyGoldmine, CPubKey& pubKeyGoldmine)
+bool CMasternodePing::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
 {
     std::string errorMessage;
-    std::string strGoldMineSignMessage;
+    std::string strMasterNodeSignMessage;
 
     sigTime = GetAdjustedTime();
     std::string strMessage = vin.ToString() + blockHash.ToString() + boost::lexical_cast<std::string>(sigTime);
 
-    if(!spySendSigner.SignMessage(strMessage, errorMessage, vchSig, keyGoldmine)) {
+    if(!darkSendSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
         LogPrintf("CGoldminePing::Sign() - Error: %s\n", errorMessage);
         return false;
     }
 
-    if(!spySendSigner.VerifyMessage(pubKeyGoldmine, vchSig, strMessage, errorMessage)) {
+    if(!darkSendSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage)) {
         LogPrintf("CGoldminePing::Sign() - Error: %s\n", errorMessage);
         return false;
     }
@@ -637,11 +637,11 @@ bool CGoldminePing::Sign(CKey& keyGoldmine, CPubKey& pubKeyGoldmine)
     return true;
 }
 
-bool CGoldminePing::VerifySignature(CPubKey& pubKeyGoldmine, int &nDos) {
+bool CMasternodePing::VerifySignature(CPubKey& pubKeyMasternode, int &nDos) {
     std::string strMessage = vin.ToString() + blockHash.ToString() + boost::lexical_cast<std::string>(sigTime);
     std::string errorMessage = "";
 
-    if(!spySendSigner.VerifyMessage(pubKeyGoldmine, vchSig, strMessage, errorMessage))
+    if(!darkSendSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage))
     {
         LogPrintf("CGoldminePing::VerifySignature - Got bad Goldmine ping signature %s Error: %s\n", vin.ToString(), errorMessage);
         nDos = 33;
@@ -650,7 +650,7 @@ bool CGoldminePing::VerifySignature(CPubKey& pubKeyGoldmine, int &nDos) {
     return true;
 }
 
-bool CGoldminePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckSigTimeOnly)
+bool CMasternodePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckSigTimeOnly)
 {
     if (sigTime > GetAdjustedTime() + 60 * 60) {
         LogPrintf("CGoldminePing::CheckAndUpdate - Signature rejected, too far into the future %s\n", vin.ToString());
@@ -665,25 +665,25 @@ bool CGoldminePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckS
     }
 
     if(fCheckSigTimeOnly) {
-        CGoldmine* pgm = gmineman.Find(vin);
-        if(pgm) return VerifySignature(pgm->pubkey2, nDos);
+        CMasternode* pmn = mnodeman.Find(vin);
+        if(pmn) return VerifySignature(pmn->pubkey2, nDos);
         return true;
     }
 
     LogPrint("goldmine", "CGoldminePing::CheckAndUpdate - New Ping - %s - %s - %lli\n", GetHash().ToString(), blockHash.ToString(), sigTime);
 
     // see if we have this Goldmine
-    CGoldmine* pgm = gmineman.Find(vin);
-    if(pgm != NULL && pgm->protocolVersion >= goldminePayments.GetMinGoldminePaymentsProto())
+    CMasternode* pmn = mnodeman.Find(vin);
+    if(pmn != NULL && pmn->protocolVersion >= masternodePayments.GetMinMasternodePaymentsProto())
     {
-        if (fRequireEnabled && !pgm->IsEnabled()) return false;
+        if (fRequireEnabled && !pmn->IsEnabled()) return false;
 
-        // LogPrintf("mnping - Found corresponding gm for vin: %s\n", vin.ToString());
+        // LogPrintf("mnping - Found corresponding mn for vin: %s\n", vin.ToString());
         // update only if there is no known ping for this goldmine or
-        // last ping was more then GOLDMINE_MIN_MNP_SECONDS-60 ago comparing to this one
-        if(!pgm->IsPingedWithin(GOLDMINE_MIN_MNP_SECONDS - 60, sigTime))
+        // last ping was more then MASTERNODE_MIN_MNP_SECONDS-60 ago comparing to this one
+        if(!pmn->IsPingedWithin(MASTERNODE_MIN_MNP_SECONDS - 60, sigTime))
         {
-            if(!VerifySignature(pgm->pubkey2, nDos))
+            if(!VerifySignature(pmn->pubkey2, nDos))
                 return false;
 
             BlockMap::iterator mi = mapBlockIndex.find(blockHash);
@@ -705,17 +705,17 @@ bool CGoldminePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckS
                 return false;
             }
 
-            pgm->lastPing = *this;
+            pmn->lastPing = *this;
 
-            //gmineman.mapSeenGoldmineBroadcast.lastPing is probably outdated, so we'll update it
-            CGoldmineBroadcast gmb(*pgm);
-            uint256 hash = gmb.GetHash();
-            if(gmineman.mapSeenGoldmineBroadcast.count(hash)) {
-                gmineman.mapSeenGoldmineBroadcast[hash].lastPing = *this;
+            //mnodeman.mapSeenGoldmineBroadcast.lastPing is probably outdated, so we'll update it
+            CMasternodeBroadcast mnb(*pmn);
+            uint256 hash = mnb.GetHash();
+            if(mnodeman.mapSeenMasternodeBroadcast.count(hash)) {
+                mnodeman.mapSeenMasternodeBroadcast[hash].lastPing = *this;
             }
 
-            pgm->Check(true);
-            if(!pgm->IsEnabled()) return false;
+            pmn->Check(true);
+            if(!pmn->IsEnabled()) return false;
 
             LogPrint("goldmine", "CGoldminePing::CheckAndUpdate - Goldmine ping accepted, vin: %s\n", vin.ToString());
 
@@ -731,8 +731,8 @@ bool CGoldminePing::CheckAndUpdate(int& nDos, bool fRequireEnabled, bool fCheckS
     return false;
 }
 
-void CGoldminePing::Relay()
+void CMasternodePing::Relay()
 {
-    CInv inv(MSG_GOLDMINE_PING, GetHash());
+    CInv inv(MSG_MASTERNODE_PING, GetHash());
     RelayInv(inv);
 }

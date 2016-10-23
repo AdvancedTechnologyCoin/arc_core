@@ -756,12 +756,12 @@ void BitcoinGUI::setNumBlocks(int count)
 
     // Set icon state: spinning if catching up, tick otherwise
 //    if(secs < 25*60) // 90*60 for bitcoin but we are 4x times faster
-    if(goldmineSync.IsBlockchainSynced())
+    if(masternodeSync.IsBlockchainSynced())
     {
         QString strSyncStatus;
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
 
-        if(goldmineSync.IsSynced()) {
+        if(masternodeSync.IsSynced()) {
             progressBarLabel->setVisible(false);
             progressBar->setVisible(false);
             labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
@@ -780,15 +780,15 @@ void BitcoinGUI::setNumBlocks(int count)
                 walletFrame->showOutOfSyncWarning(false);
 #endif // ENABLE_WALLET
 
-            nAttempt = goldmineSync.RequestedGoldmineAttempt < GOLDMINE_SYNC_THRESHOLD ?
-                        goldmineSync.RequestedGoldmineAttempt + 1 : GOLDMINE_SYNC_THRESHOLD;
-            progress = nAttempt + (goldmineSync.RequestedGoldmineAssets - 1) * GOLDMINE_SYNC_THRESHOLD;
-            progressBar->setMaximum(4 * GOLDMINE_SYNC_THRESHOLD);
+            nAttempt = masternodeSync.RequestedMasternodeAttempt < MASTERNODE_SYNC_THRESHOLD ?
+                        masternodeSync.RequestedMasternodeAttempt + 1 : MASTERNODE_SYNC_THRESHOLD;
+            progress = nAttempt + (masternodeSync.RequestedMasternodeAssets - 1) * MASTERNODE_SYNC_THRESHOLD;
+            progressBar->setMaximum(4 * MASTERNODE_SYNC_THRESHOLD);
             progressBar->setFormat(tr("Synchronizing additional data: %p%"));
             progressBar->setValue(progress);
         }
 
-        strSyncStatus = QString(goldmineSync.GetSyncStatus().c_str());
+        strSyncStatus = QString(masternodeSync.GetSyncStatus().c_str());
         progressBarLabel->setText(strSyncStatus);
         tooltip = strSyncStatus + QString("<br>") + tooltip;
     }
