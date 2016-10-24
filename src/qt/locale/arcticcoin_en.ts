@@ -1834,8 +1834,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="-469"/>
-        <source>The denominations you submitted to the Goldmine.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>The denominations you submitted to the Goldmine.&lt;br&gt;To mix, other users must submit the exact same denominations.</translation>
+        <source>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
+        <translation>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</translation>
     </message>
     <message>
         <location line="+501"/>

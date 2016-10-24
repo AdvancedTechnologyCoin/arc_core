@@ -1455,8 +1455,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Начать/остановить автоматическое перемешивание</translation>
     </message>
     <message>
-        <source>The denominations you submitted to the Goldmine.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Номиналы, предоставленные Вами Goldmine.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
+        <source>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
+        <translation>Номиналы, предоставленные Вами Goldmine Node.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
     </message>
     <message>
         <source>(Last Message)</source>
@@ -4180,8 +4180,8 @@ rpcpassword=%s
         <translation>(должно быть 7209 в главной сети)</translation>
     </message>
     <message>
-        <source>Can't find random Goldmine.</source>
-        <translation>Не получилось выбрать случайную Goldmine.</translation>
+        <source>Can't find random Goldmine Node.</source>
+        <translation>Не получилось выбрать случайную Goldmine ноду.</translation>
     </message>
     <message>
         <source>Can't mix while sync in progress.</source>

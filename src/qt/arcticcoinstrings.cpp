@@ -221,7 +221,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Always query for peer addresses via DNS lo
 QT_TRANSLATE_NOOP("arcticcoin-core", "Attempt to recover private keys from a corrupt wallet.dat"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Block creation options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Can't denominate: no compatible inputs left."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Can't find random Goldmine."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Can't find random Goldmine Node."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Can't mix while sync in progress."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Cannot downgrade wallet"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Cannot resolve -bind address: '%s'"),
