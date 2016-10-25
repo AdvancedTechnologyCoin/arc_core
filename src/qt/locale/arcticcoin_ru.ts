@@ -864,16 +864,16 @@ Address: %4
         <translation>Пожалуйста, выберите уровень приватности.</translation>
     </message>
     <message>
-        <source>Use 2 separate goldmines to mix funds up to 1000 ARC</source>
-        <translation>Использовать 2 отдельные Goldmine для перемешивания до 1000 ARC</translation>
+        <source>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</source>
+        <translation>Использовать 2 отдельные Goldmine ноды для перемешивания до 1000 ARC</translation>
     </message>
     <message>
-        <source>Use 8 separate goldmines to mix funds up to 1000 ARC</source>
-        <translation>Использовать 8 отдельных Goldmine для перемешивания до 1000 ARC</translation>
+        <source>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</source>
+        <translation>Использовать 8 отдельных Goldmine нод для перемешивания до 1000 ARC</translation>
     </message>
     <message>
-        <source>Use 16 separate goldmines</source>
-        <translation>Использовать 16 отдельных Goldmine</translation>
+        <source>Use 16 separate goldmine nodes</source>
+        <translation>Использовать 16 отдельных Goldmine нод</translation>
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
@@ -1455,8 +1455,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Начать/остановить автоматическое перемешивание</translation>
     </message>
     <message>
-        <source>The denominations you submitted to the Goldmine.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Номиналы, предоставленные Вами Goldmine.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
+        <source>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
+        <translation>Номиналы, предоставленные Вами Goldmine ноде.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
     </message>
     <message>
         <source>(Last Message)</source>
@@ -4136,8 +4136,8 @@ rpcpassword=%s
         <translation>Синхронизация спорков...</translation>
     </message>
     <message>
-        <source>This is not a Goldmine.</source>
-        <translation>Это не Goldmine.</translation>
+        <source>This is not a Goldmine Node.</source>
+        <translation>Это не Goldmine нода.</translation>
     </message>
     <message>
         <source>Threshold for disconnecting misbehaving peers (default: %u)</source>
@@ -4180,8 +4180,8 @@ rpcpassword=%s
         <translation>(должно быть 7209 в главной сети)</translation>
     </message>
     <message>
-        <source>Can't find random Goldmine.</source>
-        <translation>Не получилось выбрать случайную Goldmine.</translation>
+        <source>Can't find random Goldmine Node.</source>
+        <translation>Не получилось выбрать случайную Goldmine ноду.</translation>
     </message>
     <message>
         <source>Can't mix while sync in progress.</source>
