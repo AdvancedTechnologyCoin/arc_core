@@ -1090,18 +1090,18 @@ Address: %4
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 2 separate goldmines to mix funds up to 1000 ARC</source>
-        <translation>Use 2 separate goldmines to mix funds up to 1000 ARC</translation>
+        <source>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</source>
+        <translation>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 8 separate goldmines to mix funds up to 1000 ARC</source>
-        <translation>Use 8 separate goldmines to mix funds up to 1000 ARC</translation>
+        <source>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</source>
+        <translation>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 16 separate goldmines</source>
-        <translation>Use 16 separate goldmines</translation>
+        <source>Use 16 separate goldmine nodes</source>
+        <translation>Use 16 separate goldmine nodes</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -5257,8 +5257,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+4"/>
-        <source>This is not a Goldmine.</source>
-        <translation>This is not a Goldmine.</translation>
+        <source>This is not a Goldmine Node.</source>
+        <translation>This is not a Goldmine Node.</translation>
     </message>
     <message>
         <location line="+1"/>

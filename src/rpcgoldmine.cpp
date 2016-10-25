@@ -453,7 +453,7 @@ Value masternode(const Array& params, bool fHelp)
 
     if(strCommand == "status")
     {
-        if(!fMasterNode) throw runtime_error("This is not a goldminenode\n");
+        if(!fMasterNode) throw runtime_error("This is not a Goldmine Node.\n");
 
         Object mnObj;
         CMasternode *pmn = mnodeman.Find(activeMasternode.vin);
