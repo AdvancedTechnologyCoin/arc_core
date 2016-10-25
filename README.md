@@ -1,8 +1,6 @@
 Arctic Core staging tree 0.12
 ===============================
 
-`master:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=master)](https://travis-ci.org/ArcticCore/arcticcoin) `v0.12.0.x:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=v0.12.0.x)](https://travis-ci.org/ArcticCore/arcticcoin/branches) `v0.12.1.x:` [![Build Status](https://travis-ci.org/ArcticCore/arcticcoin.svg?branch=v0.12.1.x)](https://travis-ci.org/ArcticCore/arcticcoin/branches)
-
 https://www.arcticcoin.org
 
 Copyright (c) 2009-2015 Bitcoin Core Developers
