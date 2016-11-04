@@ -248,7 +248,7 @@ Value masternode(const Array& params, bool fHelp)
 
     if (strCommand == "start")
     {
-        if(!fMasterNode) throw runtime_error("you must set goldminenode=1 in the configuration\n");
+        if(!fMasterNode) throw runtime_error("you must set goldmine=1 in the configuration\n");
 
         if(pwalletMain->IsLocked()) {
             SecureString strWalletPass;
