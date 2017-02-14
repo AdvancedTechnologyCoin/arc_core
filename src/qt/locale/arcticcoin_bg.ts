@@ -4100,7 +4100,7 @@ for example: alertnotify=echo %%s | mail -s "Arctic Alert" admin@foo.com
     </message>
     <message>
         <source>Submitted to goldminenode, waiting in queue %s</source>
-        <translation>Изпратено към Мастернода, чака в опашката %s</translation>
+        <translation>Изпратено към Голдмайннода, чака в опашката %s</translation>
     </message>
     <message>
         <source>Synchronization failed</source>

@@ -861,15 +861,15 @@ Address: %4
     </message>
     <message>
         <source>Use 2 separate goldminenodes to mix funds up to 1000 ARC</source>
-        <translation>Использовать 2 отдельные мастерноды для перемешивания до 1000 ARC</translation>
+        <translation>Использовать 2 отдельные голдмайнноды для перемешивания до 1000 ARC</translation>
     </message>
     <message>
         <source>Use 8 separate goldminenodes to mix funds up to 1000 ARC</source>
-        <translation>Использовать 8 отдельных мастернод для перемешивания до 1000 ARC</translation>
+        <translation>Использовать 8 отдельных голдмайннод для перемешивания до 1000 ARC</translation>
     </message>
     <message>
         <source>Use 16 separate goldminenodes</source>
-        <translation>Использовать 16 отдельных мастернод</translation>
+        <translation>Использовать 16 отдельных голдмайннод</translation>
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
@@ -1183,7 +1183,7 @@ Address: %4
     </message>
     <message>
         <source>This setting determines the amount of individual goldminenodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
-        <translation>Эта настройка определяет количество отдельных мастернод, через которые пройдет анонимизация.&lt;br/&gt;Чем больше раундов, тем выше степень конфиденциальности, но также выше и суммарная стоимость комиссий.</translation>
+        <translation>Эта настройка определяет количество отдельных голдмайннод, через которые пройдет анонимизация.&lt;br/&gt;Чем больше раундов, тем выше степень конфиденциальности, но также выше и суммарная стоимость комиссий.</translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
@@ -1452,7 +1452,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Номиналы, предоставленные Вами мастерноде.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
+        <translation>Номиналы, предоставленные Вами голдмайнноде.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
     </message>
     <message>
         <source>(Last Message)</source>
@@ -1809,7 +1809,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Number of Goldminenodes</source>
-        <translation>Количество Мастернод</translation>
+        <translation>Количество Голдмайннод</translation>
     </message>
     <message>
         <source>&amp;Console</source>
@@ -3611,7 +3611,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Отключить всю функциональность, относящуюся к  Arctic (Мастерноды, Spysend, InstantX, бюджеты) (0-1, по умолчанию: %u)</translation>
+        <translation>Отключить всю функциональность, относящуюся к  Arctic (Голдмайнноды, Spysend, InstantX, бюджеты) (0-1, по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3821,11 +3821,11 @@ rpcpassword=%s
     </message>
     <message>
         <source>Enable the client to act as a goldminenode (0-1, default: %u)</source>
-        <translation>Разрешить этому клиенту работать в качестве мастерноды (0-1, по умолчанию: %u)</translation>
+        <translation>Разрешить этому клиенту работать в качестве голдмайнноды (0-1, по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Error connecting to Goldminenode.</source>
-        <translation>Ошибка соединения с мастернодой.</translation>
+        <translation>Ошибка соединения с голдмайннодой.</translation>
     </message>
     <message>
         <source>Error loading wallet.dat: Wallet requires newer version of Arctic Core</source>
@@ -3965,11 +3965,11 @@ rpcpassword=%s
     </message>
     <message>
         <source>Loading goldminenode cache...</source>
-        <translation>Загрузка кэша мастернод...</translation>
+        <translation>Загрузка кэша голдмайннод...</translation>
     </message>
     <message>
         <source>Loading goldminenode payment cache...</source>
-        <translation>Загрузка кэша выплат Мастернодам...</translation>
+        <translation>Загрузка кэша выплат Голдмайннодам...</translation>
     </message>
     <message>
         <source>Lock is already in place.</source>
@@ -3977,7 +3977,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Lock goldminenodes from goldminenode configuration file (default: %u)</source>
-        <translation>Заблокировать средства мастернод, указанных в настроечном файле (по умолчанию: %u)</translation>
+        <translation>Заблокировать средства голдмайннод, указанных в настроечном файле (по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
@@ -4001,15 +4001,15 @@ rpcpassword=%s
     </message>
     <message>
         <source>No Goldminenodes detected.</source>
-        <translation>Мастерноды не найдены.</translation>
+        <translation>Голдмайнноды не найдены.</translation>
     </message>
     <message>
         <source>No compatible Goldminenode found.</source>
-        <translation>Отсутствуют совместимые мастерноды.</translation>
+        <translation>Отсутствуют совместимые голдмайнноды.</translation>
     </message>
     <message>
         <source>Not in the Goldminenode list.</source>
-        <translation>Отсутствует в списке мастернод.</translation>
+        <translation>Отсутствует в списке голдмайннод.</translation>
     </message>
     <message>
         <source>Number of automatic wallet backups (default: 10)</source>
@@ -4049,7 +4049,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Set external address:port to get to this goldminenode (example: %s)</source>
-        <translation>Указать внешний адрес:порт для доступа к этой мастерноде (например: %s)</translation>
+        <translation>Указать внешний адрес:порт для доступа к этой голдмайнноде (например: %s)</translation>
     </message>
     <message>
         <source>Set key pool size to &lt;n&gt; (default: %u)</source>
@@ -4081,7 +4081,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Specify goldminenode configuration file (default: %s)</source>
-        <translation>Указать конфигурационный файл для мастернод (по умолчанию: %s)</translation>
+        <translation>Указать конфигурационный файл для голдмайннод (по умолчанию: %s)</translation>
     </message>
     <message>
         <source>Specify pid file (default: %s)</source>
@@ -4097,15 +4097,15 @@ rpcpassword=%s
     </message>
     <message>
         <source>Submitted following entries to goldminenode: %u / %d</source>
-        <translation>Мастерноде отправлены следующие записи: %u / %d</translation>
+        <translation>Голдмайнноде отправлены следующие записи: %u / %d</translation>
     </message>
     <message>
         <source>Submitted to goldminenode, waiting for more entries ( %u / %d ) %s</source>
-        <translation>Отправлено мастерноде, ожидаем больше записей ( %u / %d ) %s</translation>
+        <translation>Отправлено голдмайнноде, ожидаем больше записей ( %u / %d ) %s</translation>
     </message>
     <message>
         <source>Submitted to goldminenode, waiting in queue %s</source>
-        <translation>Отправлено на мастерноду, ожидаем в очереди %s</translation>
+        <translation>Отправлено на голдмайнноду, ожидаем в очереди %s</translation>
     </message>
     <message>
         <source>Synchronization failed</source>
@@ -4121,11 +4121,11 @@ rpcpassword=%s
     </message>
     <message>
         <source>Synchronizing goldminenode winners...</source>
-        <translation>Синхронизация списка мастернод-победителей...</translation>
+        <translation>Синхронизация списка голдмайннод-победителей...</translation>
     </message>
     <message>
         <source>Synchronizing goldminenodes...</source>
-        <translation>Синхронизация списка мастернод...</translation>
+        <translation>Синхронизация списка голдмайннод...</translation>
     </message>
     <message>
         <source>Synchronizing sporks...</source>
@@ -4133,7 +4133,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>This is not a Goldminenode.</source>
-        <translation>Это не мастернода.</translation>
+        <translation>Это не голдмайннода.</translation>
     </message>
     <message>
         <source>Threshold for disconnecting misbehaving peers (default: %u)</source>
@@ -4145,7 +4145,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Use N separate goldminenodes to anonymize funds  (2-8, default: %u)</source>
-        <translation>Использовать N отдельных мастернод для анонимизации средств (2-8, по умолчанию: %u)</translation>
+        <translation>Использовать N отдельных голдмайннод для анонимизации средств (2-8, по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Use UPnP to map the listening port (default: %u)</source>
@@ -4177,7 +4177,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Can't find random Goldminenode.</source>
-        <translation>Не получилось выбрать случайную Мастерноду.</translation>
+        <translation>Не получилось выбрать случайную Голдмайнноду.</translation>
     </message>
     <message>
         <source>Can't mix while sync in progress.</source>
@@ -4245,15 +4245,15 @@ rpcpassword=%s
     </message>
     <message>
         <source>Goldminenode options:</source>
-        <translation>Параметры мастерноды:</translation>
+        <translation>Параметры голдмайнноды:</translation>
     </message>
     <message>
         <source>Goldminenode queue is full.</source>
-        <translation>Очередь на мастерноде переполнена.</translation>
+        <translation>Очередь на голдмайнноде переполнена.</translation>
     </message>
     <message>
         <source>Goldminenode:</source>
-        <translation>Мастернода:</translation>
+        <translation>Голдмайннода:</translation>
     </message>
     <message>
         <source>Missing input transaction information.</source>
@@ -4357,7 +4357,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Set the goldminenode private key</source>
-        <translation>Установить закрытый ключ мастерноды</translation>
+        <translation>Установить закрытый ключ голдмайнноды</translation>
     </message>
     <message>
         <source>Show all debugging options (usage: --help -help-debug)</source>
