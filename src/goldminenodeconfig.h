@@ -1,26 +1,20 @@
 
-// Copyright (c) 2015-2016 The Arctic developers
+// Copyright (c) 2015-2017 The Arctic Core Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SRC_MASTERNODECONFIG_H_
-#define SRC_MASTERNODECONFIG_H_
+#ifndef SRC_GOLDMINENODECONFIG_H_
+#define SRC_GOLDMINENODECONFIG_H_
 
-#include <string>
-#include <vector>
+class CGoldminenodeConfig;
+extern CGoldminenodeConfig goldminenodeConfig;
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-
-class CMasternodeConfig;
-extern CMasternodeConfig masternodeConfig;
-
-class CMasternodeConfig
+class CGoldminenodeConfig
 {
 
 public:
 
-    class CMasternodeEntry {
+    class CGoldminenodeEntry {
 
     private:
         std::string alias;
@@ -30,7 +24,7 @@ public:
         std::string outputIndex;
     public:
 
-        CMasternodeEntry(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
+        CGoldminenodeEntry(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
             this->alias = alias;
             this->ip = ip;
             this->privKey = privKey;
@@ -79,31 +73,27 @@ public:
         }
     };
 
-    CMasternodeConfig() {
-        entries = std::vector<CMasternodeEntry>();
+    CGoldminenodeConfig() {
+        entries = std::vector<CGoldminenodeEntry>();
     }
 
     void clear();
     bool read(std::string& strErr);
     void add(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex);
 
-    std::vector<CMasternodeEntry>& getEntries() {
+    std::vector<CGoldminenodeEntry>& getEntries() {
         return entries;
     }
 
     int getCount() {
-        int c = -1;
-        BOOST_FOREACH(CMasternodeEntry e, entries) {
-            if(e.getAlias() != "") c++;
-        }
-        return c;
+        return (int)entries.size();
     }
 
 private:
-    std::vector<CMasternodeEntry> entries;
+    std::vector<CGoldminenodeEntry> entries;
 
 
 };
 
 
-#endif /* SRC_MASTERNODECONFIG_H_ */
+#endif /* SRC_GOLDMINENODECONFIG_H_ */

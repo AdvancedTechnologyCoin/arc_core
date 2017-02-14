@@ -517,13 +517,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Open &amp;Configuration File</source>
-        <translation>Open &amp;Configuration File</translation>
+        <source>Open Wallet &amp;Configuration File</source>
+        <translation>Open Wallet &amp;Configuration File</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Open configuration file</source>
-        <translation>Open configuration file</translation>
+        <source>Open &amp;Goldmine Configuration File</source>
+        <translation>Open &amp;Goldmine Configuration File</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -749,8 +749,8 @@ Address: %4
     <name>ClientModel</name>
     <message>
         <location filename="../clientmodel.cpp" line="+73"/>
-        <source>Total: %1 (SS compatible: %2 / Enabled: %3)</source>
-        <translation>Total: %1 (SS compatible: %2 / Enabled: %3)</translation>
+        <source>Total: %1 (DS compatible: %2 / Enabled: %3)</source>
+        <translation>Total: %1 (DS compatible: %2 / Enabled: %3)</translation>
     </message>
     <message>
         <location line="+107"/>
@@ -842,8 +842,8 @@ Address: %4
     </message>
     <message>
         <location line="+5"/>
-        <source>SS Rounds</source>
-        <translation>SS Rounds</translation>
+        <source>DS Rounds</source>
+        <translation>DS Rounds</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -1090,18 +1090,18 @@ Address: %4
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</source>
-        <translation>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</translation>
+        <source>Use 2 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Use 2 separate goldminenodes to mix funds up to 1000 ARC</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</source>
-        <translation>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</translation>
+        <source>Use 8 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Use 8 separate goldminenodes to mix funds up to 1000 ARC</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>Use 16 separate goldmine nodes</source>
-        <translation>Use 16 separate goldmine nodes</translation>
+        <source>Use 16 separate goldminenodes</source>
+        <translation>Use 16 separate goldminenodes</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -1491,8 +1491,8 @@ Address: %4
     </message>
     <message>
         <location line="-74"/>
-        <source>This setting determines the amount of individual goldmines that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
-        <translation>This setting determines the amount of individual goldmines that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</translation>
+        <source>This setting determines the amount of individual goldminenodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
+        <translation>This setting determines the amount of individual goldminenodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</translation>
     </message>
     <message>
         <location line="+80"/>
@@ -1834,8 +1834,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="-469"/>
-        <source>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</translation>
+        <source>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
+        <translation>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</translation>
     </message>
     <message>
         <location line="+501"/>
@@ -2319,8 +2319,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+289"/>
-        <source>Number of Goldmine Nodes</source>
-        <translation>Number of Goldmine Nodes</translation>
+        <source>Number of Goldminenodes</source>
+        <translation>Number of Goldminenodes</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -2914,13 +2914,13 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+78"/>
-        <source>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 nARC in fee,&lt;br /&gt;while &quot;at least&quot; pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 nARC in fee,&lt;br /&gt;while &quot;at least&quot; pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</translation>
+        <source>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 duffs in fee,&lt;br /&gt;while &quot;at least&quot; pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</source>
+        <translation>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 duffs in fee,&lt;br /&gt;while &quot;at least&quot; pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 nARC in fee,&lt;br /&gt;while &quot;total at least&quot; pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 nARC in fee,&lt;br /&gt;while &quot;total at least&quot; pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</translation>
+        <source>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 duffs in fee,&lt;br /&gt;while &quot;total at least&quot; pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</source>
+        <translation>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then &quot;per kilobyte&quot; only pays 250 duffs in fee,&lt;br /&gt;while &quot;total at least&quot; pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</translation>
     </message>
     <message>
         <location line="+33"/>
@@ -4360,8 +4360,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>You must specify a goldmineprivkey in the configuration. Please see documentation for help.</source>
-        <translation>You must specify a goldmineprivkey in the configuration. Please see documentation for help.</translation>
+        <source>You must specify a goldminenodeprivkey in the configuration. Please see documentation for help.</source>
+        <translation>You must specify a goldminenodeprivkey in the configuration. Please see documentation for help.</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -4610,8 +4610,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Disable all Arctic Core specific functionality (Goldmines, Spysend, InstantX, Evolution) (0-1, default: %u)</source>
-        <translation>Disable all Arctic Core specific functionality (Goldmines, Spysend, InstantX, Evolution) (0-1, default: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
+        <translation>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4720,8 +4720,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Show N confirmations for a successfully locked transaction (0-7209, default: %u)</source>
-        <translation>Show N confirmations for a successfully locked transaction (0-7209, default: %u)</translation>
+        <source>Show N confirmations for a successfully locked transaction (0-9999, default: %u)</source>
+        <translation>Show N confirmations for a successfully locked transaction (0-9999, default: %u)</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -4837,8 +4837,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Copyright (C) 2015-%i The Arctic Core Developers</source>
-        <translation>Copyright (C) 2015-%i The Arctic Core Developers</translation>
+        <source>Copyright (C) 2014-%i The Arctic Core Developers</source>
+        <translation>Copyright (C) 2014-%i The Arctic Core Developers</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4867,13 +4867,13 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+5"/>
-        <source>Enable the client to act as a goldmine (0-1, default: %u)</source>
-        <translation>Enable the client to act as a goldmine (0-1, default: %u)</translation>
+        <source>Enable the client to act as a goldminenode (0-1, default: %u)</source>
+        <translation>Enable the client to act as a goldminenode (0-1, default: %u)</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Error connecting to Goldmine.</source>
-        <translation>Error connecting to Goldmine.</translation>
+        <source>Error connecting to Goldminenode.</source>
+        <translation>Error connecting to Goldminenode.</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -5047,13 +5047,13 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Loading goldmine cache...</source>
-        <translation>Loading goldmine cache...</translation>
+        <source>Loading goldminenode cache...</source>
+        <translation>Loading goldminenode cache...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Loading goldmine payment cache...</source>
-        <translation>Loading goldmine payment cache...</translation>
+        <source>Loading goldminenode payment cache...</source>
+        <translation>Loading goldminenode payment cache...</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -5062,8 +5062,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Lock goldmines from goldmine configuration file (default: %u)</source>
-        <translation>Lock goldmines from goldmine configuration file (default: %u)</translation>
+        <source>Lock goldminenodes from goldminenode configuration file (default: %u)</source>
+        <translation>Lock goldminenodes from goldminenode configuration file (default: %u)</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5092,18 +5092,18 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>No Goldmines detected.</source>
-        <translation>No Goldmines detected.</translation>
+        <source>No Goldminenodes detected.</source>
+        <translation>No Goldminenodes detected.</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>No compatible Goldmine found.</source>
-        <translation>No compatible Goldmine found.</translation>
+        <source>No compatible Goldminenode found.</source>
+        <translation>No compatible Goldminenode found.</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Not in the Goldmine list.</source>
-        <translation>Not in the Goldmine list.</translation>
+        <source>Not in the Goldminenode list.</source>
+        <translation>Not in the Goldminenode list.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5152,8 +5152,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+4"/>
-        <source>Set external address:port to get to this goldmine (example: %s)</source>
-        <translation>Set external address:port to get to this goldmine (example: %s)</translation>
+        <source>Set external address:port to get to this goldminenode (example: %s)</source>
+        <translation>Set external address:port to get to this goldminenode (example: %s)</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5192,8 +5192,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+2"/>
-        <source>Specify goldmine configuration file (default: %s)</source>
-        <translation>Specify goldmine configuration file (default: %s)</translation>
+        <source>Specify goldminenode configuration file (default: %s)</source>
+        <translation>Specify goldminenode configuration file (default: %s)</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5212,18 +5212,18 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Submitted following entries to goldmine: %u / %d</source>
-        <translation>Submitted following entries to goldmine: %u / %d</translation>
+        <source>Submitted following entries to goldminenode: %u / %d</source>
+        <translation>Submitted following entries to goldminenode: %u / %d</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Submitted to goldmine, waiting for more entries ( %u / %d ) %s</source>
-        <translation>Submitted to goldmine, waiting for more entries ( %u / %d ) %s</translation>
+        <source>Submitted to goldminenode, waiting for more entries ( %u / %d ) %s</source>
+        <translation>Submitted to goldminenode, waiting for more entries ( %u / %d ) %s</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Submitted to goldmine, waiting in queue %s</source>
-        <translation>Submitted to goldmine, waiting in queue %s</translation>
+        <source>Submitted to goldminenode, waiting in queue %s</source>
+        <translation>Submitted to goldminenode, waiting in queue %s</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5242,13 +5242,13 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Synchronizing goldmine winners...</source>
-        <translation>Synchronizing goldmine winners...</translation>
+        <source>Synchronizing goldminenode winners...</source>
+        <translation>Synchronizing goldminenode winners...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Synchronizing goldmines...</source>
-        <translation>Synchronizing goldmines...</translation>
+        <source>Synchronizing goldminenodes...</source>
+        <translation>Synchronizing goldminenodes...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5257,8 +5257,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+4"/>
-        <source>This is not a Goldmine Node.</source>
-        <translation>This is not a Goldmine Node.</translation>
+        <source>This is not a Goldminenode.</source>
+        <translation>This is not a Goldminenode.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5272,8 +5272,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Use N separate goldmines to anonymize funds  (2-8, default: %u)</source>
-        <translation>Use N separate goldmines to anonymize funds  (2-8, default: %u)</translation>
+        <source>Use N separate goldminenodes to anonymize funds  (2-8, default: %u)</source>
+        <translation>Use N separate goldminenodes to anonymize funds  (2-8, default: %u)</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5302,8 +5302,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="-136"/>
-        <source>Invalid goldmineprivkey. Please see documenation.</source>
-        <translation>Invalid goldmineprivkey. Please see documenation.</translation>
+        <source>Invalid goldminenodeprivkey. Please see documenation.</source>
+        <translation>Invalid goldminenodeprivkey. Please see documenation.</translation>
     </message>
     <message>
         <location line="-88"/>
@@ -5312,8 +5312,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+13"/>
-        <source>Can&apos;t find random Goldmine.</source>
-        <translation>Can&apos;t find random Goldmine.</translation>
+        <source>Can&apos;t find random Goldminenode.</source>
+        <translation>Can&apos;t find random Goldminenode.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5322,8 +5322,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+16"/>
-        <source>Could not parse goldmine.conf</source>
-        <translation>Could not parse goldmine.conf</translation>
+        <source>Could not parse goldminenode.conf</source>
+        <translation>Could not parse goldminenode.conf</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -5332,8 +5332,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Invalid port detected in goldmine.conf</source>
-        <translation>Invalid port detected in goldmine.conf</translation>
+        <source>Invalid port detected in goldminenode.conf</source>
+        <translation>Invalid port detected in goldminenode.conf</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5397,18 +5397,18 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+4"/>
-        <source>Goldmine options:</source>
-        <translation>Goldmine options:</translation>
+        <source>Goldminenode options:</source>
+        <translation>Goldminenode options:</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Goldmine queue is full.</source>
-        <translation>Goldmine queue is full.</translation>
+        <source>Goldminenode queue is full.</source>
+        <translation>Goldminenode queue is full.</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Goldmine:</source>
-        <translation>Goldmine:</translation>
+        <source>Goldminenode:</source>
+        <translation>Goldminenode:</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -5537,8 +5537,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+2"/>
-        <source>Set the goldmine private key</source>
-        <translation>Set the goldmine private key</translation>
+        <source>Set the goldminenode private key</source>
+        <translation>Set the goldminenode private key</translation>
     </message>
     <message>
         <location line="+3"/>

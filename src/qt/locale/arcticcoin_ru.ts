@@ -189,7 +189,7 @@
     </message>
     <message>
         <source>Arctic will close now to finish the encryption process. Remember that encrypting your wallet cannot fully protect your arcticcoins from being stolen by malware infecting your computer.</source>
-        <translation>Сейчас программа закроется для завершения процесса шифрования. Помните, что шифрование вашего кошелька не может полностью защитить ваши Arctic Coin от кражи с помощью инфицирования вашего компьютера вредоносным ПО.</translation>
+        <translation>Сейчас программа закроется для завершения процесса шифрования. Помните, что шифрование вашего кошелька не может полностью защитить ваши даши от кражи с помощью инфицирования вашего компьютера вредоносным ПО.</translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
@@ -288,7 +288,7 @@
     </message>
     <message>
         <source>Show information about Arctic Core</source>
-        <translation>Показать информацию об Arctic Core</translation>
+        <translation>Показать информацию о Arctic Core</translation>
     </message>
     <message>
         <source>About &amp;Qt</source>
@@ -409,10 +409,6 @@
     <message>
         <source>Open &amp;Configuration File</source>
         <translation>Открыть файл &amp;настроек</translation>
-    </message>
-    <message>
-        <source>Open configuration file</source>
-        <translation>Открыть файл настроек</translation>
     </message>
     <message>
         <source>Show Automatic &amp;Backups</source>
@@ -594,8 +590,8 @@ Address: %4
 <context>
     <name>ClientModel</name>
     <message>
-        <source>Total: %1 (SS compatible: %2 / Enabled: %3)</source>
-        <translation>Всего: %1 (Совместимых с SS: %2 / Активных: %3)</translation>
+        <source>Total: %1 (DS compatible: %2 / Enabled: %3)</source>
+        <translation>Всего: %1 (Совместимых с DS: %2 / Активных: %3)</translation>
     </message>
     <message>
         <source>Network Alert</source>
@@ -669,8 +665,8 @@ Address: %4
         <translation>Получено на адрес</translation>
     </message>
     <message>
-        <source>SS Rounds</source>
-        <translation>Раунды SS</translation>
+        <source>DS Rounds</source>
+        <translation>Раунды DS</translation>
     </message>
     <message>
         <source>Date</source>
@@ -750,7 +746,7 @@ Address: %4
     </message>
     <message>
         <source>higher</source>
-        <translation>наивысший</translation>
+        <translation>выше высокого</translation>
     </message>
     <message>
         <source>high</source>
@@ -761,8 +757,8 @@ Address: %4
         <translation>выше среднего</translation>
     </message>
     <message>
-        <source>Can vary +/- %1 nARC(s) per input.</source>
-        <translation>Может отличаться на +/- %1 nARC(ов) на каждый вход.</translation>
+        <source>Can vary +/- %1 duff(s) per input.</source>
+        <translation>Может отличаться на +/- %1 duff(ов) на каждый вход.</translation>
     </message>
     <message>
         <source>n/a</source>
@@ -864,16 +860,16 @@ Address: %4
         <translation>Пожалуйста, выберите уровень приватности.</translation>
     </message>
     <message>
-        <source>Use 2 separate goldmine nodes to mix funds up to 1000 ARC</source>
-        <translation>Использовать 2 отдельные Goldmine ноды для перемешивания до 1000 ARC</translation>
+        <source>Use 2 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Использовать 2 отдельные мастерноды для перемешивания до 1000 ARC</translation>
     </message>
     <message>
-        <source>Use 8 separate goldmine nodes to mix funds up to 1000 ARC</source>
-        <translation>Использовать 8 отдельных Goldmine нод для перемешивания до 1000 ARC</translation>
+        <source>Use 8 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Использовать 8 отдельных мастернод для перемешивания до 1000 ARC</translation>
     </message>
     <message>
-        <source>Use 16 separate goldmine nodes</source>
-        <translation>Использовать 16 отдельных Goldmine нод</translation>
+        <source>Use 16 separate goldminenodes</source>
+        <translation>Использовать 16 отдельных мастернод</translation>
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
@@ -1186,8 +1182,8 @@ Address: %4
         <translation>Настройки для опытных пользователей</translation>
     </message>
     <message>
-        <source>This setting determines the amount of individual goldmines that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
-        <translation>Эта настройка определяет количество отдельных Goldmine, через которые пройдет анонимизация.&lt;br/&gt;Чем больше раундов, тем выше степень конфиденциальности, но также выше и суммарная стоимость комиссий.</translation>
+        <source>This setting determines the amount of individual goldminenodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
+        <translation>Эта настройка определяет количество отдельных мастернод, через которые пройдет анонимизация.&lt;br/&gt;Чем больше раундов, тем выше степень конфиденциальности, но также выше и суммарная стоимость комиссий.</translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
@@ -1368,11 +1364,11 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Immature:</source>
-        <translation>Неподтвержденные:</translation>
+        <translation>Незрелые:</translation>
     </message>
     <message>
         <source>Mined balance that has not yet matured</source>
-        <translation>Баланс добытых монет, которые ещё не подтвердились</translation>
+        <translation>Баланс добытых монет, который ещё не созрел</translation>
     </message>
     <message>
         <source>Balances</source>
@@ -1384,7 +1380,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Mined balance in watch-only addresses that has not yet matured</source>
-        <translation>Баланс добытых монет на адресах для просмотра, которые ещё не подтвердились</translation>
+        <translation>Баланс добытых монет на адресах для просмотра, которые ещё не созрели</translation>
     </message>
     <message>
         <source>Total:</source>
@@ -1455,8 +1451,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Начать/остановить автоматическое перемешивание</translation>
     </message>
     <message>
-        <source>The denominations you submitted to the Goldmine Node.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Номиналы, предоставленные Вами Goldmine ноде.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
+        <source>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
+        <translation>Номиналы, предоставленные Вами мастерноде.&lt;br&gt;Для перемешивания другие пользователи должны предоставить точно такой же набор номиналов.</translation>
     </message>
     <message>
         <source>(Last Message)</source>
@@ -1812,8 +1808,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Цепочка блоков</translation>
     </message>
     <message>
-        <source>Number of Goldmine Nodes</source>
-        <translation>Количество Goldmine нод</translation>
+        <source>Number of Goldminenodes</source>
+        <translation>Количество Мастернод</translation>
     </message>
     <message>
         <source>&amp;Console</source>
@@ -2284,12 +2280,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Свернуть</translation>
     </message>
     <message>
-        <source>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then "per kilobyte" only pays 250 nARC in fee,&lt;br /&gt;while "at least" pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation>Если ручная комиссия  установлена в 1000 nARC, а транзакция по размеру только 250 байт, то плата "за килобайт" составит лишь 250 nARC,&lt;br&gt;в то время как "минимум" будет равна 1000 nARC. Для транзакций больше килобайта в любом случае идет расчет "за килобайт".</translation>
+        <source>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then "per kilobyte" only pays 250 duffs in fee,&lt;br /&gt;while "at least" pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</source>
+        <translation>Если ручная комиссия  установлена в 1000 duff, а транзакция по размеру только 250 байт, то плата "за килобайт" составит лишь 250 duff,&lt;br&gt;в то время как "минимум" будет равна 1000 duff. Для транзакций больше килобайта в любом случае идет расчет "за килобайт".</translation>
     </message>
     <message>
-        <source>If the custom fee is set to 1000 nARC and the transaction is only 250 bytes, then "per kilobyte" only pays 250 nARC in fee,&lt;br /&gt;while "total at least" pays 1000 nARC. For transactions bigger than a kilobyte both pay by kilobyte.</source>
-        <translation>Если ручная комиссия  установлена в 1000 nARC, а транзакция по размеру только 250 байт, то плата "за килобайт" составит лишь 250 nARC,&lt;br&gt;в то время как "итого минимум" будет равна 1000 nARC. Для тразакций больше килобайта в любом случае идет расчет "за килобайт".</translation>
+        <source>If the custom fee is set to 1000 duffs and the transaction is only 250 bytes, then "per kilobyte" only pays 250 duffs in fee,&lt;br /&gt;while "total at least" pays 1000 duffs. For transactions bigger than a kilobyte both pay by kilobyte.</source>
+        <translation>Если ручная комиссия  установлена в 1000 duff, а транзакция по размеру только 250 байт, то плата "за килобайт" составит лишь 250 duff,&lt;br&gt;в то время как "итого минимум" будет равна 1000 duff. Для тразакций больше килобайта в любом случае идет расчет "за килобайт".</translation>
     </message>
     <message>
         <source>Paying only the minimum fee is just fine as long as there is less transaction volume than space in the blocks.&lt;br /&gt;But be aware that this can end up in a never confirming transaction once there is more demand for arcticcoin transactions than the network can process.</source>
@@ -2492,7 +2488,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Ошибка: этот кошелёк был разблокирован только для анонимизации монет.</translation>
     </message>
     <message>
-        <source>Pay only the minimum fee of %1</source>
+        <source>Pay only the required fee of %1</source>
         <translation>Заплатить только минимальную комиссию %1</translation>
     </message>
     <message>
@@ -2883,7 +2879,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Debit</source>
-        <translation>Дебит</translation>
+        <translation>Дебет</translation>
     </message>
     <message>
         <source>Total debit</source>
@@ -3001,7 +2997,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Immature (%1 confirmations, will be available after %2)</source>
-        <translation>Неподтвержденный (%1 подтверждений, будет доступен после %2)</translation>
+        <translation>Незрелый (%1 подтверждений, будет доступен после %2)</translation>
     </message>
     <message>
         <source>This block was not received by any other nodes and will probably not be accepted!</source>
@@ -3391,7 +3387,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции неденоминированных средств, отличающихся от 1000DRK.</translation>
+        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции неденоминированных средств, отличающихся от 1000ARC.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3414,8 +3410,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Внимание: wallet.dat повреждён, данные спасены! Оригинальный wallet.dat сохранён как wallet.{timestamp}.bak в %s. Если Ваш баланс или транзакции некорректны, Вы должны восстановить файл из резервной копии.</translation>
     </message>
     <message>
-        <source>You must specify a goldmineprivkey in the configuration. Please see documentation for help.</source>
-        <translation>Необходимо указать goldmineprivkey в файле конфигурации. Пожалуйста, ознакомьтесь с документацией.</translation>
+        <source>You must specify a goldminenodeprivkey in the configuration. Please see documentation for help.</source>
+        <translation>Необходимо указать goldminenodeprivkey в файле конфигурации. Пожалуйста, ознакомьтесь с документацией.</translation>
     </message>
     <message>
         <source>(default: 1)</source>
@@ -3599,7 +3595,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
-        <translation>Изменить поведение автоматического голосования за итоговые бюджеты на развитие. Режим auto: Голосовать только за итоговый бюджет на развитие, совпадающий со сгенерированным мной. (строковое, по умолчанию: auto)</translation>
+        <translation>Изменить поведение автоматического голосования за итоговые бюджеты. Режим auto: Голосовать только за итоговый бюджет, совпадающий со сгенерированным мной. (строковое, по умолчанию: auto)</translation>
     </message>
     <message>
         <source>Continuously rate-limit free transactions to &lt;n&gt;*1000 bytes per minute (default:%u)</source>
@@ -3614,8 +3610,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Удалить все трансакции из кошелька и при рестарте с помощью -rescan восстановить только те, которые есть в цепочке блоков</translation>
     </message>
     <message>
-        <source>Disable all Arctic specific functionality (Goldmines, Spysend, InstantX, Evolution) (0-1, default: %u)</source>
-        <translation>Отключить всю функциональность, относящуюся к  Arctic (Goldmines, Spysend, InstantX, Evolution) (0-1, по умолчанию: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
+        <translation>Отключить всю функциональность, относящуюся к  Arctic (Мастерноды, Spysend, InstantX, бюджеты) (0-1, по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3735,7 +3731,7 @@ rpcpassword=%s
     </message>
     <message>
         <source>Unable to locate enough funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции средств, отличающихся от 1000DRK.</translation>
+        <translation>Не удалось обнаружить достаточных для выполнения этой транзакции средств, отличающихся от 1000ARC.</translation>
     </message>
     <message>
         <source>Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: %s)</source>
@@ -3800,8 +3796,8 @@ rpcpassword=%s
         <translation>Copyright (C) 2009-%i The Bitcoin Core Developers</translation>
     </message>
     <message>
-        <source>Copyright (C) 2015-%i The Arctic Core Developers</source>
-        <translation>Copyright (C) 2015-%i The Arctic Core Developers</translation>
+        <source>Copyright (C) 2014-%i The Arctic Core Developers</source>
+        <translation>Copyright (C) 2014-%i The Arctic Core Developers</translation>
     </message>
     <message>
         <source>Could not parse -rpcbind value %s as network address</source>
@@ -3824,12 +3820,12 @@ rpcpassword=%s
         <translation>Отменить безопасный режим, перекрывает реальные события о переходе в безопасный режим (по умолчанию: %u)</translation>
     </message>
     <message>
-        <source>Enable the client to act as a goldmine (0-1, default: %u)</source>
-        <translation>Разрешить этому клиенту работать в качестве Goldmine (0-1, по умолчанию: %u)</translation>
+        <source>Enable the client to act as a goldminenode (0-1, default: %u)</source>
+        <translation>Разрешить этому клиенту работать в качестве мастерноды (0-1, по умолчанию: %u)</translation>
     </message>
     <message>
-        <source>Error connecting to Goldmine.</source>
-        <translation>Ошибка соединения с Goldmine.</translation>
+        <source>Error connecting to Goldminenode.</source>
+        <translation>Ошибка соединения с мастернодой.</translation>
     </message>
     <message>
         <source>Error loading wallet.dat: Wallet requires newer version of Arctic Core</source>
@@ -3965,23 +3961,23 @@ rpcpassword=%s
     </message>
     <message>
         <source>Loading evolution cache...</source>
-        <translation>Загрузка кэша Evolution...</translation>
+        <translation>Загрузка кэша бюджетов...</translation>
     </message>
     <message>
-        <source>Loading goldmine cache...</source>
-        <translation>Загрузка кэша Goldmine...</translation>
+        <source>Loading goldminenode cache...</source>
+        <translation>Загрузка кэша мастернод...</translation>
     </message>
     <message>
-        <source>Loading goldmine payment cache...</source>
-        <translation>Загрузка кэша выплат Goldmine...</translation>
+        <source>Loading goldminenode payment cache...</source>
+        <translation>Загрузка кэша выплат Мастернодам...</translation>
     </message>
     <message>
         <source>Lock is already in place.</source>
         <translation>Установлена блокировка.</translation>
     </message>
     <message>
-        <source>Lock goldmines from goldmine configuration file (default: %u)</source>
-        <translation>Заблокировать средства Goldmine, указанных в настроечном файле (по умолчанию: %u)</translation>
+        <source>Lock goldminenodes from goldminenode configuration file (default: %u)</source>
+        <translation>Заблокировать средства мастернод, указанных в настроечном файле (по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
@@ -4004,16 +4000,16 @@ rpcpassword=%s
         <translation>Для параметра -whitebind нужно указать порт: '%s'</translation>
     </message>
     <message>
-        <source>No Goldmines detected.</source>
-        <translation>Goldmines не найдены.</translation>
+        <source>No Goldminenodes detected.</source>
+        <translation>Мастерноды не найдены.</translation>
     </message>
     <message>
-        <source>No compatible Goldmine found.</source>
-        <translation>Отсутствуют совместимые Goldmine.</translation>
+        <source>No compatible Goldminenode found.</source>
+        <translation>Отсутствуют совместимые мастерноды.</translation>
     </message>
     <message>
-        <source>Not in the Goldmine list.</source>
-        <translation>Отсутствует в списке Goldmine.</translation>
+        <source>Not in the Goldminenode list.</source>
+        <translation>Отсутствует в списке мастернод.</translation>
     </message>
     <message>
         <source>Number of automatic wallet backups (default: 10)</source>
@@ -4052,8 +4048,8 @@ rpcpassword=%s
         <translation>Закрытый ключ сервера (по умолчанию: %s)</translation>
     </message>
     <message>
-        <source>Set external address:port to get to this goldmine (example: %s)</source>
-        <translation>Указать внешний адрес:порт для доступа к этой Goldmine (например: %s)</translation>
+        <source>Set external address:port to get to this goldminenode (example: %s)</source>
+        <translation>Указать внешний адрес:порт для доступа к этой мастерноде (например: %s)</translation>
     </message>
     <message>
         <source>Set key pool size to &lt;n&gt; (default: %u)</source>
@@ -4084,8 +4080,8 @@ rpcpassword=%s
         <translation>Указать тайм-аут соединения в миллисекундах (минимально: 1, по умолчанию: %d)</translation>
     </message>
     <message>
-        <source>Specify goldmine configuration file (default: %s)</source>
-        <translation>Указать конфигурационный файл для Goldmine (по умолчанию: %s)</translation>
+        <source>Specify goldminenode configuration file (default: %s)</source>
+        <translation>Указать конфигурационный файл для мастернод (по умолчанию: %s)</translation>
     </message>
     <message>
         <source>Specify pid file (default: %s)</source>
@@ -4100,16 +4096,16 @@ rpcpassword=%s
         <translation>Закрыть приложение после завершения импорта блоков с диска (по умолчанию: %u)</translation>
     </message>
     <message>
-        <source>Submitted following entries to goldmine: %u / %d</source>
-        <translation>Goldmine отправлены следующие записи: %u / %d</translation>
+        <source>Submitted following entries to goldminenode: %u / %d</source>
+        <translation>Мастерноде отправлены следующие записи: %u / %d</translation>
     </message>
     <message>
-        <source>Submitted to goldmine, waiting for more entries ( %u / %d ) %s</source>
-        <translation>Отправлено Goldmine, ожидаем больше записей ( %u / %d ) %s</translation>
+        <source>Submitted to goldminenode, waiting for more entries ( %u / %d ) %s</source>
+        <translation>Отправлено мастерноде, ожидаем больше записей ( %u / %d ) %s</translation>
     </message>
     <message>
-        <source>Submitted to goldmine, waiting in queue %s</source>
-        <translation>Отправлено на Goldmine, ожидаем в очереди %s</translation>
+        <source>Submitted to goldminenode, waiting in queue %s</source>
+        <translation>Отправлено на мастерноду, ожидаем в очереди %s</translation>
     </message>
     <message>
         <source>Synchronization failed</source>
@@ -4121,23 +4117,23 @@ rpcpassword=%s
     </message>
     <message>
         <source>Synchronizing evolutions...</source>
-        <translation>Синхронизация Evolution...</translation>
+        <translation>Синхронизация бюджетов...</translation>
     </message>
     <message>
-        <source>Synchronizing goldmine winners...</source>
-        <translation>Синхронизация списка Goldmine-победителей...</translation>
+        <source>Synchronizing goldminenode winners...</source>
+        <translation>Синхронизация списка мастернод-победителей...</translation>
     </message>
     <message>
-        <source>Synchronizing goldmines...</source>
-        <translation>Синхронизация списка Goldmine...</translation>
+        <source>Synchronizing goldminenodes...</source>
+        <translation>Синхронизация списка мастернод...</translation>
     </message>
     <message>
         <source>Synchronizing sporks...</source>
         <translation>Синхронизация спорков...</translation>
     </message>
     <message>
-        <source>This is not a Goldmine Node.</source>
-        <translation>Это не Goldmine нода.</translation>
+        <source>This is not a Goldminenode.</source>
+        <translation>Это не мастернода.</translation>
     </message>
     <message>
         <source>Threshold for disconnecting misbehaving peers (default: %u)</source>
@@ -4148,8 +4144,8 @@ rpcpassword=%s
         <translation>Использовать интеграцию с KeePass 2 через плагин KeePassHttp (по умолчанию: %u)</translation>
     </message>
     <message>
-        <source>Use N separate goldmines to anonymize funds  (2-8, default: %u)</source>
-        <translation>Использовать N отдельных Goldmine для анонимизации средств (2-8, по умолчанию: %u)</translation>
+        <source>Use N separate goldminenodes to anonymize funds  (2-8, default: %u)</source>
+        <translation>Использовать N отдельных мастернод для анонимизации средств (2-8, по умолчанию: %u)</translation>
     </message>
     <message>
         <source>Use UPnP to map the listening port (default: %u)</source>
@@ -4172,32 +4168,32 @@ rpcpassword=%s
         <translation>Попробуем еще раз...</translation>
     </message>
     <message>
-        <source>Invalid goldmineprivkey. Please see documenation.</source>
-        <translation>Неправильное значение goldmineprivkey. Пожалуйста, ознакомьтесь с документацией.</translation>
+        <source>Invalid goldminenodeprivkey. Please see documenation.</source>
+        <translation>Неправильное значение goldminenodeprivkey. Пожалуйста, ознакомьтесь с документацией.</translation>
     </message>
     <message>
         <source>(must be 7209 for mainnet)</source>
         <translation>(должно быть 7209 в главной сети)</translation>
     </message>
     <message>
-        <source>Can't find random Goldmine Node.</source>
-        <translation>Не получилось выбрать случайную Goldmine ноду.</translation>
+        <source>Can't find random Goldminenode.</source>
+        <translation>Не получилось выбрать случайную Мастерноду.</translation>
     </message>
     <message>
         <source>Can't mix while sync in progress.</source>
         <translation>Перемешивание до завершения синхронизации невозможно.</translation>
     </message>
     <message>
-        <source>Could not parse goldmine.conf</source>
-        <translation>Не могу разобрать goldmine.conf</translation>
+        <source>Could not parse goldminenode.conf</source>
+        <translation>Не могу разобрать goldminenode.conf</translation>
     </message>
     <message>
         <source>Invalid netmask specified in -whitelist: '%s'</source>
         <translation>В параметре -whitelist указана некорректная маска: '%s'</translation>
     </message>
     <message>
-        <source>Invalid port detected in goldmine.conf</source>
-        <translation>Обнаружен некорректный порт в goldmine.conf</translation>
+        <source>Invalid port detected in goldminenode.conf</source>
+        <translation>Обнаружен некорректный порт в goldminenode.conf</translation>
     </message>
     <message>
         <source>Invalid private key.</source>
@@ -4248,16 +4244,16 @@ rpcpassword=%s
         <translation>Загрузка кошелька...</translation>
     </message>
     <message>
-        <source>Goldmine options:</source>
-        <translation>Параметры Goldmine:</translation>
+        <source>Goldminenode options:</source>
+        <translation>Параметры мастерноды:</translation>
     </message>
     <message>
-        <source>Goldmine queue is full.</source>
-        <translation>Очередь на Goldmine переполнена.</translation>
+        <source>Goldminenode queue is full.</source>
+        <translation>Очередь на мастерноде переполнена.</translation>
     </message>
     <message>
-        <source>Goldmine:</source>
-        <translation>Goldmine:</translation>
+        <source>Goldminenode:</source>
+        <translation>Мастернода:</translation>
     </message>
     <message>
         <source>Missing input transaction information.</source>
@@ -4360,8 +4356,8 @@ rpcpassword=%s
         <translation>Установить максимальный размер блока в байтах (по умолчанию: %d)</translation>
     </message>
     <message>
-        <source>Set the goldmine private key</source>
-        <translation>Установить закрытый ключ Goldmine</translation>
+        <source>Set the goldminenode private key</source>
+        <translation>Установить закрытый ключ мастерноды</translation>
     </message>
     <message>
         <source>Show all debugging options (usage: --help -help-debug)</source>
@@ -4534,6 +4530,26 @@ rpcpassword=%s
     <message>
         <source>wallet.dat corrupt, salvage failed</source>
         <translation>wallet.dat повреждён, спасение данных не удалось</translation>
+    </message>
+    <message>
+        <source>SpySend Balance:</source>
+        <translation>Баланс SpySend:</translation>
+    </message>
+    <message>
+        <source>Start Mixing</source>
+        <translation>Начать перемешивание</translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation>Информация</translation>
+    </message>
+    <message>
+        <source>Open &amp;Goldmine Configuration File</source>
+        <translation>Открыть конфигурацию &amp;Goldmine</translation>
+    </message>
+    <message>
+        <source>Open Wallet &amp;Configuration File</source>
+        <translation>Открыть файл &amp;настроек</translation>
     </message>
 </context>
 </TS>

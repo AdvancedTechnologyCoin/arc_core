@@ -3,8 +3,22 @@ EXTRA_LIBRARIES += qt/libbitcoinqt.a
 
 # arcticcoin qt core #
 QT_TS = \
+  qt/locale/arcticcoin_bg.ts \
+  qt/locale/arcticcoin_de.ts \
   qt/locale/arcticcoin_en.ts \
-  qt/locale/arcticcoin_ru.ts
+  qt/locale/arcticcoin_es.ts \
+  qt/locale/arcticcoin_fi.ts \
+  qt/locale/arcticcoin_fr.ts \
+  qt/locale/arcticcoin_it.ts \
+  qt/locale/arcticcoin_ja.ts \
+  qt/locale/arcticcoin_pl.ts \
+  qt/locale/arcticcoin_pt.ts \
+  qt/locale/arcticcoin_ru.ts \
+  qt/locale/arcticcoin_sk.ts \
+  qt/locale/arcticcoin_sv.ts \
+  qt/locale/arcticcoin_vi.ts \
+  qt/locale/arcticcoin_zh_CN.ts \
+  qt/locale/arcticcoin_zh_TW.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
@@ -14,12 +28,13 @@ QT_FORMS_UI = \
   qt/forms/editaddressdialog.ui \
   qt/forms/helpmessagedialog.ui \
   qt/forms/intro.ui \
+  qt/forms/goldminenodelist.ui \
   qt/forms/openuridialog.ui \
   qt/forms/optionsdialog.ui \
   qt/forms/overviewpage.ui \
   qt/forms/receivecoinsdialog.ui \
   qt/forms/receiverequestdialog.ui \
-  qt/forms/rpcconsole.ui \
+  qt/forms/debugwindow.ui \
   qt/forms/sendcoinsdialog.ui \
   qt/forms/sendcoinsentry.ui \
   qt/forms/signverifymessagedialog.ui \
@@ -29,6 +44,7 @@ QT_MOC_CPP = \
   qt/moc_addressbookpage.cpp \
   qt/moc_addresstablemodel.cpp \
   qt/moc_askpassphrasedialog.cpp \
+  qt/moc_bantablemodel.cpp \
   qt/moc_bitcoinaddressvalidator.cpp \
   qt/moc_bitcoinamountfield.cpp \
   qt/moc_bitcoingui.cpp \
@@ -43,6 +59,7 @@ QT_MOC_CPP = \
   qt/moc_intro.cpp \
   qt/moc_macdockiconhandler.cpp \
   qt/moc_macnotificationhandler.cpp \
+  qt/moc_goldminenodelist.cpp \
   qt/moc_notificator.cpp \
   qt/moc_openuridialog.cpp \
   qt/moc_optionsdialog.cpp \
@@ -95,6 +112,7 @@ BITCOIN_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
+  qt/bantablemodel.h \
   qt/bitcoinaddressvalidator.h \
   qt/bitcoinamountfield.h \
   qt/bitcoingui.h \
@@ -110,6 +128,7 @@ BITCOIN_QT_H = \
   qt/intro.h \
   qt/macdockiconhandler.h \
   qt/macnotificationhandler.h \
+  qt/goldminenodelist.h \
   qt/networkstyle.h \
   qt/notificator.h \
   qt/openuridialog.h \
@@ -119,6 +138,7 @@ BITCOIN_QT_H = \
   qt/paymentrequestplus.h \
   qt/paymentserver.h \
   qt/peertablemodel.h \
+  qt/platformstyle.h \
   qt/qvalidatedlineedit.h \
   qt/qvaluecombobox.h \
   qt/receivecoinsdialog.h \
@@ -144,65 +164,107 @@ BITCOIN_QT_H = \
   qt/winshutdownmonitor.h
 
 RES_ICONS = \
-  qt/res/icons/add.png \
-  qt/res/icons/address-book.png \
   qt/res/icons/bitcoin.ico \
   qt/res/icons/bitcoin.png \
-  qt/res/icons/bitcoin_testnet.ico \
-  qt/res/icons/bitcoin_testnet.png \
-  qt/res/icons/browse.png \
-  qt/res/icons/clock1.png \
-  qt/res/icons/clock2.png \
-  qt/res/icons/clock3.png \
-  qt/res/icons/clock4.png \
-  qt/res/icons/clock5.png \
-  qt/res/icons/configure.png \
-  qt/res/icons/connect0_16.png \
-  qt/res/icons/connect1_16.png \
-  qt/res/icons/connect2_16.png \
-  qt/res/icons/connect3_16.png \
-  qt/res/icons/connect4_16.png \
-  qt/res/icons/debugwindow.png \
-  qt/res/icons/arcgreen_editpaste.png \
-  qt/res/icons/arcgreen_address-book.png \
-  qt/res/icons/arcgreen_editcopy.png \
-  qt/res/icons/arcgreen_remove.png \
-  qt/res/icons/edit.png \
-  qt/res/icons/editcopy.png \
-  qt/res/icons/editpaste.png \
-  qt/res/icons/export.png \
-  qt/res/icons/eye.png \
-  qt/res/icons/eye_minus.png \
-  qt/res/icons/eye_plus.png \
-  qt/res/icons/filesave.png \
-  qt/res/icons/history.png \
-  qt/res/icons/key.png \
-  qt/res/icons/lock_closed.png \
-  qt/res/icons/lock_open.png \
-  qt/res/icons/overview.png \
-  qt/res/icons/qrcode.png \
-  qt/res/icons/quit.png \
-  qt/res/icons/receive.png \
-  qt/res/icons/remove.png \
-  qt/res/icons/send.png \
-  qt/res/icons/synced.png \
-  qt/res/icons/transaction0.png \
-  qt/res/icons/transaction2.png \
-  qt/res/icons/transaction_conflicted.png \
-  qt/res/icons/tx_inout.png \
-  qt/res/icons/tx_input.png \
-  qt/res/icons/tx_output.png \
-  qt/res/icons/tx_mined.png \
-  qt/res/icons/unit_arcticcoin.png \
-  qt/res/icons/unit_marcticcoin.png \
-  qt/res/icons/unit_uarcticcoin.png \
-  qt/res/icons/unit_narc.png \
-  qt/res/icons/unit_tarcticcoin.png \
-  qt/res/icons/unit_tmarcticcoin.png \
-  qt/res/icons/unit_tuarcticcoin.png \
-  qt/res/icons/unit_tnarc.png
+  qt/res/icons/arcgreen/add.png \
+  qt/res/icons/arcgreen/address-book.png \
+  qt/res/icons/arcgreen/browse.png \
+  qt/res/icons/arcgreen/clock1.png \
+  qt/res/icons/arcgreen/clock2.png \
+  qt/res/icons/arcgreen/clock3.png \
+  qt/res/icons/arcgreen/clock4.png \
+  qt/res/icons/arcgreen/clock5.png \
+  qt/res/icons/arcgreen/configure.png \
+  qt/res/icons/arcgreen/connect0_16.png \
+  qt/res/icons/arcgreen/connect1_16.png \
+  qt/res/icons/arcgreen/connect2_16.png \
+  qt/res/icons/arcgreen/connect3_16.png \
+  qt/res/icons/arcgreen/connect4_16.png \
+  qt/res/icons/arcgreen/debugwindow.png \
+  qt/res/icons/arcgreen/arcgreen_editpaste.png \
+  qt/res/icons/arcgreen/arcgreen_address-book.png \
+  qt/res/icons/arcgreen/arcgreen_editcopy.png \
+  qt/res/icons/arcgreen/arcgreen_remove.png \
+  qt/res/icons/arcgreen/edit.png \
+  qt/res/icons/arcgreen/editcopy.png \
+  qt/res/icons/arcgreen/editpaste.png \
+  qt/res/icons/arcgreen/export.png \
+  qt/res/icons/arcgreen/eye.png \
+  qt/res/icons/arcgreen/eye_minus.png \
+  qt/res/icons/arcgreen/eye_plus.png \
+  qt/res/icons/arcgreen/filesave.png \
+  qt/res/icons/arcgreen/history.png \
+  qt/res/icons/arcgreen/key.png \
+  qt/res/icons/arcgreen/lock_closed.png \
+  qt/res/icons/arcgreen/lock_open.png \
+  qt/res/icons/arcgreen/goldminenodes.png \
+  qt/res/icons/arcgreen/overview.png \
+  qt/res/icons/arcgreen/quit.png \
+  qt/res/icons/arcgreen/receive.png \
+  qt/res/icons/arcgreen/remove.png \
+  qt/res/icons/arcgreen/send.png \
+  qt/res/icons/arcgreen/synced.png \
+  qt/res/icons/arcgreen/transaction0.png \
+  qt/res/icons/arcgreen/transaction2.png \
+  qt/res/icons/arcgreen/transaction_conflicted.png \
+  qt/res/icons/arcgreen/tx_inout.png \
+  qt/res/icons/arcgreen/tx_input.png \
+  qt/res/icons/arcgreen/tx_output.png \
+  qt/res/icons/arcgreen/tx_mined.png \
+  qt/res/icons/arcgreen/about.png \
+  qt/res/icons/arcgreen/about_qt.png \
+  qt/res/icons/arcgreen/verify.png \
+   qt/res/icons/trad/add.png \
+  qt/res/icons/trad/address-book.png \
+  qt/res/icons/trad/browse.png \
+  qt/res/icons/trad/clock1.png \
+  qt/res/icons/trad/clock2.png \
+  qt/res/icons/trad/clock3.png \
+  qt/res/icons/trad/clock4.png \
+  qt/res/icons/trad/clock5.png \
+  qt/res/icons/trad/configure.png \
+  qt/res/icons/trad/connect0_16.png \
+  qt/res/icons/trad/connect1_16.png \
+  qt/res/icons/trad/connect2_16.png \
+  qt/res/icons/trad/connect3_16.png \
+  qt/res/icons/trad/connect4_16.png \
+  qt/res/icons/trad/debugwindow.png \
+  qt/res/icons/trad/arcgreen_editpaste.png \
+  qt/res/icons/trad/arcgreen_address-book.png \
+  qt/res/icons/trad/arcgreen_editcopy.png \
+  qt/res/icons/trad/arcgreen_remove.png \
+  qt/res/icons/trad/edit.png \
+  qt/res/icons/trad/editcopy.png \
+  qt/res/icons/trad/editpaste.png \
+  qt/res/icons/trad/export.png \
+  qt/res/icons/trad/eye.png \
+  qt/res/icons/trad/eye_minus.png \
+  qt/res/icons/trad/eye_plus.png \
+  qt/res/icons/trad/filesave.png \
+  qt/res/icons/trad/history.png \
+  qt/res/icons/trad/key.png \
+  qt/res/icons/trad/lock_closed.png \
+  qt/res/icons/trad/lock_open.png \
+  qt/res/icons/trad/goldminenodes.png \
+  qt/res/icons/trad/overview.png \
+  qt/res/icons/trad/quit.png \
+  qt/res/icons/trad/receive.png \
+  qt/res/icons/trad/remove.png \
+  qt/res/icons/trad/send.png \
+  qt/res/icons/trad/synced.png \
+  qt/res/icons/trad/transaction0.png \
+  qt/res/icons/trad/transaction2.png \
+  qt/res/icons/trad/transaction_conflicted.png \
+  qt/res/icons/trad/tx_inout.png \
+  qt/res/icons/trad/tx_input.png \
+  qt/res/icons/trad/tx_output.png \
+  qt/res/icons/trad/tx_mined.png \
+  qt/res/icons/trad/about.png \
+  qt/res/icons/trad/about_qt.png \
+  qt/res/icons/trad/verify.png
 
 BITCOIN_QT_CPP = \
+  qt/bantablemodel.cpp \
   qt/bitcoinaddressvalidator.cpp \
   qt/bitcoinamountfield.cpp \
   qt/bitcoingui.cpp \
@@ -216,13 +278,17 @@ BITCOIN_QT_CPP = \
   qt/optionsdialog.cpp \
   qt/optionsmodel.cpp \
   qt/peertablemodel.cpp \
+  qt/platformstyle.cpp \
   qt/qvalidatedlineedit.cpp \
   qt/qvaluecombobox.cpp \
   qt/rpcconsole.cpp \
   qt/splashscreen.cpp \
   qt/trafficgraphwidget.cpp \
-  qt/utilitydialog.cpp \
-  qt/winshutdownmonitor.cpp
+  qt/utilitydialog.cpp
+
+if TARGET_WINDOWS
+BITCOIN_QT_CPP += qt/winshutdownmonitor.cpp
+endif
 
 if ENABLE_WALLET
 BITCOIN_QT_CPP += \
@@ -233,6 +299,7 @@ BITCOIN_QT_CPP += \
   qt/coincontroltreewidget.cpp \
   qt/spysendconfig.cpp \
   qt/editaddressdialog.cpp \
+  qt/goldminenodelist.cpp \
   qt/openuridialog.cpp \
   qt/overviewpage.cpp \
   qt/paymentrequestplus.cpp \
@@ -256,18 +323,30 @@ BITCOIN_QT_CPP += \
 endif
 
 RES_IMAGES = \
-  qt/res/images/about.png \
-  qt/res/images/splash.png \
-  qt/res/images/splash_testnet.png \
-  qt/res/images/arcticcoin_logo_horizontal.png \
-  qt/res/images/arcgreen_downArrow.png \
-  qt/res/images/arcgreen_downArrow_small.png \
-  qt/res/images/arcgreen_upArrow_small.png \
-  qt/res/images/arcgreen_leftArrow_small.png \
-  qt/res/images/arcgreen_rightArrow_small.png \
-  qt/res/images/arcgreen_qtreeview_selected.png \
-  qt/res/images/arcgreen_walletFrame_bg.png \
-  qt/res/images/arcgreen_walletFrame.png
+  qt/res/images/arcgreen/about.png \
+  qt/res/images/arcgreen/splash.png \
+  qt/res/images/arcgreen/splash_testnet.png \
+  qt/res/images/arcgreen/arcticcoin_logo_horizontal.png \
+  qt/res/images/arcgreen/unchecked.png \
+  qt/res/images/arcgreen/checked.png \
+  qt/res/images/arcgreen/arcgreen_downArrow.png \
+  qt/res/images/arcgreen/arcgreen_downArrow_small.png \
+  qt/res/images/arcgreen/arcgreen_upArrow_small.png \
+  qt/res/images/arcgreen/arcgreen_leftArrow_small.png \
+  qt/res/images/arcgreen/arcgreen_rightArrow_small.png \
+  qt/res/images/arcgreen/arcgreen_qtreeview_selected.png \
+  qt/res/images/arcgreen/arcgreen_walletFrame_bg.png \
+   qt/res/images/trad/about.png \
+  qt/res/images/trad/splash.png \
+  qt/res/images/trad/splash_testnet.png \
+  qt/res/images/trad/arcticcoin_logo_horizontal.png \
+  qt/res/images/trad/arcgreen_downArrow.png \
+  qt/res/images/trad/arcgreen_downArrow_small.png \
+  qt/res/images/trad/arcgreen_upArrow_small.png \
+  qt/res/images/trad/arcgreen_leftArrow_small.png \
+  qt/res/images/trad/arcgreen_rightArrow_small.png \
+  qt/res/images/trad/arcgreen_qtreeview_selected.png \
+  qt/res/images/trad/arcgreen_walletFrame_bg.png
 
 RES_CSS = \
   qt/res/css/arcgreen.css
@@ -277,10 +356,11 @@ RES_MOVIES = $(wildcard qt/res/movies/spinner-*.png)
 BITCOIN_RC = qt/res/arcticcoin-qt-res.rc
 
 BITCOIN_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
-  -I$(builddir)/qt/forms
+  -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
 
-qt_libbitcoinqt_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+qt_libbitcoinqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
   $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
+qt_libbitcoinqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
 qt_libbitcoinqt_a_SOURCES = $(BITCOIN_QT_CPP) $(BITCOIN_QT_H) $(QT_FORMS_UI) \
   $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_CSS) $(RES_MOVIES)
@@ -302,8 +382,9 @@ $(QT_MOC): $(PROTOBUF_H)
 $(QT_MOC_CPP): $(PROTOBUF_H)
 
 # arcticcoin-qt binary #
-qt_arcticcoin_qt_CPPFLAGS = $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+qt_arcticcoin_qt_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
   $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
+qt_arcticcoin_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
 qt_arcticcoin_qt_SOURCES = qt/arcticcoin.cpp
 if TARGET_DARWIN
@@ -316,15 +397,19 @@ qt_arcticcoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER)
 if ENABLE_WALLET
 qt_arcticcoin_qt_LDADD += $(LIBBITCOIN_WALLET)
 endif
-qt_arcticcoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_UNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
-  $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1)
+if ENABLE_ZMQ
+qt_arcticcoin_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
+endif
+qt_arcticcoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
+  $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
+  $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
 qt_arcticcoin_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 qt_arcticcoin_qt_LIBTOOLFLAGS = --tag CXX
 
 #locale/foo.ts -> locale/foo.qm
 QT_QM=$(QT_TS:.ts=.qm)
 
-.SECONDARY: $(QT_QM)
+SECONDARY: $(QT_QM)
 
 qt/arcticcoinstrings.cpp: $(libbitcoin_server_a_SOURCES) $(libbitcoin_wallet_a_SOURCES) $(libbitcoin_common_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
@@ -360,11 +445,11 @@ ui_%.h: %.ui
 	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(UIC) -o $@ $< || (echo "Error creating $@"; false)
 
 %.moc: %.cpp
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(QT_INCLUDES) $(MOC_DEFS) $< | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(DEFAULT_INCLUDES) $(QT_INCLUDES) $(MOC_DEFS) $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
 moc_%.cpp: %.h
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(QT_INCLUDES) $(MOC_DEFS) $< | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(MOC) $(DEFAULT_INCLUDES) $(QT_INCLUDES) $(MOC_DEFS) $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
 %.qm: %.ts

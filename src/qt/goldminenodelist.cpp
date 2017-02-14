@@ -1,0 +1,397 @@
+#include "goldminenodelist.h"
+#include "ui_goldminenodelist.h"
+
+#include "activegoldminenode.h"
+#include "clientmodel.h"
+#include "init.h"
+#include "guiutil.h"
+#include "goldminenode-sync.h"
+#include "goldminenodeconfig.h"
+#include "goldminenodeman.h"
+#include "sync.h"
+#include "wallet/wallet.h"
+#include "walletmodel.h"
+
+#include <QTimer>
+#include <QMessageBox>
+
+CCriticalSection cs_goldminenodes;
+
+GoldminenodeList::GoldminenodeList(const PlatformStyle *platformStyle, QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::GoldminenodeList),
+    clientModel(0),
+    walletModel(0)
+{
+    ui->setupUi(this);
+
+    ui->startButton->setEnabled(false);
+
+    int columnAliasWidth = 100;
+    int columnAddressWidth = 200;
+    int columnProtocolWidth = 60;
+    int columnStatusWidth = 80;
+    int columnActiveWidth = 130;
+    int columnLastSeenWidth = 130;
+
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(0, columnAliasWidth);
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(1, columnAddressWidth);
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(2, columnProtocolWidth);
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(3, columnStatusWidth);
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(4, columnActiveWidth);
+    ui->tableWidgetMyGoldminenodes->setColumnWidth(5, columnLastSeenWidth);
+
+    ui->tableWidgetGoldminenodes->setColumnWidth(0, columnAddressWidth);
+    ui->tableWidgetGoldminenodes->setColumnWidth(1, columnProtocolWidth);
+    ui->tableWidgetGoldminenodes->setColumnWidth(2, columnStatusWidth);
+    ui->tableWidgetGoldminenodes->setColumnWidth(3, columnActiveWidth);
+    ui->tableWidgetGoldminenodes->setColumnWidth(4, columnLastSeenWidth);
+
+    ui->tableWidgetMyGoldminenodes->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    QAction *startAliasAction = new QAction(tr("Start alias"), this);
+    contextMenu = new QMenu();
+    contextMenu->addAction(startAliasAction);
+    connect(ui->tableWidgetMyGoldminenodes, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
+    connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
+
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateNodeList()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateMyNodeList()));
+    timer->start(1000);
+
+    fFilterUpdated = false;
+    nTimeFilterUpdated = GetTime();
+    updateNodeList();
+}
+
+GoldminenodeList::~GoldminenodeList()
+{
+    delete ui;
+}
+
+void GoldminenodeList::setClientModel(ClientModel *model)
+{
+    this->clientModel = model;
+    if(model) {
+        // try to update list when goldminenode count changes
+        connect(clientModel, SIGNAL(strGoldminenodesChanged(QString)), this, SLOT(updateNodeList()));
+    }
+}
+
+void GoldminenodeList::setWalletModel(WalletModel *model)
+{
+    this->walletModel = model;
+}
+
+void GoldminenodeList::showContextMenu(const QPoint &point)
+{
+    QTableWidgetItem *item = ui->tableWidgetMyGoldminenodes->itemAt(point);
+    if(item) contextMenu->exec(QCursor::pos());
+}
+
+void GoldminenodeList::StartAlias(std::string strAlias)
+{
+    std::string strStatusHtml;
+    strStatusHtml += "<center>Alias: " + strAlias;
+
+    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+        if(mne.getAlias() == strAlias) {
+            std::string strError;
+            CGoldminenodeBroadcast mnb;
+
+            bool fSuccess = CGoldminenodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
+
+            if(fSuccess) {
+                strStatusHtml += "<br>Successfully started goldminenode.";
+                mnodeman.UpdateGoldminenodeList(mnb);
+                mnb.Relay();
+                mnodeman.NotifyGoldminenodeUpdates();
+            } else {
+                strStatusHtml += "<br>Failed to start goldminenode.<br>Error: " + strError;
+            }
+            break;
+        }
+    }
+    strStatusHtml += "</center>";
+
+    QMessageBox msg;
+    msg.setText(QString::fromStdString(strStatusHtml));
+    msg.exec();
+
+    updateMyNodeList(true);
+}
+
+void GoldminenodeList::StartAll(std::string strCommand)
+{
+    int nCountSuccessful = 0;
+    int nCountFailed = 0;
+    std::string strFailedHtml;
+
+    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+        std::string strError;
+        CGoldminenodeBroadcast mnb;
+
+        CTxIn txin = CTxIn(uint256S(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
+        CGoldminenode *pmn = mnodeman.Find(txin);
+
+        if(strCommand == "start-missing" && pmn) continue;
+
+        bool fSuccess = CGoldminenodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
+
+        if(fSuccess) {
+            nCountSuccessful++;
+            mnodeman.UpdateGoldminenodeList(mnb);
+            mnb.Relay();
+            mnodeman.NotifyGoldminenodeUpdates();
+        } else {
+            nCountFailed++;
+            strFailedHtml += "\nFailed to start " + mne.getAlias() + ". Error: " + strError;
+        }
+    }
+    pwalletMain->Lock();
+
+    std::string returnObj;
+    returnObj = strprintf("Successfully started %d goldminenodes, failed to start %d, total %d", nCountSuccessful, nCountFailed, nCountFailed + nCountSuccessful);
+    if (nCountFailed > 0) {
+        returnObj += strFailedHtml;
+    }
+
+    QMessageBox msg;
+    msg.setText(QString::fromStdString(returnObj));
+    msg.exec();
+
+    updateMyNodeList(true);
+}
+
+void GoldminenodeList::updateMyGoldminenodeInfo(QString strAlias, QString strAddr, CGoldminenode *pmn)
+{
+    LOCK(cs_mnlistupdate);
+    bool fOldRowFound = false;
+    int nNewRow = 0;
+
+    for(int i = 0; i < ui->tableWidgetMyGoldminenodes->rowCount(); i++) {
+        if(ui->tableWidgetMyGoldminenodes->item(i, 0)->text() == strAlias) {
+            fOldRowFound = true;
+            nNewRow = i;
+            break;
+        }
+    }
+
+    if(nNewRow == 0 && !fOldRowFound) {
+        nNewRow = ui->tableWidgetMyGoldminenodes->rowCount();
+        ui->tableWidgetMyGoldminenodes->insertRow(nNewRow);
+    }
+
+    QTableWidgetItem *aliasItem = new QTableWidgetItem(strAlias);
+    QTableWidgetItem *addrItem = new QTableWidgetItem(pmn ? QString::fromStdString(pmn->addr.ToString()) : strAddr);
+    QTableWidgetItem *protocolItem = new QTableWidgetItem(QString::number(pmn ? pmn->nProtocolVersion : -1));
+    QTableWidgetItem *statusItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->GetStatus() : "MISSING"));
+    QTableWidgetItem *activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(pmn ? (pmn->lastPing.sigTime - pmn->sigTime) : 0)));
+    QTableWidgetItem *lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", pmn ? pmn->lastPing.sigTime + QDateTime::currentDateTime().offsetFromUtc() : 0)));
+    QTableWidgetItem *pubkeyItem = new QTableWidgetItem(QString::fromStdString(pmn ? CBitcoinAddress(pmn->pubKeyCollateralAddress.GetID()).ToString() : ""));
+
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 0, aliasItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 1, addrItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 2, protocolItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 3, statusItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 4, activeSecondsItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 5, lastSeenItem);
+    ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 6, pubkeyItem);
+}
+
+void GoldminenodeList::updateMyNodeList(bool fForce)
+{
+    static int64_t nTimeMyListUpdated = 0;
+
+    // automatically update my goldminenode list only once in MY_GOLDMINENODELIST_UPDATE_SECONDS seconds,
+    // this update still can be triggered manually at any time via button click
+    int64_t nSecondsTillUpdate = nTimeMyListUpdated + MY_GOLDMINENODELIST_UPDATE_SECONDS - GetTime();
+    ui->secondsLabel->setText(QString::number(nSecondsTillUpdate));
+
+    if(nSecondsTillUpdate > 0 && !fForce) return;
+    nTimeMyListUpdated = GetTime();
+
+    ui->tableWidgetGoldminenodes->setSortingEnabled(false);
+    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+        CTxIn txin = CTxIn(uint256S(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
+        CGoldminenode *pmn = mnodeman.Find(txin);
+
+        updateMyGoldminenodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), pmn);
+    }
+    ui->tableWidgetGoldminenodes->setSortingEnabled(true);
+
+    // reset "timer"
+    ui->secondsLabel->setText("0");
+}
+
+void GoldminenodeList::updateNodeList()
+{
+    static int64_t nTimeListUpdated = GetTime();
+
+    // to prevent high cpu usage update only once in GOLDMINENODELIST_UPDATE_SECONDS seconds
+    // or GOLDMINENODELIST_FILTER_COOLDOWN_SECONDS seconds after filter was last changed
+    int64_t nSecondsToWait = fFilterUpdated
+                            ? nTimeFilterUpdated - GetTime() + GOLDMINENODELIST_FILTER_COOLDOWN_SECONDS
+                            : nTimeListUpdated - GetTime() + GOLDMINENODELIST_UPDATE_SECONDS;
+
+    if(fFilterUpdated) ui->countLabel->setText(QString::fromStdString(strprintf("Please wait... %d", nSecondsToWait)));
+    if(nSecondsToWait > 0) return;
+
+    nTimeListUpdated = GetTime();
+    fFilterUpdated = false;
+
+    TRY_LOCK(cs_goldminenodes, lockGoldminenodes);
+    if(!lockGoldminenodes) return;
+
+    QString strToFilter;
+    ui->countLabel->setText("Updating...");
+    ui->tableWidgetGoldminenodes->setSortingEnabled(false);
+    ui->tableWidgetGoldminenodes->clearContents();
+    ui->tableWidgetGoldminenodes->setRowCount(0);
+    std::vector<CGoldminenode> vGoldminenodes = mnodeman.GetFullGoldminenodeVector();
+
+    BOOST_FOREACH(CGoldminenode& mn, vGoldminenodes)
+    {
+        // populate list
+        // Address, Protocol, Status, Active Seconds, Last Seen, Pub Key
+        QTableWidgetItem *addressItem = new QTableWidgetItem(QString::fromStdString(mn.addr.ToString()));
+        QTableWidgetItem *protocolItem = new QTableWidgetItem(QString::number(mn.nProtocolVersion));
+        QTableWidgetItem *statusItem = new QTableWidgetItem(QString::fromStdString(mn.GetStatus()));
+        QTableWidgetItem *activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(mn.lastPing.sigTime - mn.sigTime)));
+        QTableWidgetItem *lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + QDateTime::currentDateTime().offsetFromUtc())));
+        QTableWidgetItem *pubkeyItem = new QTableWidgetItem(QString::fromStdString(CBitcoinAddress(mn.pubKeyCollateralAddress.GetID()).ToString()));
+
+        if (strCurrentFilter != "")
+        {
+            strToFilter =   addressItem->text() + " " +
+                            protocolItem->text() + " " +
+                            statusItem->text() + " " +
+                            activeSecondsItem->text() + " " +
+                            lastSeenItem->text() + " " +
+                            pubkeyItem->text();
+            if (!strToFilter.contains(strCurrentFilter)) continue;
+        }
+
+        ui->tableWidgetGoldminenodes->insertRow(0);
+        ui->tableWidgetGoldminenodes->setItem(0, 0, addressItem);
+        ui->tableWidgetGoldminenodes->setItem(0, 1, protocolItem);
+        ui->tableWidgetGoldminenodes->setItem(0, 2, statusItem);
+        ui->tableWidgetGoldminenodes->setItem(0, 3, activeSecondsItem);
+        ui->tableWidgetGoldminenodes->setItem(0, 4, lastSeenItem);
+        ui->tableWidgetGoldminenodes->setItem(0, 5, pubkeyItem);
+    }
+
+    ui->countLabel->setText(QString::number(ui->tableWidgetGoldminenodes->rowCount()));
+    ui->tableWidgetGoldminenodes->setSortingEnabled(true);
+}
+
+void GoldminenodeList::on_filterLineEdit_textChanged(const QString &strFilterIn)
+{
+    strCurrentFilter = strFilterIn;
+    nTimeFilterUpdated = GetTime();
+    fFilterUpdated = true;
+    ui->countLabel->setText(QString::fromStdString(strprintf("Please wait... %d", GOLDMINENODELIST_FILTER_COOLDOWN_SECONDS)));
+}
+
+void GoldminenodeList::on_startButton_clicked()
+{
+    // Find selected node alias
+    QItemSelectionModel* selectionModel = ui->tableWidgetMyGoldminenodes->selectionModel();
+    QModelIndexList selected = selectionModel->selectedRows();
+
+    if(selected.count() == 0) return;
+
+    QModelIndex index = selected.at(0);
+    int nSelectedRow = index.row();
+    std::string strAlias = ui->tableWidgetMyGoldminenodes->item(nSelectedRow, 0)->text().toStdString();
+
+    // Display message box
+    QMessageBox::StandardButton retval = QMessageBox::question(this, tr("Confirm goldminenode start"),
+        tr("Are you sure you want to start goldminenode %1?").arg(QString::fromStdString(strAlias)),
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Cancel);
+
+    if(retval != QMessageBox::Yes) return;
+
+    WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
+
+    if(encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForMixingOnly) {
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+
+        if(!ctx.isValid()) return; // Unlock wallet was cancelled
+
+        StartAlias(strAlias);
+        return;
+    }
+
+    StartAlias(strAlias);
+}
+
+void GoldminenodeList::on_startAllButton_clicked()
+{
+    // Display message box
+    QMessageBox::StandardButton retval = QMessageBox::question(this, tr("Confirm all goldminenodes start"),
+        tr("Are you sure you want to start ALL goldminenodes?"),
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Cancel);
+
+    if(retval != QMessageBox::Yes) return;
+
+    WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
+
+    if(encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForMixingOnly) {
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+
+        if(!ctx.isValid()) return; // Unlock wallet was cancelled
+
+        StartAll();
+        return;
+    }
+
+    StartAll();
+}
+
+void GoldminenodeList::on_startMissingButton_clicked()
+{
+
+    if(!goldminenodeSync.IsGoldminenodeListSynced()) {
+        QMessageBox::critical(this, tr("Command is not available right now"),
+            tr("You can't use this command until goldminenode list is synced"));
+        return;
+    }
+
+    // Display message box
+    QMessageBox::StandardButton retval = QMessageBox::question(this,
+        tr("Confirm missing goldminenodes start"),
+        tr("Are you sure you want to start MISSING goldminenodes?"),
+        QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Cancel);
+
+    if(retval != QMessageBox::Yes) return;
+
+    WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
+
+    if(encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForMixingOnly) {
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+
+        if(!ctx.isValid()) return; // Unlock wallet was cancelled
+
+        StartAll("start-missing");
+        return;
+    }
+
+    StartAll("start-missing");
+}
+
+void GoldminenodeList::on_tableWidgetMyGoldminenodes_itemSelectionChanged()
+{
+    if(ui->tableWidgetMyGoldminenodes->selectedItems().count() > 0) {
+        ui->startButton->setEnabled(true);
+    }
+}
+
+void GoldminenodeList::on_UpdateButton_clicked()
+{
+    updateMyNodeList(true);
+}

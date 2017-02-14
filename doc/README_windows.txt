@@ -1,4 +1,4 @@
-Arctic Core 0.12.0
+Arctic Core 0.12.1
 =====================
 
 Intro
@@ -19,5 +19,5 @@ depending on the speed of your computer and network connection, the synchronizat
 process can take anywhere from a few hours to a day or more.
 
 See the arcticcoin wiki at:
-  https://en.bitcoin.it/wiki/Main_Page ***TODO***
+  https://arcticcoinpay.atlassian.net/wiki/
 for more help and information.

@@ -1,743 +1,767 @@
-// Copyright (c) 2015-2016 The Arctic developers
+// Copyright (c) 2015-2017 The Arctic Core Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "activegoldminenode.h"
+#include "spysend.h"
+#include "governance-classes.h"
 #include "goldminenode-payments.h"
-#include "goldminenode-evolution.h"
 #include "goldminenode-sync.h"
 #include "goldminenodeman.h"
-#include "spysend.h"
-#include "util.h"
-#include "sync.h"
+#include "netfulfilledman.h"
 #include "spork.h"
-#include "addrman.h"
+#include "util.h"
+
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
 
 /** Object for who's going to get paid on which blocks */
-CMasternodePayments masternodePayments;
+CGoldminenodePayments mnpayments;
 
-CCriticalSection cs_vecPayments;
-CCriticalSection cs_mapMasternodeBlocks;
-CCriticalSection cs_mapMasternodePayeeVotes;
+CCriticalSection cs_vecPayees;
+CCriticalSection cs_mapGoldminenodeBlocks;
+CCriticalSection cs_mapGoldminenodePaymentVotes;
 
-//
-// CMasternodePaymentDB
-//
+/**
+* IsBlockValueValid
+*
+*   Determine if coinbase outgoing created money is the correct value
+*
+*   Why is this needed?
+*   - In Arctic some blocks are superblocks, which output much higher amounts of coins
+*   - Otherblocks are 10% lower in outgoing value, so in total, no extra coins are created
+*   - When non-superblocks are detected, the normal schedule should be maintained
+*/
 
-CMasternodePaymentDB::CMasternodePaymentDB()
+bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockReward, std::string &strErrorRet)
 {
-    pathDB = GetDataDir() / "gmpayments.dat";
-    strMagicMessage = "MasternodePayments";
-}
+    strErrorRet = "";
 
-bool CMasternodePaymentDB::Write(const CMasternodePayments& objToSave)
-{
-    int64_t nStart = GetTimeMillis();
+    bool isBlockRewardValueMet = (block.vtx[0].GetValueOut() <= blockReward);
+    if(fDebug) LogPrintf("block.vtx[0].GetValueOut() %lld <= blockReward %lld\n", block.vtx[0].GetValueOut(), blockReward);
 
-    // serialize, checksum data up to that point, then append checksum
-    CDataStream ssObj(SER_DISK, CLIENT_VERSION);
-    ssObj << strMagicMessage; // goldmine node cache file specific magic message
-    ssObj << FLATDATA(Params().MessageStart()); // network specific magic number
-    ssObj << objToSave;
-    uint256 hash = Hash(ssObj.begin(), ssObj.end());
-    ssObj << hash;
+    // we are still using evolutions, but we have no data about them anymore,
+    // all we know is predefined evolution cycle and window
 
-    // open output file, and associate with CAutoFile
-    FILE *file = fopen(pathDB.string().c_str(), "wb");
-    CAutoFile fileout(file, SER_DISK, CLIENT_VERSION);
-    if (fileout.IsNull())
-        return error("%s : Failed to open file %s", __func__, pathDB.string());
+    const Consensus::Params& consensusParams = Params().GetConsensus();
 
-    // Write and commit header, data
-    try {
-        fileout << ssObj;
-    }
-    catch (std::exception &e) {
-        return error("%s : Serialize or I/O error - %s", __func__, e.what());
-    }
-    fileout.fclose();
-
-    LogPrintf("Written info to gmpayments.dat  %dms\n", GetTimeMillis() - nStart);
-
-    return true;
-}
-
-CMasternodePaymentDB::ReadResult CMasternodePaymentDB::Read(CMasternodePayments& objToLoad, bool fDryRun)
-{
-
-    int64_t nStart = GetTimeMillis();
-    // open input file, and associate with CAutoFile
-    FILE *file = fopen(pathDB.string().c_str(), "rb");
-    CAutoFile filein(file, SER_DISK, CLIENT_VERSION);
-    if (filein.IsNull())
-    {
-        error("%s : Failed to open file %s", __func__, pathDB.string());
-        return FileError;
-    }
-
-    // use file size to size memory buffer
-    int fileSize = boost::filesystem::file_size(pathDB);
-    int dataSize = fileSize - sizeof(uint256);
-    // Don't try to resize to a negative number if file is small
-    if (dataSize < 0)
-        dataSize = 0;
-    vector<unsigned char> vchData;
-    vchData.resize(dataSize);
-    uint256 hashIn;
-
-    // read data and checksum from file
-    try {
-        filein.read((char *)&vchData[0], dataSize);
-        filein >> hashIn;
-    }
-    catch (std::exception &e) {
-        error("%s : Deserialize or I/O error - %s", __func__, e.what());
-        return HashReadError;
-    }
-    filein.fclose();
-
-    CDataStream ssObj(vchData, SER_DISK, CLIENT_VERSION);
-
-    // verify stored checksum matches input data
-    uint256 hashTmp = Hash(ssObj.begin(), ssObj.end());
-    if (hashIn != hashTmp)
-    {
-        error("%s : Checksum mismatch, data corrupted", __func__);
-        return IncorrectHash;
-    }
-
-
-    unsigned char pchMsgTmp[4];
-    std::string strMagicMessageTmp;
-    try {
-        // de-serialize file header (goldmine node cache file specific magic message) and ..
-        ssObj >> strMagicMessageTmp;
-
-        // ... verify the message matches predefined one
-        if (strMagicMessage != strMagicMessageTmp)
-        {
-            error("%s : Invalid goldmine node payement cache magic message", __func__);
-            return IncorrectMagicMessage;
-        }
-
-
-        // de-serialize file header (network specific magic number) and ..
-        ssObj >> FLATDATA(pchMsgTmp);
-
-        // ... verify the network matches ours
-        if (memcmp(pchMsgTmp, Params().MessageStart(), sizeof(pchMsgTmp)))
-        {
-            error("%s : Invalid network magic number", __func__);
-            return IncorrectMagicNumber;
-        }
-
-        // de-serialize data into CMasternodePayments object
-        ssObj >> objToLoad;
-    }
-    catch (std::exception &e) {
-        objToLoad.Clear();
-        error("%s : Deserialize or I/O error - %s", __func__, e.what());
-        return IncorrectFormat;
-    }
-
-    LogPrintf("Loaded info from gmpayments.dat  %dms\n", GetTimeMillis() - nStart);
-    LogPrintf("  %s\n", objToLoad.ToString());
-    if(!fDryRun) {
-        LogPrintf("Goldmine payments manager - cleaning....\n");
-        objToLoad.CleanPaymentList();
-        LogPrintf("Goldmine payments manager - result:\n");
-        LogPrintf("  %s\n", objToLoad.ToString());
-    }
-
-    return Ok;
-}
-
-void DumpMasternodePayments()
-{
-    int64_t nStart = GetTimeMillis();
-
-    CMasternodePaymentDB paymentdb;
-    CMasternodePayments tempPayments;
-
-    LogPrintf("Verifying gmpayments.dat format...\n");
-    CMasternodePaymentDB::ReadResult readResult = paymentdb.Read(tempPayments, true);
-    // there was an error and it was not an error on file opening => do not proceed
-    if (readResult == CMasternodePaymentDB::FileError)
-        LogPrintf("Missing evolution file - gmpayments.dat, will try to recreate\n");
-    else if (readResult != CMasternodePaymentDB::Ok)
-    {
-        LogPrintf("Error reading gmpayments.dat: ");
-        if(readResult == CMasternodePaymentDB::IncorrectFormat)
-            LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
-        else
-        {
-            LogPrintf("file format is unknown or invalid, please fix it manually\n");
-            return;
-        }
-    }
-    LogPrintf("Writting info to gmpayments.dat...\n");
-    paymentdb.Write(masternodePayments);
-
-    LogPrintf("Evolution dump finished  %dms\n", GetTimeMillis() - nStart);
-}
-
-bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue){
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(pindexPrev == NULL) return true;
-
-    int nHeight = 0;
-    if(pindexPrev->GetBlockHash() == block.hashPrevBlock)
-    {
-        nHeight = pindexPrev->nHeight+1;
-    } else { //out of order
-        BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
-        if (mi != mapBlockIndex.end() && (*mi).second)
-            nHeight = (*mi).second->nHeight+1;
-    }
-
-    if(nHeight == 0){
-        LogPrintf("IsBlockValueValid() : WARNING: Couldn't find previous block");
-    }
-
-    if(!masternodeSync.IsSynced()) { //there is no budget data to use to check anything
-        //super blocks will always be on these blocks, max 100 per budgeting
-        if(nHeight % GetBudgetPaymentCycleBlocks() < 100){
-            return true;
-        } else {
-            if(block.vtx[0].GetValueOut() > nExpectedValue) return false;
-        }
-    } else { // we're synced and have data so check the budget schedule
-
-        //are these blocks even enabled
-        if(!IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)){
-            return block.vtx[0].GetValueOut() <= nExpectedValue;
-        }
-        
-        if(budget.IsBudgetPaymentBlock(nHeight)){
-            //the value of the block is evaluated in CheckBlock
-            return true;
-        } else {
-            if(block.vtx[0].GetValueOut() > nExpectedValue) return false;
-        }
-    }
-
-    return true;
-}
-
-bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight)
-{
-    if(!masternodeSync.IsSynced()) { //there is no budget data to use to check anything -- find the longest chain
-        LogPrint("gmpayments", "Client not synced, skipping block payee checks\n");
-        return true;
-    }
-
-    //check if it's a budget block
-    if(IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)){
-        if(budget.IsBudgetPaymentBlock(nBlockHeight)){
-            if(budget.IsTransactionValid(txNew, nBlockHeight)){
-                return true;
-            } else {
-                LogPrintf("Invalid evolution payment detected %s\n", txNew.ToString().c_str());
-                if(IsSporkActive(SPORK_9_MASTERNODE_BUDGET_ENFORCEMENT)){
-                    return false;
-                } else {
-                    LogPrintf("Evolution enforcement is disabled, accepting block\n");
-                    return true;
+    if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
+        int nOffset = nBlockHeight % consensusParams.nEvolutionPaymentsCycleBlocks;
+        if(nBlockHeight >= consensusParams.nEvolutionPaymentsStartBlock &&
+            nOffset < consensusParams.nEvolutionPaymentsWindowBlocks) {
+            // NOTE: make sure SPORK_13_OLD_SUPERBLOCK_FLAG is disabled when 12.1 starts to go live
+            if(goldminenodeSync.IsSynced() && !sporkManager.IsSporkActive(SPORK_13_OLD_SUPERBLOCK_FLAG)) {
+                // no evolution blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
+                LogPrint("gobject", "IsBlockValueValid -- Client synced but evolution spork is disabled, checking block value against block reward\n");
+                if(!isBlockRewardValueMet) {
+                    strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, evolutions are disabled",
+                                            nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
                 }
+                return isBlockRewardValueMet;
             }
-        }
-    }
-
-    //check for goldmine node payee
-    if(masternodePayments.IsTransactionValid(txNew, nBlockHeight))
-    {
-        return true;
-    } else {
-        LogPrintf("Invalid mn payment detected %s\n", txNew.ToString().c_str());
-        if(IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)){
-            return false;
-        } else {
-            LogPrintf("Goldmine payment enforcement is disabled, accepting block\n");
+            LogPrint("gobject", "IsBlockValueValid -- WARNING: Skipping evolution block value checks, accepting block\n");
+            // TODO: reprocess blocks to make sure they are legit?
             return true;
         }
+        // LogPrint("gobject", "IsBlockValueValid -- Block is not in evolution cycle window, checking block value against block reward\n");
+        if(!isBlockRewardValueMet) {
+            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, block is not in evolution cycle window",
+                                    nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
+        }
+        return isBlockRewardValueMet;
     }
 
-    return false;
+    // superblocks started
+
+    CAmount nSuperblockMaxValue =  blockReward + CSuperblock::GetPaymentsLimit(nBlockHeight);
+    bool isSuperblockMaxValueMet = (block.vtx[0].GetValueOut() <= nSuperblockMaxValue);
+
+    LogPrint("gobject", "block.vtx[0].GetValueOut() %lld <= nSuperblockMaxValue %lld\n", block.vtx[0].GetValueOut(), nSuperblockMaxValue);
+
+    if(!goldminenodeSync.IsSynced()) {
+        // not enough data but at least it must NOT exceed superblock max value
+        if(CSuperblock::IsValidBlockHeight(nBlockHeight)) {
+            if(fDebug) LogPrintf("IsBlockPayeeValid -- WARNING: Client not synced, checking superblock max bounds only\n");
+            if(!isSuperblockMaxValueMet) {
+                strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded superblock max value",
+                                        nBlockHeight, block.vtx[0].GetValueOut(), nSuperblockMaxValue);
+            }
+            return isSuperblockMaxValueMet;
+        }
+        if(!isBlockRewardValueMet) {
+            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, only regular blocks are allowed at this height",
+                                    nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
+        }
+        // it MUST be a regular block otherwise
+        return isBlockRewardValueMet;
+    }
+
+    // we are synced, let's try to check as much data as we can
+
+    if(sporkManager.IsSporkActive(SPORK_9_SUPERBLOCKS_ENABLED)) {
+        if(CSuperblockManager::IsSuperblockTriggered(nBlockHeight)) {
+            if(CSuperblockManager::IsValid(block.vtx[0], nBlockHeight, blockReward)) {
+                LogPrint("gobject", "IsBlockValueValid -- Valid superblock at height %d: %s", nBlockHeight, block.vtx[0].ToString());
+                // all checks are done in CSuperblock::IsValid, nothing to do here
+                return true;
+            }
+
+            // triggered but invalid? that's weird
+            LogPrintf("IsBlockValueValid -- ERROR: Invalid superblock detected at height %d: %s", nBlockHeight, block.vtx[0].ToString());
+            // should NOT allow invalid superblocks, when superblocks are enabled
+            strErrorRet = strprintf("invalid superblock detected at height %d", nBlockHeight);
+            return false;
+        }
+        LogPrint("gobject", "IsBlockValueValid -- No triggered superblock detected at height %d\n", nBlockHeight);
+        if(!isBlockRewardValueMet) {
+            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, no triggered superblock detected",
+                                    nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
+        }
+    } else {
+        // should NOT allow superblocks at all, when superblocks are disabled
+        LogPrint("gobject", "IsBlockValueValid -- Superblocks are disabled, no superblocks allowed\n");
+        if(!isBlockRewardValueMet) {
+            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, superblocks are disabled",
+                                    nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
+        }
+    }
+
+    // it MUST be a regular block
+    return isBlockRewardValueMet;
 }
 
-
-void FillBlockPayee(CMutableTransaction& txNew, int64_t nFees)
+bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount blockReward)
 {
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(!pindexPrev) return;
-
-    if(IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(pindexPrev->nHeight+1)){
-        budget.FillBlockPayee(txNew, nFees);
-    } else {
-        masternodePayments.FillBlockPayee(txNew, nFees);
+    if(!goldminenodeSync.IsSynced()) {
+        //there is no evolution data to use to check anything, let's just accept the longest chain
+        if(fDebug) LogPrintf("IsBlockPayeeValid -- WARNING: Client not synced, skipping block payee checks\n");
+        return true;
     }
+
+    // we are still using evolutions, but we have no data about them anymore,
+    // we can only check goldminenode payments
+
+    const Consensus::Params& consensusParams = Params().GetConsensus();
+
+    if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
+        if(mnpayments.IsTransactionValid(txNew, nBlockHeight)) {
+            LogPrint("mnpayments", "IsBlockPayeeValid -- Valid goldminenode payment at height %d: %s", nBlockHeight, txNew.ToString());
+            return true;
+        }
+
+        int nOffset = nBlockHeight % consensusParams.nEvolutionPaymentsCycleBlocks;
+        if(nBlockHeight >= consensusParams.nEvolutionPaymentsStartBlock &&
+            nOffset < consensusParams.nEvolutionPaymentsWindowBlocks) {
+            if(!sporkManager.IsSporkActive(SPORK_13_OLD_SUPERBLOCK_FLAG)) {
+                // no evolution blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
+                LogPrint("gobject", "IsBlockPayeeValid -- ERROR: Client synced but evolution spork is disabled and goldminenode payment is invalid\n");
+                return false;
+            }
+            // NOTE: this should never happen in real, SPORK_13_OLD_SUPERBLOCK_FLAG MUST be disabled when 12.1 starts to go live
+            LogPrint("gobject", "IsBlockPayeeValid -- WARNING: Probably valid evolution block, have no data, accepting\n");
+            // TODO: reprocess blocks to make sure they are legit?
+            return true;
+        }
+
+        if(sporkManager.IsSporkActive(SPORK_8_GOLDMINENODE_PAYMENT_ENFORCEMENT)) {
+            LogPrintf("IsBlockPayeeValid -- ERROR: Invalid goldminenode payment detected at height %d: %s", nBlockHeight, txNew.ToString());
+            return false;
+        }
+
+        LogPrintf("IsBlockPayeeValid -- WARNING: Goldminenode payment enforcement is disabled, accepting any payee\n");
+        return true;
+    }
+
+    // superblocks started
+    // SEE IF THIS IS A VALID SUPERBLOCK
+
+    if(sporkManager.IsSporkActive(SPORK_9_SUPERBLOCKS_ENABLED)) {
+        if(CSuperblockManager::IsSuperblockTriggered(nBlockHeight)) {
+            if(CSuperblockManager::IsValid(txNew, nBlockHeight, blockReward)) {
+                LogPrint("gobject", "IsBlockPayeeValid -- Valid superblock at height %d: %s", nBlockHeight, txNew.ToString());
+                return true;
+            }
+
+            LogPrintf("IsBlockPayeeValid -- ERROR: Invalid superblock detected at height %d: %s", nBlockHeight, txNew.ToString());
+            // should NOT allow such superblocks, when superblocks are enabled
+            return false;
+        }
+        // continue validation, should pay MN
+        LogPrint("gobject", "IsBlockPayeeValid -- No triggered superblock detected at height %d\n", nBlockHeight);
+    } else {
+        // should NOT allow superblocks at all, when superblocks are disabled
+        LogPrint("gobject", "IsBlockPayeeValid -- Superblocks are disabled, no superblocks allowed\n");
+    }
+
+    // IF THIS ISN'T A SUPERBLOCK OR SUPERBLOCK IS INVALID, IT SHOULD PAY A GOLDMINENODE DIRECTLY
+    if(mnpayments.IsTransactionValid(txNew, nBlockHeight)) {
+        LogPrint("mnpayments", "IsBlockPayeeValid -- Valid goldminenode payment at height %d: %s", nBlockHeight, txNew.ToString());
+        return true;
+    }
+
+    if(sporkManager.IsSporkActive(SPORK_8_GOLDMINENODE_PAYMENT_ENFORCEMENT)) {
+        LogPrintf("IsBlockPayeeValid -- ERROR: Invalid goldminenode payment detected at height %d: %s", nBlockHeight, txNew.ToString());
+        return false;
+    }
+
+    LogPrintf("IsBlockPayeeValid -- WARNING: Goldminenode payment enforcement is disabled, accepting any payee\n");
+    return true;
+}
+
+void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutGoldminenodeRet, std::vector<CTxOut>& voutSuperblockRet)
+{
+    // only create superblocks if spork is enabled AND if superblock is actually triggered
+    // (height should be validated inside)
+    if(sporkManager.IsSporkActive(SPORK_9_SUPERBLOCKS_ENABLED) &&
+        CSuperblockManager::IsSuperblockTriggered(nBlockHeight)) {
+            LogPrint("gobject", "FillBlockPayments -- triggered superblock creation at height %d\n", nBlockHeight);
+            CSuperblockManager::CreateSuperblock(txNew, nBlockHeight, voutSuperblockRet);
+            return;
+    }
+
+    // FILL BLOCK PAYEE WITH GOLDMINENODE PAYMENT OTHERWISE
+    mnpayments.FillBlockPayee(txNew, nBlockHeight, blockReward, txoutGoldminenodeRet);
+    LogPrint("mnpayments", "FillBlockPayments -- nBlockHeight %d blockReward %lld txoutGoldminenodeRet %s txNew %s",
+                            nBlockHeight, blockReward, txoutGoldminenodeRet.ToString(), txNew.ToString());
 }
 
 std::string GetRequiredPaymentsString(int nBlockHeight)
 {
-    if(IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(nBlockHeight)){
-        return budget.GetRequiredPaymentsString(nBlockHeight);
-    } else {
-        return masternodePayments.GetRequiredPaymentsString(nBlockHeight);
+    // IF WE HAVE A ACTIVATED TRIGGER FOR THIS HEIGHT - IT IS A SUPERBLOCK, GET THE REQUIRED PAYEES
+    if(CSuperblockManager::IsSuperblockTriggered(nBlockHeight)) {
+        return CSuperblockManager::GetRequiredPaymentsString(nBlockHeight);
     }
+
+    // OTHERWISE, PAY GOLDMINENODE
+    return mnpayments.GetRequiredPaymentsString(nBlockHeight);
 }
 
-void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFees)
+void CGoldminenodePayments::Clear()
 {
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(!pindexPrev) return;
+    LOCK2(cs_mapGoldminenodeBlocks, cs_mapGoldminenodePaymentVotes);
+    mapGoldminenodeBlocks.clear();
+    mapGoldminenodePaymentVotes.clear();
+}
 
-    bool hasPayment = true;
+bool CGoldminenodePayments::CanVote(COutPoint outGoldminenode, int nBlockHeight)
+{
+    LOCK(cs_mapGoldminenodePaymentVotes);
+
+    if (mapGoldminenodesLastVote.count(outGoldminenode) && mapGoldminenodesLastVote[outGoldminenode] == nBlockHeight) {
+        return false;
+    }
+
+    //record this goldminenode voted
+    mapGoldminenodesLastVote[outGoldminenode] = nBlockHeight;
+    return true;
+}
+
+/**
+*   FillBlockPayee
+*
+*   Fill Goldminenode ONLY payment block
+*/
+
+void CGoldminenodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutGoldminenodeRet)
+{
+    // make sure it's not filled yet
+    txoutGoldminenodeRet = CTxOut();
+
     CScript payee;
 
-    //spork
-    if(!masternodePayments.GetBlockPayee(pindexPrev->nHeight+1, payee)){
-        //no goldmine node detected
-        CMasternode* winningNode = mnodeman.GetCurrentMasterNode(1);
-        if(winningNode){
-            payee = GetScriptForDestination(winningNode->pubkey.GetID());
-        } else {
-            LogPrintf("CreateNewBlock: Failed to detect goldmine node to pay\n");
-            hasPayment = false;
+    if(!mnpayments.GetBlockPayee(nBlockHeight, payee)) {
+        // no goldminenode detected...
+        int nCount = 0;
+        CGoldminenode *winningNode = mnodeman.GetNextGoldminenodeInQueueForPayment(nBlockHeight, true, nCount);
+        if(!winningNode) {
+            // ...and we can't calculate it on our own
+            LogPrintf("CGoldminenodePayments::FillBlockPayee -- Failed to detect goldminenode to pay\n");
+            return;
         }
+        // fill payee with locally calculated winner and hope for the best
+        payee = GetScriptForDestination(winningNode->pubKeyCollateralAddress.GetID());
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nBits, pindexPrev->nHeight, nFees);
-    CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight+1, blockValue);
+    // GET GOLDMINENODE PAYMENT VARIABLES SETUP
+    CAmount goldminenodePayment = GetGoldminenodePayment(nBlockHeight, blockReward);
 
-    txNew.vout[0].nValue = blockValue;
+    // split reward between miner ...
+    txNew.vout[0].nValue -= goldminenodePayment;
+    // ... and goldminenode
+    txoutGoldminenodeRet = CTxOut(goldminenodePayment, payee);
+    txNew.vout.push_back(txoutGoldminenodeRet);
 
-    if(hasPayment){
-        txNew.vout.resize(2);
+    CTxDestination address1;
+    ExtractDestination(payee, address1);
+    CBitcoinAddress address2(address1);
 
-        txNew.vout[1].scriptPubKey = payee;
-        txNew.vout[1].nValue = masternodePayment;
-
-        txNew.vout[0].nValue -= masternodePayment;
-
-        CTxDestination address1;
-        ExtractDestination(payee, address1);
-        CBitcoinAddress address2(address1);
-
-        LogPrintf("Goldmine node payment to %s\n", address2.ToString().c_str());
-    }
+    LogPrintf("CGoldminenodePayments::FillBlockPayee -- Goldminenode payment %lld to %s\n", goldminenodePayment, address2.ToString());
 }
 
-int CMasternodePayments::GetMinMasternodePaymentsProto() {
-    return IsSporkActive(SPORK_10_MASTERNODE_PAY_UPDATED_NODES)
-            ? MIN_MASTERNODE_PAYMENT_PROTO_VERSION_2
-            : MIN_MASTERNODE_PAYMENT_PROTO_VERSION_1;
+int CGoldminenodePayments::GetMinGoldminenodePaymentsProto() {
+    return sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES)
+            ? MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_2
+            : MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1;
 }
 
-void CMasternodePayments::ProcessMessageMasternodePayments(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
+void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
-    if(!masternodeSync.IsBlockchainSynced()) return;
+    // Ignore any payments messages until goldminenode list is synced
+    if(!goldminenodeSync.IsGoldminenodeListSynced()) return;
 
-    if(fLiteMode) return; //disable all Spysend/Goldmine node related functionality
+    if(fLiteMode) return; // disable all Arctic specific functionality
 
+    if (strCommand == NetMsgType::GOLDMINENODEPAYMENTSYNC) { //Goldminenode Payments Request Sync
 
-    if (strCommand == "mnget") { //Goldmine node Payments Request Sync
-        if(fLiteMode) return; //disable all Spysend/Goldmine node related functionality
+        // Ignore such requests until we are fully synced.
+        // We could start processing this after goldminenode list is synced
+        // but this is a heavy one so it's better to finish sync first.
+        if (!goldminenodeSync.IsSynced()) return;
 
         int nCountNeeded;
         vRecv >> nCountNeeded;
 
-        if(Params().NetworkID() == CBaseChainParams::MAIN){
-            if(pfrom->HasFulfilledRequest("mnget")) {
-                LogPrintf("mnget - peer already asked me for the list\n");
-                Misbehaving(pfrom->GetId(), 20);
-                return;
-            }
-        }
-
-        pfrom->FulfilledRequest("mnget");
-        masternodePayments.Sync(pfrom, nCountNeeded);
-        LogPrintf("mnget - Sent Goldmine node winners to %s\n", pfrom->addr.ToString().c_str());
-    }
-    else if (strCommand == "mnw") { //Goldmine node Payments Declare Winner
-        //this is required in litemodef
-        CMasternodePaymentWinner winner;
-        vRecv >> winner;
-
-        if(pfrom->nVersion < MIN_MNW_PEER_PROTO_VERSION) return;
-
-        if(chainActive.Tip() == NULL) return;
-
-        if(masternodePayments.mapMasternodePayeeVotes.count(winner.GetHash())){
-            LogPrint("gmpayments", "mnw - Already seen - %s bestHeight %d\n", winner.GetHash().ToString().c_str(), chainActive.Tip()->nHeight);
-            masternodeSync.AddedMasternodeWinner(winner.GetHash());
+        if(netfulfilledman.HasFulfilledRequest(pfrom->addr, NetMsgType::GOLDMINENODEPAYMENTSYNC)) {
+            // Asking for the payments list multiple times in a short period of time is no good
+            LogPrintf("GOLDMINENODEPAYMENTSYNC -- peer already asked me for the list, peer=%d\n", pfrom->id);
+            Misbehaving(pfrom->GetId(), 20);
             return;
         }
+        netfulfilledman.AddFulfilledRequest(pfrom->addr, NetMsgType::GOLDMINENODEPAYMENTSYNC);
 
-        int nFirstBlock = chainActive.Tip()->nHeight - (mnodeman.CountEnabled()*1.25);
-        if(winner.nBlockHeight < nFirstBlock || winner.nBlockHeight > chainActive.Tip()->nHeight+20){
-            LogPrint("gmpayments", "mnw - winner out of range - FirstBlock %d Height %d bestHeight %d\n", nFirstBlock, winner.nBlockHeight, chainActive.Tip()->nHeight);
+        Sync(pfrom, nCountNeeded);
+        LogPrintf("GOLDMINENODEPAYMENTSYNC -- Sent Goldminenode payment votes to peer %d\n", pfrom->id);
+
+    } else if (strCommand == NetMsgType::GOLDMINENODEPAYMENTVOTE) { // Goldminenode Payments Vote for the Winner
+
+        CGoldminenodePaymentVote vote;
+        vRecv >> vote;
+
+        if(pfrom->nVersion < GetMinGoldminenodePaymentsProto()) return;
+
+        if(!pCurrentBlockIndex) return;
+
+        uint256 nHash = vote.GetHash();
+
+        pfrom->setAskFor.erase(nHash);
+
+        {
+            LOCK(cs_mapGoldminenodePaymentVotes);
+            if(mapGoldminenodePaymentVotes.count(nHash)) {
+                LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- hash=%s, nHeight=%d seen\n", nHash.ToString(), pCurrentBlockIndex->nHeight);
+                return;
+            }
+
+            // Avoid processing same vote multiple times
+            mapGoldminenodePaymentVotes[nHash] = vote;
+            // but first mark vote as non-verified,
+            // AddPaymentVote() below should take care of it if vote is actually ok
+            mapGoldminenodePaymentVotes[nHash].MarkAsNotVerified();
+        }
+
+        int nFirstBlock = pCurrentBlockIndex->nHeight - GetStorageLimit();
+        if(vote.nBlockHeight < nFirstBlock || vote.nBlockHeight > pCurrentBlockIndex->nHeight+20) {
+            LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- vote out of range: nFirstBlock=%d, nBlockHeight=%d, nHeight=%d\n", nFirstBlock, vote.nBlockHeight, pCurrentBlockIndex->nHeight);
             return;
         }
 
         std::string strError = "";
-        if(!winner.IsValid(pfrom, strError)){
-            if(strError != "") LogPrintf("mnw - invalid message - %s\n", strError);
+        if(!vote.IsValid(pfrom, pCurrentBlockIndex->nHeight, strError)) {
+            LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- invalid message, error: %s\n", strError);
             return;
         }
 
-        if(!masternodePayments.CanVote(winner.vinMasternode.prevout, winner.nBlockHeight)){
-            LogPrintf("mnw - goldmine node already voted - %s\n", winner.vinMasternode.prevout.ToStringShort());
+        if(!CanVote(vote.vinGoldminenode.prevout, vote.nBlockHeight)) {
+            LogPrintf("GOLDMINENODEPAYMENTVOTE -- goldminenode already voted, goldminenode=%s\n", vote.vinGoldminenode.prevout.ToStringShort());
             return;
         }
 
-        if(!winner.SignatureValid()){
-            LogPrintf("mnw - invalid signature\n");
-            if(masternodeSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
-            // it could just be a non-synced goldmine node
-            mnodeman.AskForMN(pfrom, winner.vinMasternode);
+        goldminenode_info_t mnInfo = mnodeman.GetGoldminenodeInfo(vote.vinGoldminenode);
+        if(!mnInfo.fInfoValid) {
+            // mn was not found, so we can't check vote, some info is probably missing
+            LogPrintf("GOLDMINENODEPAYMENTVOTE -- goldminenode is missing %s\n", vote.vinGoldminenode.prevout.ToStringShort());
+            mnodeman.AskForMN(pfrom, vote.vinGoldminenode);
+            return;
+        }
+
+        int nDos = 0;
+        if(!vote.CheckSignature(mnInfo.pubKeyGoldminenode, pCurrentBlockIndex->nHeight, nDos)) {
+            if(nDos) {
+                LogPrintf("GOLDMINENODEPAYMENTVOTE -- ERROR: invalid signature\n");
+                Misbehaving(pfrom->GetId(), nDos);
+            } else {
+                // only warn about anything non-critical (i.e. nDos == 0) in debug mode
+                LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- WARNING: invalid signature\n");
+            }
+            // Either our info or vote info could be outdated.
+            // In case our info is outdated, ask for an update,
+            mnodeman.AskForMN(pfrom, vote.vinGoldminenode);
+            // but there is nothing we can do if vote info itself is outdated
+            // (i.e. it was signed by a mn which changed its key),
+            // so just quit here.
             return;
         }
 
         CTxDestination address1;
-        ExtractDestination(winner.payee, address1);
+        ExtractDestination(vote.payee, address1);
         CBitcoinAddress address2(address1);
 
-        LogPrint("gmpayments", "mnw - winning vote - Addr %s Height %d bestHeight %d - %s\n", address2.ToString().c_str(), winner.nBlockHeight, chainActive.Tip()->nHeight, winner.vinMasternode.prevout.ToStringShort());
+        LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s\n", address2.ToString(), vote.nBlockHeight, pCurrentBlockIndex->nHeight, vote.vinGoldminenode.prevout.ToStringShort());
 
-        if(masternodePayments.AddWinningMasternode(winner)){
-            winner.Relay();
-            masternodeSync.AddedMasternodeWinner(winner.GetHash());
+        if(AddPaymentVote(vote)){
+            vote.Relay();
+            goldminenodeSync.AddedPaymentVote();
         }
     }
 }
 
-bool CMasternodePaymentWinner::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
+bool CGoldminenodePaymentVote::Sign()
 {
-    std::string errorMessage;
-    std::string strMasterNodeSignMessage;
-
-    std::string strMessage =  vinMasternode.prevout.ToStringShort() +
+    std::string strError;
+    std::string strMessage = vinGoldminenode.prevout.ToStringShort() +
                 boost::lexical_cast<std::string>(nBlockHeight) +
-                payee.ToString();
+                ScriptToAsmStr(payee);
 
-    if(!darkSendSigner.SignMessage(strMessage, errorMessage, vchSig, keyMasternode)) {
-        LogPrintf("CGoldminePing::Sign() - Error: %s\n", errorMessage.c_str());
+    if(!darkSendSigner.SignMessage(strMessage, vchSig, activeGoldminenode.keyGoldminenode)) {
+        LogPrintf("CGoldminenodePaymentVote::Sign -- SignMessage() failed\n");
         return false;
     }
 
-    if(!darkSendSigner.VerifyMessage(pubKeyMasternode, vchSig, strMessage, errorMessage)) {
-        LogPrintf("CGoldminePing::Sign() - Error: %s\n", errorMessage.c_str());
+    if(!darkSendSigner.VerifyMessage(activeGoldminenode.pubKeyGoldminenode, vchSig, strMessage, strError)) {
+        LogPrintf("CGoldminenodePaymentVote::Sign -- VerifyMessage() failed, error: %s\n", strError);
         return false;
     }
 
     return true;
 }
 
-bool CMasternodePayments::GetBlockPayee(int nBlockHeight, CScript& payee)
+bool CGoldminenodePayments::GetBlockPayee(int nBlockHeight, CScript& payee)
 {
-    if(mapMasternodeBlocks.count(nBlockHeight)){
-        return mapMasternodeBlocks[nBlockHeight].GetPayee(payee);
+    if(mapGoldminenodeBlocks.count(nBlockHeight)){
+        return mapGoldminenodeBlocks[nBlockHeight].GetBestPayee(payee);
     }
 
     return false;
 }
 
-// Is this goldmine node scheduled to get paid soon? 
-// -- Only look ahead up to 8 blocks to allow for propagation of the latest 2 winners
-bool CMasternodePayments::IsScheduled(CMasternode& mn, int nNotBlockHeight)
+// Is this goldminenode scheduled to get paid soon?
+// -- Only look ahead up to 8 blocks to allow for propagation of the latest 2 blocks of votes
+bool CGoldminenodePayments::IsScheduled(CGoldminenode& mn, int nNotBlockHeight)
 {
-    LOCK(cs_mapMasternodeBlocks);
+    LOCK(cs_mapGoldminenodeBlocks);
 
-    CBlockIndex* pindexPrev = chainActive.Tip();
-    if(pindexPrev == NULL) return false;
+    if(!pCurrentBlockIndex) return false;
 
     CScript mnpayee;
-    mnpayee = GetScriptForDestination(mn.pubkey.GetID());
+    mnpayee = GetScriptForDestination(mn.pubKeyCollateralAddress.GetID());
 
     CScript payee;
-    for(int64_t h = pindexPrev->nHeight; h <= pindexPrev->nHeight+8; h++){
+    for(int64_t h = pCurrentBlockIndex->nHeight; h <= pCurrentBlockIndex->nHeight + 8; h++){
         if(h == nNotBlockHeight) continue;
-        if(mapMasternodeBlocks.count(h)){
-            if(mapMasternodeBlocks[h].GetPayee(payee)){
-                if(mnpayee == payee) {
-                    return true;
-                }
-            }
+        if(mapGoldminenodeBlocks.count(h) && mapGoldminenodeBlocks[h].GetBestPayee(payee) && mnpayee == payee) {
+            return true;
         }
     }
 
     return false;
 }
 
-bool CMasternodePayments::AddWinningMasternode(CMasternodePaymentWinner& winnerIn)
+bool CGoldminenodePayments::AddPaymentVote(const CGoldminenodePaymentVote& vote)
 {
-    uint256 blockHash = 0;
-    if(!GetBlockHash(blockHash, winnerIn.nBlockHeight-100)) {
-        return false;
+    uint256 blockHash = uint256();
+    if(!GetBlockHash(blockHash, vote.nBlockHeight - 101)) return false;
+
+    if(HasVerifiedPaymentVote(vote.GetHash())) return false;
+
+    LOCK2(cs_mapGoldminenodeBlocks, cs_mapGoldminenodePaymentVotes);
+
+    mapGoldminenodePaymentVotes[vote.GetHash()] = vote;
+
+    if(!mapGoldminenodeBlocks.count(vote.nBlockHeight)) {
+       CGoldminenodeBlockPayees blockPayees(vote.nBlockHeight);
+       mapGoldminenodeBlocks[vote.nBlockHeight] = blockPayees;
     }
 
-    {
-        LOCK2(cs_mapMasternodePayeeVotes, cs_mapMasternodeBlocks);
-    
-        if(mapMasternodePayeeVotes.count(winnerIn.GetHash())){
-           return false;
-        }
-
-        mapMasternodePayeeVotes[winnerIn.GetHash()] = winnerIn;
-
-        if(!mapMasternodeBlocks.count(winnerIn.nBlockHeight)){
-           CMasternodeBlockPayees blockPayees(winnerIn.nBlockHeight);
-           mapMasternodeBlocks[winnerIn.nBlockHeight] = blockPayees;
-        }
-    }
-
-    int n = 1;
-    if(IsReferenceNode(winnerIn.vinMasternode)) n = 100;
-    mapMasternodeBlocks[winnerIn.nBlockHeight].AddPayee(winnerIn.payee, n);
+    mapGoldminenodeBlocks[vote.nBlockHeight].AddPayee(vote);
 
     return true;
 }
 
-bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
+bool CGoldminenodePayments::HasVerifiedPaymentVote(uint256 hashIn)
 {
-    LOCK(cs_vecPayments);
+    LOCK(cs_mapGoldminenodePaymentVotes);
+    std::map<uint256, CGoldminenodePaymentVote>::iterator it = mapGoldminenodePaymentVotes.find(hashIn);
+    return it != mapGoldminenodePaymentVotes.end() && it->second.IsVerified();
+}
+
+void CGoldminenodeBlockPayees::AddPayee(const CGoldminenodePaymentVote& vote)
+{
+    LOCK(cs_vecPayees);
+
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
+        if (payee.GetPayee() == vote.payee) {
+            payee.AddVoteHash(vote.GetHash());
+            return;
+        }
+    }
+    CGoldminenodePayee payeeNew(vote.payee, vote.GetHash());
+    vecPayees.push_back(payeeNew);
+}
+
+bool CGoldminenodeBlockPayees::GetBestPayee(CScript& payeeRet)
+{
+    LOCK(cs_vecPayees);
+
+    if(!vecPayees.size()) {
+        LogPrint("mnpayments", "CGoldminenodeBlockPayees::GetBestPayee -- ERROR: couldn't find any payee\n");
+        return false;
+    }
+
+    int nVotes = -1;
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
+        if (payee.GetVoteCount() > nVotes) {
+            payeeRet = payee.GetPayee();
+            nVotes = payee.GetVoteCount();
+        }
+    }
+
+    return (nVotes > -1);
+}
+
+bool CGoldminenodeBlockPayees::HasPayeeWithVotes(CScript payeeIn, int nVotesReq)
+{
+    LOCK(cs_vecPayees);
+
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
+        if (payee.GetVoteCount() >= nVotesReq && payee.GetPayee() == payeeIn) {
+            return true;
+        }
+    }
+
+    LogPrint("mnpayments", "CGoldminenodeBlockPayees::HasPayeeWithVotes -- ERROR: couldn't find any payee with %d+ votes\n", nVotesReq);
+    return false;
+}
+
+bool CGoldminenodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
+{
+    LOCK(cs_vecPayees);
 
     int nMaxSignatures = 0;
     std::string strPayeesPossible = "";
 
-    CAmount masternodePayment = GetMasternodePayment(nBlockHeight, txNew.GetValueOut());
+    CAmount nGoldminenodePayment = GetGoldminenodePayment(nBlockHeight, txNew.GetValueOut());
 
-    //require at least 6 signatures
+    //require at least MNPAYMENTS_SIGNATURES_REQUIRED signatures
 
-    BOOST_FOREACH(CMasternodePayee& payee, vecPayments)
-        if(payee.nVotes >= nMaxSignatures && payee.nVotes >= MNPAYMENTS_SIGNATURES_REQUIRED)
-            nMaxSignatures = payee.nVotes;
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
+        if (payee.GetVoteCount() >= nMaxSignatures) {
+            nMaxSignatures = payee.GetVoteCount();
+        }
+    }
 
-    // if we don't have at least 6 signatures on a payee, approve whichever is the longest chain
+    // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
-    BOOST_FOREACH(CMasternodePayee& payee, vecPayments)
-    {
-        bool found = false;
-        BOOST_FOREACH(CTxOut out, txNew.vout){
-            if(payee.scriptPubKey == out.scriptPubKey && masternodePayment == out.nValue){
-                found = true;
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
+        if (payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
+            BOOST_FOREACH(CTxOut txout, txNew.vout) {
+                if (payee.GetPayee() == txout.scriptPubKey && nGoldminenodePayment == txout.nValue) {
+                    LogPrint("mnpayments", "CGoldminenodeBlockPayees::IsTransactionValid -- Found required payment\n");
+                    return true;
+                }
             }
-        }
-
-        if(payee.nVotes >= MNPAYMENTS_SIGNATURES_REQUIRED){
-            if(found) return true;
 
             CTxDestination address1;
-            ExtractDestination(payee.scriptPubKey, address1);
+            ExtractDestination(payee.GetPayee(), address1);
             CBitcoinAddress address2(address1);
 
-            if(strPayeesPossible == ""){
-                strPayeesPossible += address2.ToString();
+            if(strPayeesPossible == "") {
+                strPayeesPossible = address2.ToString();
             } else {
                 strPayeesPossible += "," + address2.ToString();
             }
         }
     }
 
-
-    LogPrintf("CGoldminePayments::IsTransactionValid - Missing required payment - %s\n", strPayeesPossible.c_str());
+    LogPrintf("CGoldminenodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s', amount: %f ARC\n", strPayeesPossible, (float)nGoldminenodePayment/COIN);
     return false;
 }
 
-std::string CMasternodeBlockPayees::GetRequiredPaymentsString()
+std::string CGoldminenodeBlockPayees::GetRequiredPaymentsString()
 {
-    LOCK(cs_vecPayments);
+    LOCK(cs_vecPayees);
 
-    std::string ret = "Unknown";
+    std::string strRequiredPayments = "Unknown";
 
-    BOOST_FOREACH(CMasternodePayee& payee, vecPayments)
+    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees)
     {
         CTxDestination address1;
-        ExtractDestination(payee.scriptPubKey, address1);
+        ExtractDestination(payee.GetPayee(), address1);
         CBitcoinAddress address2(address1);
 
-        if(ret != "Unknown"){
-            ret += ", " + address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+        if (strRequiredPayments != "Unknown") {
+            strRequiredPayments += ", " + address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.GetVoteCount());
         } else {
-            ret = address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+            strRequiredPayments = address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.GetVoteCount());
         }
     }
 
-    return ret;
+    return strRequiredPayments;
 }
 
-std::string CMasternodePayments::GetRequiredPaymentsString(int nBlockHeight)
+std::string CGoldminenodePayments::GetRequiredPaymentsString(int nBlockHeight)
 {
-    LOCK(cs_mapMasternodeBlocks);
+    LOCK(cs_mapGoldminenodeBlocks);
 
-    if(mapMasternodeBlocks.count(nBlockHeight)){
-        return mapMasternodeBlocks[nBlockHeight].GetRequiredPaymentsString();
+    if(mapGoldminenodeBlocks.count(nBlockHeight)){
+        return mapGoldminenodeBlocks[nBlockHeight].GetRequiredPaymentsString();
     }
 
     return "Unknown";
 }
 
-bool CMasternodePayments::IsTransactionValid(const CTransaction& txNew, int nBlockHeight)
+bool CGoldminenodePayments::IsTransactionValid(const CTransaction& txNew, int nBlockHeight)
 {
-    LOCK(cs_mapMasternodeBlocks);
+    LOCK(cs_mapGoldminenodeBlocks);
 
-    if(mapMasternodeBlocks.count(nBlockHeight)){
-        return mapMasternodeBlocks[nBlockHeight].IsTransactionValid(txNew);
+    if(mapGoldminenodeBlocks.count(nBlockHeight)){
+        return mapGoldminenodeBlocks[nBlockHeight].IsTransactionValid(txNew);
     }
 
     return true;
 }
 
-void CMasternodePayments::CleanPaymentList()
+void CGoldminenodePayments::CheckAndRemove()
 {
-    LOCK2(cs_mapMasternodePayeeVotes, cs_mapMasternodeBlocks);
+    if(!pCurrentBlockIndex) return;
 
-    if(chainActive.Tip() == NULL) return;
+    LOCK2(cs_mapGoldminenodeBlocks, cs_mapGoldminenodePaymentVotes);
 
-    //keep up to five cycles for historical sake
-    int nLimit = std::max(int(mnodeman.size()*1.25), 1000);
+    int nLimit = GetStorageLimit();
 
-    std::map<uint256, CMasternodePaymentWinner>::iterator it = mapMasternodePayeeVotes.begin();
-    while(it != mapMasternodePayeeVotes.end()) {
-        CMasternodePaymentWinner winner = (*it).second;
+    std::map<uint256, CGoldminenodePaymentVote>::iterator it = mapGoldminenodePaymentVotes.begin();
+    while(it != mapGoldminenodePaymentVotes.end()) {
+        CGoldminenodePaymentVote vote = (*it).second;
 
-        if(chainActive.Tip()->nHeight - winner.nBlockHeight > nLimit){
-            LogPrint("gmpayments", "CGoldminePayments::CleanPaymentList - Removing old Goldmine payment - block %d\n", winner.nBlockHeight);
-            masternodeSync.mapSeenSyncMNW.erase((*it).first);
-            mapMasternodePayeeVotes.erase(it++);
-            mapMasternodeBlocks.erase(winner.nBlockHeight);
+        if(pCurrentBlockIndex->nHeight - vote.nBlockHeight > nLimit) {
+            LogPrint("mnpayments", "CGoldminenodePayments::CheckAndRemove -- Removing old Goldminenode payment: nBlockHeight=%d\n", vote.nBlockHeight);
+            mapGoldminenodePaymentVotes.erase(it++);
+            mapGoldminenodeBlocks.erase(vote.nBlockHeight);
         } else {
             ++it;
         }
     }
+    LogPrintf("CGoldminenodePayments::CheckAndRemove -- %s\n", ToString());
 }
 
-bool IsReferenceNode(CTxIn& vin)
+bool CGoldminenodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std::string& strError)
 {
-    //reference node - hybrid mode
-    if(vin.prevout.ToStringShort() == "099c01bea63abd1692f60806bb646fa1d288e2d049281225f17e499024084e28-0") return true; // mainnet
-    if(vin.prevout.ToStringShort() == "fbc16ae5229d6d99181802fd76a4feee5e7640164dcebc7f8feb04a7bea026f8-0") return true; // testnet
-    if(vin.prevout.ToStringShort() == "e466f5d8beb4c2d22a314310dc58e0ea89505c95409754d0d68fb874952608cc-1") return true; // regtest
+    CGoldminenode* pmn = mnodeman.Find(vinGoldminenode);
 
-    return false;
-}
-
-bool CMasternodePaymentWinner::IsValid(CNode* pnode, std::string& strError)
-{
-    if(IsReferenceNode(vinMasternode)) return true;
-
-    CMasternode* pmn = mnodeman.Find(vinMasternode);
-
-    if(!pmn)
-    {
-        strError = strprintf("Unknown Goldmine %s", vinMasternode.prevout.ToStringShort());
-        LogPrintf ("CGoldminePaymentWinner::IsValid - %s\n", strError);
-        mnodeman.AskForMN(pnode, vinMasternode);
-        return false;
-    }
-
-    if(pmn->protocolVersion < MIN_MNW_PEER_PROTO_VERSION)
-    {
-        strError = strprintf("Goldmine protocol too old %d - req %d", pmn->protocolVersion, MIN_MNW_PEER_PROTO_VERSION);
-        LogPrintf ("CGoldminePaymentWinner::IsValid - %s\n", strError);
-        return false;
-    }
-
-    int n = mnodeman.GetMasternodeRank(vinMasternode, nBlockHeight-100, MIN_MNW_PEER_PROTO_VERSION);
-
-    if(n > MNPAYMENTS_SIGNATURES_TOTAL)
-    {    
-        //It's common to have goldmine nodes mistakenly think they are in the top 10
-        // We don't want to print all of these messages, or punish them unless they're way off
-        if(n > MNPAYMENTS_SIGNATURES_TOTAL*2)
-        {
-            strError = strprintf("Goldmine not in the top %d (%d)", MNPAYMENTS_SIGNATURES_TOTAL, n);
-            LogPrintf("CGoldminePaymentWinner::IsValid - %s\n", strError);
-            if(masternodeSync.IsSynced()) Misbehaving(pnode->GetId(), 20);
+    if(!pmn) {
+        strError = strprintf("Unknown Goldminenode: prevout=%s", vinGoldminenode.prevout.ToStringShort());
+        // Only ask if we are already synced and still have no idea about that Goldminenode
+        if(goldminenodeSync.IsSynced()) {
+            mnodeman.AskForMN(pnode, vinGoldminenode);
         }
+
+        return false;
+    }
+
+    int nMinRequiredProtocol;
+    if(nBlockHeight >= nValidationHeight) {
+        // new votes must comply SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES rules
+        nMinRequiredProtocol = mnpayments.GetMinGoldminenodePaymentsProto();
+    } else {
+        // allow non-updated goldminenodes for old blocks
+        nMinRequiredProtocol = MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1;
+    }
+
+    if(pmn->nProtocolVersion < nMinRequiredProtocol) {
+        strError = strprintf("Goldminenode protocol is too old: nProtocolVersion=%d, nMinRequiredProtocol=%d", pmn->nProtocolVersion, nMinRequiredProtocol);
+        return false;
+    }
+
+    // Only goldminenodes should try to check goldminenode rank for old votes - they need to pick the right winner for future blocks.
+    // Regular clients (miners included) need to verify goldminenode rank for future block votes only.
+    if(!fMasterNode && nBlockHeight < nValidationHeight) return true;
+
+    int nRank = mnodeman.GetGoldminenodeRank(vinGoldminenode, nBlockHeight - 101, nMinRequiredProtocol, false);
+
+    if(nRank > MNPAYMENTS_SIGNATURES_TOTAL) {
+        // It's common to have goldminenodes mistakenly think they are in the top 10
+        // We don't want to print all of these messages in normal mode, debug mode should print though
+        strError = strprintf("Goldminenode is not in the top %d (%d)", MNPAYMENTS_SIGNATURES_TOTAL, nRank);
+        // Only ban for new mnw which is out of bounds, for old mnw MN list itself might be way too much off
+        if(nRank > MNPAYMENTS_SIGNATURES_TOTAL*2 && nBlockHeight > nValidationHeight) {
+            strError = strprintf("Goldminenode is not in the top %d (%d)", MNPAYMENTS_SIGNATURES_TOTAL*2, nRank);
+            LogPrintf("CGoldminenodePaymentVote::IsValid -- Error: %s\n", strError);
+            Misbehaving(pnode->GetId(), 20);
+        }
+        // Still invalid however
         return false;
     }
 
     return true;
 }
 
-bool CMasternodePayments::ProcessBlock(int nBlockHeight)
+bool CGoldminenodePayments::ProcessBlock(int nBlockHeight)
 {
-    if(!fMasterNode) return false;
+    // DETERMINE IF WE SHOULD BE VOTING FOR THE NEXT PAYEE
 
-    //reference node - hybrid mode
+    if(fLiteMode || !fMasterNode) return false;
 
-    if(!IsReferenceNode(activeMasternode.vin)){
-        int n = mnodeman.GetMasternodeRank(activeMasternode.vin, nBlockHeight-100, MIN_MNW_PEER_PROTO_VERSION);
+    // We have little chances to pick the right winner if winners list is out of sync
+    // but we have no choice, so we'll try. However it doesn't make sense to even try to do so
+    // if we have not enough data about goldminenodes.
+    if(!goldminenodeSync.IsGoldminenodeListSynced()) return false;
 
-        if(n == -1)
-        {
-            LogPrint("gmpayments", "CGoldminePayments::ProcessBlock - Unknown Goldmine\n");
-            return false;
-        }
+    int nRank = mnodeman.GetGoldminenodeRank(activeGoldminenode.vin, nBlockHeight - 101, GetMinGoldminenodePaymentsProto(), false);
 
-        if(n > MNPAYMENTS_SIGNATURES_TOTAL)
-        {
-            LogPrint("gmpayments", "CGoldminePayments::ProcessBlock - Goldmine not in the top %d (%d)\n", MNPAYMENTS_SIGNATURES_TOTAL, n);
-            return false;
-        }
-    }
-
-    if(nBlockHeight <= nLastBlockHeight) return false;
-
-    CMasternodePaymentWinner newWinner(activeMasternode.vin);
-
-    if(budget.IsBudgetPaymentBlock(nBlockHeight)){
-        //is budget payment block -- handled by the budgeting software
-    } else {
-        LogPrintf("CGoldminePayments::ProcessBlock() Start nHeight %d - vin %s. \n", nBlockHeight, activeMasternode.vin.ToString().c_str());
-
-        // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
-        int nCount = 0;
-        CMasternode *pmn = mnodeman.GetNextMasternodeInQueueForPayment(nBlockHeight, true, nCount);
-        
-        if(pmn != NULL)
-        {
-            LogPrintf("CGoldminePayments::ProcessBlock() Found by FindOldestNotInVec \n");
-
-            newWinner.nBlockHeight = nBlockHeight;
-
-            CScript payee = GetScriptForDestination(pmn->pubkey.GetID());
-            newWinner.AddPayee(payee);
-
-            CTxDestination address1;
-            ExtractDestination(payee, address1);
-            CBitcoinAddress address2(address1);
-
-            LogPrintf("CGoldminePayments::ProcessBlock() Winner payee %s nHeight %d. \n", address2.ToString().c_str(), newWinner.nBlockHeight);
-        } else {
-            LogPrintf("CGoldminePayments::ProcessBlock() Failed to find goldmine node to pay\n");
-        }
-
-    }
-
-    std::string errorMessage;
-    CPubKey pubKeyMasternode;
-    CKey keyMasternode;
-
-    if(!darkSendSigner.SetKey(strMasterNodePrivKey, errorMessage, keyMasternode, pubKeyMasternode))
-    {
-        LogPrintf("CGoldminePayments::ProcessBlock() - Error upon calling SetKey: %s\n", errorMessage.c_str());
+    if (nRank == -1) {
+        LogPrint("mnpayments", "CGoldminenodePayments::ProcessBlock -- Unknown Goldminenode\n");
         return false;
     }
 
-    LogPrintf("CGoldminePayments::ProcessBlock() - Signing Winner\n");
-    if(newWinner.Sign(keyMasternode, pubKeyMasternode))
-    {
-        LogPrintf("CGoldminePayments::ProcessBlock() - AddWinningGoldmine\n");
+    if (nRank > MNPAYMENTS_SIGNATURES_TOTAL) {
+        LogPrint("mnpayments", "CGoldminenodePayments::ProcessBlock -- Goldminenode not in the top %d (%d)\n", MNPAYMENTS_SIGNATURES_TOTAL, nRank);
+        return false;
+    }
 
-        if(AddWinningMasternode(newWinner))
-        {
-            newWinner.Relay();
-            nLastBlockHeight = nBlockHeight;
+
+    // LOCATE THE NEXT GOLDMINENODE WHICH SHOULD BE PAID
+
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- Start: nBlockHeight=%d, goldminenode=%s\n", nBlockHeight, activeGoldminenode.vin.prevout.ToStringShort());
+
+    // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
+    int nCount = 0;
+    CGoldminenode *pmn = mnodeman.GetNextGoldminenodeInQueueForPayment(nBlockHeight, true, nCount);
+
+    if (pmn == NULL) {
+        LogPrintf("CGoldminenodePayments::ProcessBlock -- ERROR: Failed to find goldminenode to pay\n");
+        return false;
+    }
+
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- Goldminenode found by GetNextGoldminenodeInQueueForPayment(): %s\n", pmn->vin.prevout.ToStringShort());
+
+
+    CScript payee = GetScriptForDestination(pmn->pubKeyCollateralAddress.GetID());
+
+    CGoldminenodePaymentVote voteNew(activeGoldminenode.vin, nBlockHeight, payee);
+
+    CTxDestination address1;
+    ExtractDestination(payee, address1);
+    CBitcoinAddress address2(address1);
+
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- vote: payee=%s, nBlockHeight=%d\n", address2.ToString(), nBlockHeight);
+
+    // SIGN MESSAGE TO NETWORK WITH OUR GOLDMINENODE KEYS
+
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- Signing vote\n");
+    if (voteNew.Sign()) {
+        LogPrintf("CGoldminenodePayments::ProcessBlock -- AddPaymentVote()\n");
+
+        if (AddPaymentVote(voteNew)) {
+            voteNew.Relay();
             return true;
         }
     }
@@ -745,100 +769,192 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight)
     return false;
 }
 
-void CMasternodePaymentWinner::Relay()
+void CGoldminenodePaymentVote::Relay()
 {
-    CInv inv(MSG_MASTERNODE_WINNER, GetHash());
+    // do not relay until synced
+    if (!goldminenodeSync.IsSynced()) return;
+    CInv inv(MSG_GOLDMINENODE_PAYMENT_VOTE, GetHash());
     RelayInv(inv);
 }
 
-bool CMasternodePaymentWinner::SignatureValid()
+bool CGoldminenodePaymentVote::CheckSignature(const CPubKey& pubKeyGoldminenode, int nValidationHeight, int &nDos)
 {
+    // do not ban by default
+    nDos = 0;
 
-    CMasternode* pmn = mnodeman.Find(vinMasternode);
+    std::string strMessage = vinGoldminenode.prevout.ToStringShort() +
+                boost::lexical_cast<std::string>(nBlockHeight) +
+                ScriptToAsmStr(payee);
 
-    if(pmn != NULL)
-    {
-        std::string strMessage =  vinMasternode.prevout.ToStringShort() +
-                    boost::lexical_cast<std::string>(nBlockHeight) +
-                    payee.ToString();
-
-        std::string errorMessage = "";
-        if(!darkSendSigner.VerifyMessage(pmn->pubkey2, vchSig, strMessage, errorMessage)){
-            return error("CGoldminePaymentWinner::SignatureValid() - Got bad Goldmine address signature %s \n", vinMasternode.ToString().c_str());
+    std::string strError = "";
+    if (!darkSendSigner.VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
+        // Only ban for future block vote when we are already synced.
+        // Otherwise it could be the case when MN which signed this vote is using another key now
+        // and we have no idea about the old one.
+        if(goldminenodeSync.IsSynced() && nBlockHeight > nValidationHeight) {
+            nDos = 20;
         }
-
-        return true;
+        return error("CGoldminenodePaymentVote::CheckSignature -- Got bad Goldminenode payment signature, goldminenode=%s, error: %s", vinGoldminenode.prevout.ToStringShort().c_str(), strError);
     }
 
-    return false;
+    return true;
 }
 
-void CMasternodePayments::Sync(CNode* node, int nCountNeeded)
-{
-    LOCK(cs_mapMasternodePayeeVotes);
-
-    if(chainActive.Tip() == NULL) return;
-
-    int nCount = (mnodeman.CountEnabled()*1.25);
-    if(nCountNeeded > nCount) nCountNeeded = nCount;
-
-    int nInvCount = 0;
-    std::map<uint256, CMasternodePaymentWinner>::iterator it = mapMasternodePayeeVotes.begin();
-    while(it != mapMasternodePayeeVotes.end()) {
-        CMasternodePaymentWinner winner = (*it).second;
-        if(winner.nBlockHeight >= chainActive.Tip()->nHeight-nCountNeeded && winner.nBlockHeight <= chainActive.Tip()->nHeight + 20) {
-            node->PushInventory(CInv(MSG_MASTERNODE_WINNER, winner.GetHash()));
-            nInvCount++;
-        }
-        ++it;
-    }
-    node->PushMessage("ssc", MASTERNODE_SYNC_MNW, nInvCount);
-}
-
-std::string CMasternodePayments::ToString() const
+std::string CGoldminenodePaymentVote::ToString() const
 {
     std::ostringstream info;
 
-    info << "Votes: " << (int)mapMasternodePayeeVotes.size() <<
-            ", Blocks: " << (int)mapMasternodeBlocks.size();
+    info << vinGoldminenode.prevout.ToStringShort() <<
+            ", " << nBlockHeight <<
+            ", " << ScriptToAsmStr(payee) <<
+            ", " << (int)vchSig.size();
 
     return info.str();
 }
 
-
-
-int CMasternodePayments::GetOldestBlock()
+// Send all votes up to nCountNeeded blocks (but not more than GetStorageLimit)
+void CGoldminenodePayments::Sync(CNode* pnode, int nCountNeeded)
 {
-    LOCK(cs_mapMasternodeBlocks);
+    LOCK(cs_mapGoldminenodeBlocks);
 
-    int nOldestBlock = std::numeric_limits<int>::max();
+    if(!pCurrentBlockIndex) return;
 
-    std::map<int, CMasternodeBlockPayees>::iterator it = mapMasternodeBlocks.begin();
-    while(it != mapMasternodeBlocks.end()) {
-        if((*it).first < nOldestBlock) {
-            nOldestBlock = (*it).first;
-        }
-        it++;
+    if(pnode->nVersion < 70202) {
+        // Old nodes can only sync via heavy method
+        int nLimit = GetStorageLimit();
+        if(nCountNeeded > nLimit) nCountNeeded = nLimit;
+    } else {
+        // New nodes request missing payment blocks themselves, push only votes for future blocks to them
+        nCountNeeded = 0;
     }
 
-    return nOldestBlock;
+    int nInvCount = 0;
+
+    for(int h = pCurrentBlockIndex->nHeight - nCountNeeded; h < pCurrentBlockIndex->nHeight + 20; h++) {
+        if(mapGoldminenodeBlocks.count(h)) {
+            BOOST_FOREACH(CGoldminenodePayee& payee, mapGoldminenodeBlocks[h].vecPayees) {
+                std::vector<uint256> vecVoteHashes = payee.GetVoteHashes();
+                BOOST_FOREACH(uint256& hash, vecVoteHashes) {
+                    if(!HasVerifiedPaymentVote(hash)) continue;
+                    pnode->PushInventory(CInv(MSG_GOLDMINENODE_PAYMENT_VOTE, hash));
+                    nInvCount++;
+                }
+            }
+        }
+    }
+
+    LogPrintf("CGoldminenodePayments::Sync -- Sent %d votes to peer %d\n", nInvCount, pnode->id);
+    pnode->PushMessage(NetMsgType::SYNCSTATUSCOUNT, GOLDMINENODE_SYNC_MNW, nInvCount);
 }
 
-
-
-int CMasternodePayments::GetNewestBlock()
+// Request low data/unknown payment blocks in batches directly from some node instead of/after preliminary Sync.
+void CGoldminenodePayments::RequestLowDataPaymentBlocks(CNode* pnode)
 {
-    LOCK(cs_mapMasternodeBlocks);
+    // Old nodes can't process this
+    if(pnode->nVersion < 70202) return;
+    if(!pCurrentBlockIndex) return;
 
-    int nNewestBlock = 0;
+    LOCK2(cs_main, cs_mapGoldminenodeBlocks);
 
-    std::map<int, CMasternodeBlockPayees>::iterator it = mapMasternodeBlocks.begin();
-    while(it != mapMasternodeBlocks.end()) {
-        if((*it).first > nNewestBlock) {
-            nNewestBlock = (*it).first;
+    std::vector<CInv> vToFetch;
+    int nLimit = GetStorageLimit();
+
+    const CBlockIndex *pindex = pCurrentBlockIndex;
+
+    while(pCurrentBlockIndex->nHeight - pindex->nHeight < nLimit) {
+        if(!mapGoldminenodeBlocks.count(pindex->nHeight)) {
+            // We have no idea about this block height, let's ask
+            vToFetch.push_back(CInv(MSG_GOLDMINENODE_PAYMENT_BLOCK, pindex->GetBlockHash()));
+            // We should not violate GETDATA rules
+            if(vToFetch.size() == MAX_INV_SZ) {
+                LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d blocks\n", pnode->id, MAX_INV_SZ);
+                pnode->PushMessage(NetMsgType::GETDATA, vToFetch);
+                // Start filling new batch
+                vToFetch.clear();
+            }
         }
-        it++;
+        if(!pindex->pprev) break;
+        pindex = pindex->pprev;
     }
 
-    return nNewestBlock;
+    std::map<int, CGoldminenodeBlockPayees>::iterator it = mapGoldminenodeBlocks.begin();
+
+    while(it != mapGoldminenodeBlocks.end()) {
+        int nTotalVotes = 0;
+        bool fFound = false;
+        BOOST_FOREACH(CGoldminenodePayee& payee, it->second.vecPayees) {
+            if(payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
+                fFound = true;
+                break;
+            }
+            nTotalVotes += payee.GetVoteCount();
+        }
+        // A clear winner (MNPAYMENTS_SIGNATURES_REQUIRED+ votes) was found
+        // or no clear winner was found but there are at least avg number of votes
+        if(fFound || nTotalVotes >= (MNPAYMENTS_SIGNATURES_TOTAL + MNPAYMENTS_SIGNATURES_REQUIRED)/2) {
+            // so just move to the next block
+            ++it;
+            continue;
+        }
+        // DEBUG
+        DBG (
+            // Let's see why this failed
+            BOOST_FOREACH(CGoldminenodePayee& payee, it->second.vecPayees) {
+                CTxDestination address1;
+                ExtractDestination(payee.GetPayee(), address1);
+                CBitcoinAddress address2(address1);
+                printf("payee %s votes %d\n", address2.ToString().c_str(), payee.GetVoteCount());
+            }
+            printf("block %d votes total %d\n", it->first, nTotalVotes);
+        )
+        // END DEBUG
+        // Low data block found, let's try to sync it
+        uint256 hash;
+        if(GetBlockHash(hash, it->first)) {
+            vToFetch.push_back(CInv(MSG_GOLDMINENODE_PAYMENT_BLOCK, hash));
+        }
+        // We should not violate GETDATA rules
+        if(vToFetch.size() == MAX_INV_SZ) {
+            LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d blocks\n", pnode->id, MAX_INV_SZ);
+            pnode->PushMessage(NetMsgType::GETDATA, vToFetch);
+            // Start filling new batch
+            vToFetch.clear();
+        }
+        ++it;
+    }
+    // Ask for the rest of it
+    if(!vToFetch.empty()) {
+        LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d blocks\n", pnode->id, vToFetch.size());
+        pnode->PushMessage(NetMsgType::GETDATA, vToFetch);
+    }
+}
+
+std::string CGoldminenodePayments::ToString() const
+{
+    std::ostringstream info;
+
+    info << "Votes: " << (int)mapGoldminenodePaymentVotes.size() <<
+            ", Blocks: " << (int)mapGoldminenodeBlocks.size();
+
+    return info.str();
+}
+
+bool CGoldminenodePayments::IsEnoughData()
+{
+    float nAverageVotes = (MNPAYMENTS_SIGNATURES_TOTAL + MNPAYMENTS_SIGNATURES_REQUIRED) / 2;
+    int nStorageLimit = GetStorageLimit();
+    return GetBlockCount() > nStorageLimit && GetVoteCount() > nStorageLimit * nAverageVotes;
+}
+
+int CGoldminenodePayments::GetStorageLimit()
+{
+    return std::max(int(mnodeman.size() * nStorageCoeff), nMinBlocksToStore);
+}
+
+void CGoldminenodePayments::UpdatedBlockTip(const CBlockIndex *pindex)
+{
+    pCurrentBlockIndex = pindex;
+    LogPrint("mnpayments", "CGoldminenodePayments::UpdatedBlockTip -- pCurrentBlockIndex->nHeight=%d\n", pCurrentBlockIndex->nHeight);
+
+    ProcessBlock(pindex->nHeight + 10);
 }

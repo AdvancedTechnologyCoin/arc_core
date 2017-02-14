@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2014 The Bitcoin developers
+// Copyright (c) 2012-2014 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,8 +45,8 @@ const std::string CLIENT_NAME("Arctic Core");
 //! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
 #define GIT_ARCHIVE 1
 #ifdef GIT_ARCHIVE
-#define GIT_COMMIT_ID "1fc8dbc"
-#define GIT_COMMIT_DATE "Sun, 21 Aug 2016 19:22:47 -0600"
+#define GIT_COMMIT_ID "56971f8"
+#define GIT_COMMIT_DATE "Mon, 6 Feb 2017 01:29:23 +0400"
 #endif
 
 #define BUILD_DESC_WITH_SUFFIX(maj, min, rev, build, suffix) \
