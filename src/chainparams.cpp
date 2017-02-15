@@ -63,7 +63,6 @@ public:
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210240; // Note: actual number of blocks per calendar year with DGW v3 is ~200700 (for example 449750 - 249050)
         consensus.nGoldminenodePaymentsStartBlock = 1; // not true, but it's ok as long as it's less then nGoldminenodePaymentsIncreaseBlock
-        consensus.nGoldminenodePaymentsIncreaseBlock = 1493; // actual historical value
         consensus.nInstantSendKeepLock = 24;
         consensus.nEvolutionPaymentsStartBlock = 16616; // actual historical value
         consensus.nEvolutionPaymentsCycleBlocks = 16616; // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
@@ -178,7 +177,6 @@ public:
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210240;
         consensus.nGoldminenodePaymentsStartBlock = 10000; // not true, but it's ok as long as it's less then nGoldminenodePaymentsIncreaseBlock
-        consensus.nGoldminenodePaymentsIncreaseBlock = 46000;
         consensus.nInstantSendKeepLock = 6;
         consensus.nEvolutionPaymentsCycleBlocks = 50;
         consensus.nEvolutionPaymentsWindowBlocks = 10;
@@ -278,7 +276,6 @@ public:
         strNetworkID = "regtest";
         consensus.nSubsidyHalvingInterval = 150;
         consensus.nGoldminenodePaymentsStartBlock = 240;
-        consensus.nGoldminenodePaymentsIncreaseBlock = 350;
         consensus.nInstantSendKeepLock = 6;
         consensus.nEvolutionPaymentsStartBlock = 1000;
         consensus.nEvolutionPaymentsWindowBlocks = 10;

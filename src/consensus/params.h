@@ -38,7 +38,6 @@ struct Params {
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
     int nGoldminenodePaymentsStartBlock;
-    int nGoldminenodePaymentsIncreaseBlock;
     int nGoldminenodePaymentsIncreasePeriod; // in blocks
     int nInstantSendKeepLock; // in blocks
     int nEvolutionPaymentsStartBlock;

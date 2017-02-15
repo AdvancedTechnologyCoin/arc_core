@@ -1783,11 +1783,7 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
 
 CAmount GetGoldminenodePayment(int nHeight, CAmount blockValue)
 {
-    CAmount ret = blockValue/5; // start at 20%
-
-    int nMNPIBlock = Params().GetConsensus().nGoldminenodePaymentsIncreaseBlock;
-                                                       // mainnet:
-    if(nHeight > nMNPIBlock)                  ret += blockValue / 2; // 50% PoS & 50% PoW
+    CAmount ret = blockValue/2; // 50% PoS & 50% PoW
     return ret;
 }
 
