@@ -1,4 +1,4 @@
-Building Arctic
+Building Arctic Core
 
 Use the autogen script to prepare the build environment.
 
@@ -7,7 +7,7 @@ Use the autogen script to prepare the build environment.
     make
 
 Precompiled binaries are available at github, see
-https://github.com/arcticcoinproject/arcticcoin-binaries
+https://github.com/ArcticCore/arcticcoin-binaries
 
 Always verify the signatures and checksums.
 

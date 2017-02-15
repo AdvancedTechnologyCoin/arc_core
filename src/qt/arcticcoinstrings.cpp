@@ -42,22 +42,22 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Create new files with system default permissions, instead of umask 077 (only "
 "effective with disabled wallet functionality)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Spysend uses exact denominated amounts to send funds, you might simply need "
+"SpySend uses exact denominated amounts to send funds, you might simply need "
 "to anonymize some more coins."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Delete all wallet transactions and only recover those parts of the "
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Disable all Arctic specific functionality (Goldmines, Spysend, InstantX, "
-"Evolution) (0-1, default: %u)"),
+"Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantSend, "
+"Evolutioning) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Distributed under the MIT software license, see the accompanying file "
 "COPYING or <http://www.opensource.org/licenses/mit-license.php>."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Enable instantx, show confirmations for locked transactions (bool, default: "
+"Enable InstantSend, show confirmations for locked transactions (bool, default: "
 "%s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Enable use of automated spysend for funds stored in this wallet (0-1, "
+"Enable use of automated privatesend for funds stored in this wallet (0-1, "
 "default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Enter regression test mode, which uses a special chain in which blocks can "
@@ -97,7 +97,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "In this mode -genproclimit controls how many blocks are generated "
 "immediately."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"InstantX requires inputs with at least 6 confirmations, you might need to "
+"InstantSend requires inputs with at least 6 confirmations, you might need to "
 "wait a few minutes and try again."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Invalid amount for -maxtxfee=<amount>: '%s' (must be at least the minrelay "
@@ -120,7 +120,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Output debugging information (default: %u, supplying <category> is optional)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Provide liquidity to Spysend by infrequently mixing coins on a continual "
+"Provide liquidity to SpySend by infrequently mixing coins on a continual "
 "basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, "
 "low fees)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
@@ -164,9 +164,9 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Unable to bind to %s on this computer. Arctic Core is probably already running."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Unable to locate enough Spysend denominated funds for this transaction."),
+"Unable to locate enough SpySend denominated funds for this transaction."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Unable to locate enough Spysend non-denominated funds for this transaction "
+"Unable to locate enough SpySend non-denominated funds for this transaction "
 "that are not equal 1000 ARC."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Unable to locate enough funds for this transaction that are not equal 1000 "
@@ -203,7 +203,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Whitelisted peers cannot be DoS banned and their transactions are always "
 "relayed, even if they are already in the mempool, useful e.g. for a gateway"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"You must specify a goldmineprivkey in the configuration. Please see "
+"You must specify a goldminenodeprivkey in the configuration. Please see "
 "documentation for help."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "(7209 could be used only on mainnet)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "(default: %s)"),
@@ -221,7 +221,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Always query for peer addresses via DNS lo
 QT_TRANSLATE_NOOP("arcticcoin-core", "Attempt to recover private keys from a corrupt wallet.dat"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Block creation options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Can't denominate: no compatible inputs left."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Can't find random Goldmine Node."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Can't find random Goldminenode."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Can't mix while sync in progress."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Cannot downgrade wallet"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Cannot resolve -bind address: '%s'"),
@@ -235,23 +235,23 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Connect to KeePassHttp on port <port> (def
 QT_TRANSLATE_NOOP("arcticcoin-core", "Connect to a node to retrieve peer addresses, and disconnect"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Connection options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2009-%i The Bitcoin Core Developers"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2015-%i The Arctic Core Developers"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Copyright (C) 2014-%i The Arctic Core Developers"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Corrupted block database detected"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Could not parse -rpcbind value %s as network address"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Could not parse goldmine.conf"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Spysend is idle."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Spysend options:"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Spysend request complete:"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Spysend request incomplete:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Could not parse goldminenode.conf"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "SpySend is idle."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "SpySend options:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "SpySend request complete:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "SpySend request incomplete:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Debugging/Testing options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Disable safemode, override a real safe mode event (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Discover own IP address (default: 1 when listening and no -externalip)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Do not load the wallet and disable wallet RPC calls"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Do you want to rebuild the block database now?"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Done loading"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Enable the client to act as a goldmine (0-1, default: %u)"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Enable the client to act as a goldminenode (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Entries are full."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Error connecting to Goldmine."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Error connecting to Goldminenode."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error initializing block database"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error initializing wallet database environment %s!"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error loading block database"),
@@ -267,7 +267,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Error: Can't select current denominated in
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error: Disk space is low!"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error: Unsupported argument -tor found, use -onion."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Error: Wallet locked, unable to create transaction!"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Error: You already have pending entries in the Spysend pool"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Error: You already have pending entries in the SpySend pool"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Failed to listen on any port. Use -listen=0 if you want this."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Failed to read block"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Fee (in ARC/kB) to add to transactions you send (default: %s)"),
@@ -287,7 +287,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Incorrect or no genesis block found. Wrong
 QT_TRANSLATE_NOOP("arcticcoin-core", "Information"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Initialization sanity check failed. Arctic Core is shutting down."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Input is not valid."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "InstantX options:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "InstantSend options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Insufficient funds."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid -onion address: '%s'"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid -proxy address: '%s'"),
@@ -296,17 +296,17 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid amount for -minrelaytxfee=<amount>
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid amount for -mintxfee=<amount>: '%s'"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid amount for -paytxfee=<amount>: '%s' (must be at least %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid amount for -paytxfee=<amount>: '%s'"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid goldmineprivkey. Please see documenation."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid goldminenodeprivkey. Please see documenation."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid netmask specified in -whitelist: '%s'"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid port detected in goldmine.conf"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid port detected in goldminenode.conf"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid private key."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Invalid script detected."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "KeePassHttp id for the established association"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "KeePassHttp key for AES encrypted communication with KeePass"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Keep N ARC anonymized (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Keep at most <n> unconnectable transactions in memory (default: %u)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Last Spysend was too recent."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Last successful Spysend action was too recent."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Last SpySend was too recent."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Last successful SpySend action was too recent."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Limit size of signature cache to <n> entries (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Line: %d"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Listen for JSON-RPC connections on <port> (default: %u or testnet: %u)"),
@@ -314,30 +314,30 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Listen for connections on <port> (default:
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading addresses..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading block index..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading evolution cache..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldmine cache..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldmine payment cache..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldminenode cache..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldminenode payment cache..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading wallet... (%3.2f %%)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading wallet..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Lock is already in place."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Lock goldmines from goldmine configuration file (default: %u)"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Lock goldminenodes from goldminenode configuration file (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Maintain at most <n> connections to peers (default: %u)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Goldmine options:"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Goldmine queue is full."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Goldmine:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Goldminenode options:"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Goldminenode queue is full."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Goldminenode:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Maximum per-connection receive buffer, <n>*1000 bytes (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Maximum per-connection send buffer, <n>*1000 bytes (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Missing input transaction information."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Mixing in progress..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Need to specify a port with -whitebind: '%s'"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "No Goldmines detected."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "No compatible Goldmine found."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "No Goldminenodes detected."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "No compatible Goldminenode found."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "No funds detected in need of denominating."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "No matching denominations found for mixing."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Node relay options:"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Non-standard public key detected."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Not compatible with existing transactions."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Not enough file descriptors available."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Not in the Goldmine list."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Not in the Goldminenode list."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Number of automatic wallet backups (default: 10)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Only accept block chain matching built-in checkpoints (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Only connect to nodes in network <net> (ipv4, ipv6 or onion)"),
@@ -364,11 +364,11 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Server private key (default: %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Session not complete!"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Session timed out."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Set database cache size in megabytes (%d to %d, default: %d)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Set external address:port to get to this goldmine (example: %s)"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Set external address:port to get to this goldminenode (example: %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Set key pool size to <n> (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Set maximum block size in bytes (default: %d)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Set minimum block size in bytes (default: %u)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Set the goldmine private key"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Set the goldminenode private key"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Set the number of threads to service RPC calls (default: %d)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Sets the DB_PRIVATE flag in the wallet db environment (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Show all debugging options (usage: --help -help-debug)"),
@@ -379,26 +379,26 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Signing transaction failed"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify configuration file (default: %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify connection timeout in milliseconds (minimum: 1, default: %d)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify data directory"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Specify goldmine configuration file (default: %s)"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Specify goldminenode configuration file (default: %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify pid file (default: %s)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify wallet file (within data directory)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Specify your own public address"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Spend unconfirmed change when sending transactions (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Stop running after importing blocks from disk (default: %u)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted following entries to goldmine: %u / %d"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted to goldmine, waiting for more entries ( %u / %d ) %s"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted to goldmine, waiting in queue %s"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted following entries to goldminenode: %u / %d"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted to goldminenode, waiting for more entries ( %u / %d ) %s"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted to goldminenode, waiting in queue %s"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization failed"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization finished"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization pending..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing evolutions..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldmine winners..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldmines..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldminenode winners..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldminenodes..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing sporks..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "This help message"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "This is experimental software."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "This is intended for regression testing tools and app development."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "This is not a Goldmine Node."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "This is not a Goldminenode."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Threshold for disconnecting misbehaving peers (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Transaction amount too small"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Transaction amounts must be positive"),
@@ -414,13 +414,13 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Unknown network specified in -onlynet: '%s
 QT_TRANSLATE_NOOP("arcticcoin-core", "Unknown state: id = %u"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Upgrade wallet to latest format"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Use KeePass 2 integration using KeePassHttp plugin (default: %u)"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Use N separate goldmines to anonymize funds  (2-8, default: %u)"),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Use N separate goldminenodes to anonymize funds  (2-8, default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Use OpenSSL (https) for JSON-RPC connections"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Use UPnP to map the listening port (default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Use UPnP to map the listening port (default: 1 when listening)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Use the test network"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Username for JSON-RPC connections"),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Value more than Spysend pool maximum allows."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Value more than SpySend pool maximum allows."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Verifying blocks..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Verifying wallet..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Wallet %s resides outside data directory %s"),

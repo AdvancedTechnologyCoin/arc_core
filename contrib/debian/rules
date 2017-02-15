@@ -2,11 +2,11 @@
 # -*- mode: makefile; coding: utf-8 -*-
 
 #DEB_MAKE_CHECK_TARGET = test_arcticcoin
-#build/bitcoind::
+#build/arcticcoind::
 #	$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),,src/test_arcticcoin)
 
-DEB_INSTALL_EXAMPLES_bitcoind += debian/examples/*
-DEB_INSTALL_MANPAGES_bitcoind += debian/manpages/*
+DEB_INSTALL_EXAMPLES_arcticcoind += debian/examples/*
+DEB_INSTALL_MANPAGES_arcticcoind += debian/manpages/*
 
 %:
 	dh --with bash-completion $@
@@ -18,7 +18,7 @@ override_dh_auto_clean:
 # Yea, autogen should be run on the source archive, but I like doing git archive
 override_dh_auto_configure:
 	./autogen.sh
-	./configure
+	./configure --without-miniupnpc --with-gui=qt4
 
 override_dh_auto_test:
 	make check

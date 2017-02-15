@@ -3,7 +3,7 @@
 <plist version="0.9">
 <dict>
   <key>LSMinimumSystemVersion</key>
-  <string>10.6.0</string>
+  <string>10.7.0</string>
 
   <key>LSArchitecturePriority</key>
   <array>
@@ -30,9 +30,15 @@
 
   <key>CFBundleExecutable</key>
   <string>Arctic-Qt</string>
+  
+  <key>CFBundleName</key>
+  <string>Arctic-Qt</string>
+
+  <key>LSHasLocalizedDisplayName</key>
+  <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>io.arcticcoin.Arctic-Qt</string>
+  <string>org.arcticcoin.Arctic-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -40,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>io.arcticcoin.ArcticPayment</string>
+      <string>org.arcticcoin.ArcticPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>arcticcoin</string>
@@ -52,7 +58,7 @@
   <array>
     <dict>
       <key>UTTypeIdentifier</key>
-      <string>io.arcticcoin.paymentrequest</string>
+      <string>org.arcticcoin.paymentrequest</string>
       <key>UTTypeDescription</key>
       <string>Arctic payment request</string>
       <key>UTTypeConformsTo</key>
@@ -65,7 +71,7 @@
         <string>application/x-arcticcoin-payment-request</string>
         <key>public.filename-extension</key>
         <array>
-          <string>arcticcoinmentrequest</string>
+          <string>arcticcoinpaymentrequest</string>
         </array>
       </dict>
     </dict>
@@ -78,7 +84,7 @@
       <string>Editor</string>
       <key>LSItemContentTypes</key>
       <array>
-        <string>io.arcticcoin.paymentrequest</string>
+        <string>org.arcticcoin.paymentrequest</string>
       </array>
       <key>LSHandlerRank</key>
       <string>Owner</string>

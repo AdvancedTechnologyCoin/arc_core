@@ -1,6 +1,6 @@
-// Copyright (c) 2011-2014 The Bitcoin developers
-// Copyright (c) 2015-2016 The Arctic developers
-// Distributed under the MIT/X11 software license, see the accompanying
+// Copyright (c) 2011-2015 The Bitcoin Core developers
+// Copyright (c) 2015-2017 The Arctic Core Developers
+// Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "askpassphrasedialog.h"
@@ -9,7 +9,7 @@
 #include "guiconstants.h"
 #include "walletmodel.h"
 
-#include "allocators.h"
+#include "support/allocators/secure.h"
 
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -45,9 +45,9 @@ AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget *parent) :
             ui->passEdit1->hide();
             setWindowTitle(tr("Encrypt wallet"));
             break;
-        case UnlockAnonymize:
-            ui->anonymizationCheckBox->setChecked(true);
-            ui->anonymizationCheckBox->show();
+        case UnlockMixing:
+            ui->mixingOnlyCheckBox->show();
+            ui->mixingOnlyCheckBox->setChecked(true);
         case Unlock: // Ask passphrase
             ui->warningLabel->setText(tr("This operation needs your wallet passphrase to unlock the wallet."));
             ui->passLabel2->hide();
@@ -66,7 +66,7 @@ AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget *parent) :
             break;
         case ChangePass: // Ask old passphrase + new passphrase x2
             setWindowTitle(tr("Change passphrase"));
-            ui->warningLabel->setText(tr("Enter the old and new passphrase to the wallet."));
+            ui->warningLabel->setText(tr("Enter the old passphrase and new passphrase to the wallet."));
             break;
     }
     textChanged();
@@ -87,7 +87,6 @@ AskPassphraseDialog::~AskPassphraseDialog()
 void AskPassphraseDialog::setModel(WalletModel *model)
 {
     this->model = model;
-    ui->anonymizationCheckBox->setChecked(model->isAnonymizeOnlyUnlocked());
 }
 
 void AskPassphraseDialog::accept()
@@ -124,7 +123,7 @@ void AskPassphraseDialog::accept()
                 {
                     QMessageBox::warning(this, tr("Wallet encrypted"),
                                          "<qt>" +
-                                         tr("Arctic will close now to finish the encryption process. "
+                                         tr("Arctic Core will close now to finish the encryption process. "
                                          "Remember that encrypting your wallet cannot fully protect "
                                          "your arcticcoins from being stolen by malware infecting your computer.") +
                                          "<br><br><b>" +
@@ -153,9 +152,9 @@ void AskPassphraseDialog::accept()
             QDialog::reject(); // Cancelled
         }
         } break;
-    case UnlockAnonymize:
+    case UnlockMixing:
     case Unlock:
-        if(!model->setWalletLocked(false, oldpass, ui->anonymizationCheckBox->isChecked()))
+        if(!model->setWalletLocked(false, oldpass, ui->mixingOnlyCheckBox->isChecked()))
         {
             QMessageBox::critical(this, tr("Wallet unlock failed"),
                                   tr("The passphrase entered for the wallet decryption was incorrect."));
@@ -209,7 +208,7 @@ void AskPassphraseDialog::textChanged()
     case Encrypt: // New passphrase x2
         acceptable = !ui->passEdit2->text().isEmpty() && !ui->passEdit3->text().isEmpty();
         break;
-    case UnlockAnonymize: // Old passphrase x1
+    case UnlockMixing: // Old passphrase x1
     case Unlock: // Old passphrase x1
     case Decrypt:
         acceptable = !ui->passEdit1->text().isEmpty();

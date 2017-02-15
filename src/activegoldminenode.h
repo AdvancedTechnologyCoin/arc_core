@@ -1,71 +1,78 @@
-// Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2015-2017 The Arctic Core Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef ACTIVEMASTERNODE_H
-#define ACTIVEMASTERNODE_H
 
-#include "sync.h"
+#ifndef ACTIVEGOLDMINENODE_H
+#define ACTIVEGOLDMINENODE_H
+
 #include "net.h"
 #include "key.h"
-#include "init.h"
-#include "wallet.h"
-#include "spysend.h"
-#include "goldminenode.h"
+#include "wallet/wallet.h"
 
-#define ACTIVE_MASTERNODE_INITIAL                     0 // initial state
-#define ACTIVE_MASTERNODE_SYNC_IN_PROCESS             1
-#define ACTIVE_MASTERNODE_INPUT_TOO_NEW               2
-#define ACTIVE_MASTERNODE_NOT_CAPABLE                 3
-#define ACTIVE_MASTERNODE_STARTED                     4
+class CActiveGoldminenode;
 
-// Responsible for activating the Masternode and pinging the network
-class CActiveMasternode
+static const int ACTIVE_GOLDMINENODE_INITIAL          = 0; // initial state
+static const int ACTIVE_GOLDMINENODE_SYNC_IN_PROCESS  = 1;
+static const int ACTIVE_GOLDMINENODE_INPUT_TOO_NEW    = 2;
+static const int ACTIVE_GOLDMINENODE_NOT_CAPABLE      = 3;
+static const int ACTIVE_GOLDMINENODE_STARTED          = 4;
+
+extern CActiveGoldminenode activeGoldminenode;
+
+// Responsible for activating the Goldminenode and pinging the network
+class CActiveGoldminenode
 {
+public:
+    enum goldminenode_type_enum_t {
+        GOLDMINENODE_UNKNOWN = 0,
+        GOLDMINENODE_REMOTE  = 1,
+        GOLDMINENODE_LOCAL   = 2
+    };
+
 private:
     // critical section to protect the inner data structures
     mutable CCriticalSection cs;
 
-    /// Ping Masternode
-    bool SendMasternodePing(std::string& errorMessage);
+    goldminenode_type_enum_t eType;
 
-    /// Create Masternode broadcast, needs to be relayed manually after that
-    bool CreateBroadcast(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyMasternode, CPubKey pubKeyMasternode, std::string &errorMessage, CMasternodeBroadcast &mnb);
+    bool fPingerEnabled;
 
-    /// Get 1000DRK input that can be used for the Masternode
-    bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey, std::string strTxHash, std::string strOutputIndex);
-    bool GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubkey, CKey& secretKey);
+    /// Ping Goldminenode
+    bool SendGoldminenodePing();
 
 public:
-	// Initialized by init.cpp
-	// Keys for the main Masternode
-	CPubKey pubKeyMasternode;
+    // Keys for the active Goldminenode
+    CPubKey pubKeyGoldminenode;
+    CKey keyGoldminenode;
 
-	// Initialized while registering Masternode
-	CTxIn vin;
+    // Initialized while registering Goldminenode
+    CTxIn vin;
     CService service;
 
-    int status;
-    std::string notCapableReason;
+    int nState; // should be one of ACTIVE_GOLDMINENODE_XXXX
+    std::string strNotCapableReason;
 
-    CActiveMasternode()
-    {        
-        status = ACTIVE_MASTERNODE_INITIAL;
-    }
+    CActiveGoldminenode()
+        : eType(GOLDMINENODE_UNKNOWN),
+          fPingerEnabled(false),
+          pubKeyGoldminenode(),
+          keyGoldminenode(),
+          vin(),
+          service(),
+          nState(ACTIVE_GOLDMINENODE_INITIAL)
+    {}
 
-    /// Manage status of main Masternode
-    void ManageStatus(); 
-    std::string GetStatus();
+    /// Manage state of active Goldminenode
+    void ManageState();
 
-    /// Create Masternode broadcast, needs to be relayed manually after that
-    bool CreateBroadcast(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CMasternodeBroadcast &mnb, bool fOffline = false);
+    std::string GetStateString() const;
+    std::string GetStatus() const;
+    std::string GetTypeString() const;
 
-    /// Get 1000DRK input that can be used for the Masternode
-    bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey);
-    vector<COutput> SelectCoinsMasternode();
-
-    /// Enable cold wallet mode (run a Masternode with no funds)
-    bool EnableHotColdMasterNode(CTxIn& vin, CService& addr);
+private:
+    void ManageStateInitial();
+    void ManageStateRemote();
+    void ManageStateLocal();
 };
 
 #endif

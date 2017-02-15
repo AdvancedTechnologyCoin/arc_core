@@ -1,2 +1,3 @@
 debian/manpages/arcticcoind.1
 debian/manpages/arcticcoin.conf.5
+debian/manpages/arcticcoin-cli.1

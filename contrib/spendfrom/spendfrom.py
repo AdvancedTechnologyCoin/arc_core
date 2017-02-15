@@ -33,12 +33,12 @@ def check_json_precision():
         raise RuntimeError("JSON encode/decode loses precision")
 
 def determine_db_dir():
-    """Return the default location of the arcticcoin data directory"""
+    """Return the default location of the Arctic Core data directory"""
     if platform.system() == "Darwin":
-        return os.path.expanduser("~/Library/Application Support/Arctic/")
+        return os.path.expanduser("~/Library/Application Support/ArcticCore/")
     elif platform.system() == "Windows":
-        return os.path.join(os.environ['APPDATA'], "Arctic")
-    return os.path.expanduser("~/.arcticcoin")
+        return os.path.join(os.environ['APPDATA'], "ArcticCore")
+    return os.path.expanduser("~/.arcticcore")
 
 def read_bitcoin_config(dbdir):
     """Read the arcticcoin.conf file from dbdir, returns dictionary of settings"""
@@ -63,7 +63,7 @@ def read_bitcoin_config(dbdir):
     return dict(config_parser.items("all"))
 
 def connect_JSON(config):
-    """Connect to a arcticcoin JSON-RPC server"""
+    """Connect to a Arctic Core JSON-RPC server"""
     testnet = config.get('testnet', '0')
     testnet = (int(testnet) > 0)  # 0/1 in config file, convert to True/False
     if not 'rpcport' in config:
