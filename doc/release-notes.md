@@ -45,10 +45,10 @@ Asm script outputs replacements for OP_NOP2 and OP_NOP3
 -------------------------------------------------------
 
 OP_NOP2 has been renamed to OP_CHECKLOCKTIMEVERIFY by [BIP 
-65](https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki)
+65](https://github.com/bitcoin/bips/blob/goldmine/bip-0065.mediawiki)
 
 OP_NOP3 has been renamed to OP_CHECKSEQUENCEVERIFY by [BIP 
-112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki)
+112](https://github.com/bitcoin/bips/blob/goldmine/bip-0112.mediawiki)
 
 The following outputs are affected by this change:
 - RPC `getrawtransaction` (in verbose mode)
@@ -96,7 +96,7 @@ As well as everyone that helped translating on [Transifex](https://www.transifex
 Darkcoin tree 0.9.x was the open source implementation of goldminenodes based on
 the 0.8.x tree and was first released on Mar/13/2014.
 
-Darkcoin tree 0.10.x used to be the closed source implementation of Spysend
+Darkcoin tree 0.10.x used to be the closed source implementation of SpySend
 which was released open source on Sep/25/2014.
 
 Arctic Core tree 0.11.x was a fork of Bitcoin Core tree 0.9, Darkcoin was rebranded

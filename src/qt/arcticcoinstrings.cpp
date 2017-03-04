@@ -33,8 +33,8 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Cannot obtain a lock on data directory %s. Arctic Core is probably already "
 "running."),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
-"Change automatic finalized evolution voting behavior. mode=auto: Vote for only "
-"exact finalized evolution match to my generated evolution. (string, default: auto)"),
+"Change automatic finalized budget voting behavior. mode=auto: Vote for only "
+"exact finalized budget match to my generated budget. (string, default: auto)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Continuously rate-limit free transactions to <n>*1000 bytes per minute "
 "(default:%u)"),
@@ -49,7 +49,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantSend, "
-"Evolutioning) (0-1, default: %u)"),
+"Evolution) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", ""
 "Distributed under the MIT software license, see the accompanying file "
 "COPYING or <http://www.opensource.org/licenses/mit-license.php>."),
@@ -313,7 +313,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Listen for JSON-RPC connections on <port> 
 QT_TRANSLATE_NOOP("arcticcoin-core", "Listen for connections on <port> (default: %u or testnet: %u)"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading addresses..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading block index..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Loading evolution cache..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Loading budget cache..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldminenode cache..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading goldminenode payment cache..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Loading wallet... (%3.2f %%)"),
@@ -391,7 +391,7 @@ QT_TRANSLATE_NOOP("arcticcoin-core", "Submitted to goldminenode, waiting in queu
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization failed"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization finished"),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronization pending..."),
-QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing evolutions..."),
+QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing budgets..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldminenode winners..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing goldminenodes..."),
 QT_TRANSLATE_NOOP("arcticcoin-core", "Synchronizing sporks..."),

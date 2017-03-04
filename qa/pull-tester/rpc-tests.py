@@ -62,10 +62,10 @@ for arg in sys.argv[1:]:
 
 #Set env vars
 buildDir = BUILDDIR
-if "ARCD" not in os.environ:
-    os.environ["ARCD"] = buildDir + '/src/arcticcoind' + EXEEXT
-if "ARCCLI" not in os.environ:
-    os.environ["ARCCLI"] = buildDir + '/src/arcticcoin-cli' + EXEEXT
+if "ARCTICCOIND" not in os.environ:
+    os.environ["ARCTICCOIND"] = buildDir + '/src/arcticcoind' + EXEEXT
+if "ARCTICCLI" not in os.environ:
+    os.environ["ARCTICCLI"] = buildDir + '/src/arcticcoin-cli' + EXEEXT
 
 if EXEEXT == ".exe" and "-win" not in opts:
     # https://github.com/bitcoin/bitcoin/commit/d52802551752140cf41f0d9a225a43e84404d3e9

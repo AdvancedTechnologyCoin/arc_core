@@ -252,7 +252,7 @@ bool CExtKey::Derive(CExtKey &out, unsigned int nChild) const {
     return key.Derive(out.key, out.chaincode, nChild, chaincode);
 }
 
-void CExtKey::SetMaster(const unsigned char *seed, unsigned int nSeedLen) {
+void CExtKey::SetGoldmine(const unsigned char *seed, unsigned int nSeedLen) {
     static const unsigned char hashkey[] = {'B','i','t','c','o','i','n',' ','s','e','e','d'};
     unsigned char out[64];
     LockObject(out);

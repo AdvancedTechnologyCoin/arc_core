@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -141,7 +141,7 @@ You retain control of your money at all times..<hr> \
 <b>The SpySend process works like this:</b>\
 <ol type=\"1\"> \
 <li>SpySend begins by breaking your transaction inputs down into standard denominations. \
-These denominations are 0.1 ARC, 1 ARC, 10 ARC, and 100 ARC--sort of like the paper money you use every day.</li> \
+These denominations are 0.01 ARC, 0.1 ARC, 1 ARC and 10 ARC -- sort of like the paper money you use every day.</li> \
 <li>Your wallet then sends requests to specially configured software nodes on the network, called \"goldminenodes.\" \
 These goldminenodes are informed then that you are interested in mixing a certain denomination. \
 No identifiable information is sent to the goldminenodes, so they never know \"who\" you are.</li> \
@@ -157,6 +157,7 @@ your funds will already be anonymized. No additional waiting is required.</li> \
 This means those 1000 addresses last for about 100 mixing events. When 900 of them are used, your wallet must create more addresses. \
 It can only do this, however, if you have automatic backups enabled.<br> \
 Consequently, users who have backups disabled will also have SpySend disabled. <hr>\
+For more info see <a href=\"https://ArcticCore.atlassian.net/wiki/display/DOC/SpySend\">https://ArcticCore.atlassian.net/wiki/display/DOC/SpySend</a> \
         "));
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);

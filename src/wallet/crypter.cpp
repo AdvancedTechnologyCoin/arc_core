@@ -58,15 +58,19 @@ bool CCrypter::Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned
     int nCLen = nLen + AES_BLOCK_SIZE, nFLen = 0;
     vchCiphertext = std::vector<unsigned char> (nCLen);
 
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+
+    if (!ctx) return false;
 
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
-    if (fOk) fOk = EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
-    if (fOk) fOk = EVP_EncryptUpdate(&ctx, &vchCiphertext[0], &nCLen, &vchPlaintext[0], nLen) != 0;
-    if (fOk) fOk = EVP_EncryptFinal_ex(&ctx, (&vchCiphertext[0]) + nCLen, &nFLen) != 0;
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_init(ctx);
+    if (fOk) fOk = EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
+    if (fOk) fOk = EVP_EncryptUpdate(ctx, &vchCiphertext[0], &nCLen, &vchPlaintext[0], nLen) != 0;
+    if (fOk) fOk = EVP_EncryptFinal_ex(ctx, (&vchCiphertext[0]) + nCLen, &nFLen) != 0;
+    EVP_CIPHER_CTX_cleanup(ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
 
     if (!fOk) return false;
 
@@ -85,15 +89,19 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
 
     vchPlaintext = CKeyingMaterial(nPLen);
 
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+
+    if (!ctx) return false;
 
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
-    if (fOk) fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
-    if (fOk) fOk = EVP_DecryptUpdate(&ctx, &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen) != 0;
-    if (fOk) fOk = EVP_DecryptFinal_ex(&ctx, (&vchPlaintext[0]) + nPLen, &nFLen) != 0;
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_init(ctx);
+    if (fOk) fOk = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, chKey, chIV) != 0;
+    if (fOk) fOk = EVP_DecryptUpdate(ctx, &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen) != 0;
+    if (fOk) fOk = EVP_DecryptFinal_ex(ctx, (&vchPlaintext[0]) + nPLen, &nFLen) != 0;
+    EVP_CIPHER_CTX_cleanup(ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
 
     if (!fOk) return false;
 
@@ -102,12 +110,12 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
 }
 
 
-static bool EncryptSecret(const CKeyingMaterial& vMasterKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV, std::vector<unsigned char> &vchCiphertext)
+static bool EncryptSecret(const CKeyingMaterial& vGoldmineKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV, std::vector<unsigned char> &vchCiphertext)
 {
     CCrypter cKeyCrypter;
     std::vector<unsigned char> chIV(WALLET_CRYPTO_KEY_SIZE);
     memcpy(&chIV[0], &nIV, WALLET_CRYPTO_KEY_SIZE);
-    if(!cKeyCrypter.SetKey(vMasterKey, chIV))
+    if(!cKeyCrypter.SetKey(vGoldmineKey, chIV))
         return false;
     return cKeyCrypter.Encrypt(*((const CKeyingMaterial*)&vchPlaintext), vchCiphertext);
 }
@@ -132,15 +140,19 @@ bool EncryptAES256(const SecureString& sKey, const SecureString& sPlaintext, con
     sCiphertext.resize(nCLen);
 
     // Perform the encryption
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+
+    if (!ctx) return false;
 
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
-    if (fOk) fOk = EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0], (const unsigned char*) &sIV[0]);
-    if (fOk) fOk = EVP_EncryptUpdate(&ctx, (unsigned char*) &sCiphertext[0], &nCLen, (const unsigned char*) &sPlaintext[0], nLen);
-    if (fOk) fOk = EVP_EncryptFinal_ex(&ctx, (unsigned char*) (&sCiphertext[0])+nCLen, &nFLen);
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_init(ctx);
+    if (fOk) fOk = EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0], (const unsigned char*) &sIV[0]);
+    if (fOk) fOk = EVP_EncryptUpdate(ctx, (unsigned char*) &sCiphertext[0], &nCLen, (const unsigned char*) &sPlaintext[0], nLen);
+    if (fOk) fOk = EVP_EncryptFinal_ex(ctx, (unsigned char*) (&sCiphertext[0])+nCLen, &nFLen);
+    EVP_CIPHER_CTX_cleanup(ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
 
     if (!fOk) return false;
 
@@ -149,12 +161,12 @@ bool EncryptAES256(const SecureString& sKey, const SecureString& sPlaintext, con
 }
 
 
-static bool DecryptSecret(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCiphertext, const uint256& nIV, CKeyingMaterial& vchPlaintext)
+static bool DecryptSecret(const CKeyingMaterial& vGoldmineKey, const std::vector<unsigned char>& vchCiphertext, const uint256& nIV, CKeyingMaterial& vchPlaintext)
 {
     CCrypter cKeyCrypter;
     std::vector<unsigned char> chIV(WALLET_CRYPTO_KEY_SIZE);
     memcpy(&chIV[0], &nIV, WALLET_CRYPTO_KEY_SIZE);
-    if(!cKeyCrypter.SetKey(vMasterKey, chIV))
+    if(!cKeyCrypter.SetKey(vGoldmineKey, chIV))
         return false;
     return cKeyCrypter.Decrypt(vchCiphertext, *((CKeyingMaterial*)&vchPlaintext));
 }
@@ -173,15 +185,19 @@ bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, con
 
     sPlaintext.resize(nPLen);
 
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+
+    if (!ctx) return false;
 
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
-    if (fOk) fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0], (const unsigned char*) &sIV[0]);
-    if (fOk) fOk = EVP_DecryptUpdate(&ctx, (unsigned char *) &sPlaintext[0], &nPLen, (const unsigned char *) &sCiphertext[0], nLen);
-    if (fOk) fOk = EVP_DecryptFinal_ex(&ctx, (unsigned char *) (&sPlaintext[0])+nPLen, &nFLen);
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_init(ctx);
+    if (fOk) fOk = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0], (const unsigned char*) &sIV[0]);
+    if (fOk) fOk = EVP_DecryptUpdate(ctx, (unsigned char *) &sPlaintext[0], &nPLen, (const unsigned char *) &sCiphertext[0], nLen);
+    if (fOk) fOk = EVP_DecryptFinal_ex(ctx, (unsigned char *) (&sPlaintext[0])+nPLen, &nFLen);
+    EVP_CIPHER_CTX_cleanup(ctx);
+
+    EVP_CIPHER_CTX_free(ctx);
 
     if (!fOk) return false;
 
@@ -190,10 +206,10 @@ bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, con
 }
 
 
-static bool DecryptKey(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCryptedSecret, const CPubKey& vchPubKey, CKey& key)
+static bool DecryptKey(const CKeyingMaterial& vGoldmineKey, const std::vector<unsigned char>& vchCryptedSecret, const CPubKey& vchPubKey, CKey& key)
 {
     CKeyingMaterial vchSecret;
-    if(!DecryptSecret(vMasterKey, vchCryptedSecret, vchPubKey.GetHash(), vchSecret))
+    if(!DecryptSecret(vGoldmineKey, vchCryptedSecret, vchPubKey.GetHash(), vchSecret))
         return false;
 
     if (vchSecret.size() != 32)
@@ -221,7 +237,7 @@ bool CCryptoKeyStore::Lock(bool fAllowMixing)
 
     if(!fAllowMixing) {
         LOCK(cs_KeyStore);
-        vMasterKey.clear();
+        vGoldmineKey.clear();
     }
 
     fOnlyMixingAllowed = fAllowMixing;
@@ -229,7 +245,7 @@ bool CCryptoKeyStore::Lock(bool fAllowMixing)
     return true;
 }
 
-bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn, bool fForMixingOnly)
+bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vGoldmineKeyIn, bool fForMixingOnly)
 {
     {
         LOCK(cs_KeyStore);
@@ -244,7 +260,7 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn, bool fForMixin
             const CPubKey &vchPubKey = (*mi).second.first;
             const std::vector<unsigned char> &vchCryptedSecret = (*mi).second.second;
             CKey key;
-            if (!DecryptKey(vMasterKeyIn, vchCryptedSecret, vchPubKey, key))
+            if (!DecryptKey(vGoldmineKeyIn, vchCryptedSecret, vchPubKey, key))
             {
                 keyFail = true;
                 break;
@@ -260,7 +276,7 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn, bool fForMixin
         }
         if (keyFail || !keyPass)
             return false;
-        vMasterKey = vMasterKeyIn;
+        vGoldmineKey = vGoldmineKeyIn;
         fDecryptionThoroughlyChecked = true;
     }
     fOnlyMixingAllowed = fForMixingOnly;
@@ -280,7 +296,7 @@ bool CCryptoKeyStore::AddKeyPubKey(const CKey& key, const CPubKey &pubkey)
 
         std::vector<unsigned char> vchCryptedSecret;
         CKeyingMaterial vchSecret(key.begin(), key.end());
-        if (!EncryptSecret(vMasterKey, vchSecret, pubkey.GetHash(), vchCryptedSecret))
+        if (!EncryptSecret(vGoldmineKey, vchSecret, pubkey.GetHash(), vchCryptedSecret))
             return false;
 
         if (!AddCryptedKey(pubkey, vchCryptedSecret))
@@ -314,7 +330,7 @@ bool CCryptoKeyStore::GetKey(const CKeyID &address, CKey& keyOut) const
         {
             const CPubKey &vchPubKey = (*mi).second.first;
             const std::vector<unsigned char> &vchCryptedSecret = (*mi).second.second;
-            return DecryptKey(vMasterKey, vchCryptedSecret, vchPubKey, keyOut);
+            return DecryptKey(vGoldmineKey, vchCryptedSecret, vchPubKey, keyOut);
         }
     }
     return false;
@@ -339,7 +355,7 @@ bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) co
     return false;
 }
 
-bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
+bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vGoldmineKeyIn)
 {
     {
         LOCK(cs_KeyStore);
@@ -353,7 +369,7 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
             CPubKey vchPubKey = key.GetPubKey();
             CKeyingMaterial vchSecret(key.begin(), key.end());
             std::vector<unsigned char> vchCryptedSecret;
-            if (!EncryptSecret(vMasterKeyIn, vchSecret, vchPubKey.GetHash(), vchCryptedSecret))
+            if (!EncryptSecret(vGoldmineKeyIn, vchSecret, vchPubKey.GetHash(), vchCryptedSecret))
                 return false;
             if (!AddCryptedKey(vchPubKey, vchCryptedSecret))
                 return false;

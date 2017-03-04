@@ -1,14 +1,14 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "splashscreen.h"
-
+#include "guiutil.h"
 #include "networkstyle.h"
 
 #include "clientversion.h"
-#include "guiutil.h"
+
 #include "init.h"
 #include "util.h"
 #include "ui_interface.h"
@@ -26,26 +26,30 @@
 SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) :
     QWidget(0, f), curAlignment(0)
 {
-    // set reference point, paddings
+    
+	// transparent background
+    setAttribute(Qt::WA_TranslucentBackground);
+    setStyleSheet("background:transparent;");
+
+    // no window decorations
+    setWindowFlags(Qt::FramelessWindowHint);
+
+	
+	// set reference point, paddings
     int paddingLeft             = 14;
     int paddingTop              = 470;
     int titleVersionVSpace      = 17;
     int titleCopyrightVSpace    = 32;
 
     float fontFactor            = 1.0;
-    float devicePixelRatio      = 1.0;
-#if QT_VERSION > 0x050100
-    devicePixelRatio = ((QGuiApplication*)QCoreApplication::instance())->devicePixelRatio();
-#endif
-
+    
+	
     // define text to place
     QString titleText       = tr("Arctic Core");
     QString versionText     = QString(tr("Version %1")).arg(QString::fromStdString(FormatFullVersion()));
     QString copyrightTextBtc   = QChar(0xA9)+QString(" 2009-%1 ").arg(COPYRIGHT_YEAR) + QString(tr("The Bitcoin Core developers"));
-    QString copyrightTextArctic   = QChar(0xA9)+QString(" 2014-%1 ").arg(COPYRIGHT_YEAR) + QString(tr("The Arctic Core developers"));
+    QString copyrightTextArctic   = QChar(0xA9)+QString(" 2015-%1 ").arg(COPYRIGHT_YEAR) + QString(tr("The Arctic Core developers"));
     QString titleAddText    = networkStyle->getTitleAddText();
-
-    QString font            = QApplication::font().toString();
 
     // networkstyle.cpp can't (yet) read themes, so we do it here to get the correct Splash-screen
     QString splashScreenPath = ":/images/" + GUIUtil::getThemeName() + "/splash";
@@ -54,7 +58,9 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     if(GetBoolArg("-testnet", false))
         splashScreenPath = ":/images/" + GUIUtil::getThemeName() + "/splash_testnet";
 
-    // load the bitmap for writing some text over it
+	QString font = QApplication::font().toString();	
+    
+	// load the bitmap for writing some text over it
     pixmap = QPixmap(splashScreenPath);
 
     QPainter pixPaint(&pixmap);
@@ -94,11 +100,8 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
 
     pixPaint.end();
 
-    // Set window title
-    setWindowTitle(titleText + " " + titleAddText);
-
     // Resize window and move to center of desktop, disallow resizing
-    QRect r(QPoint(), QSize(pixmap.size().width()/devicePixelRatio,pixmap.size().height()/devicePixelRatio));
+    QRect r(QPoint(), pixmap.size());
     resize(r.size());
     setFixedSize(r.size());
     move(QApplication::desktop()->screenGeometry().center() - r.center());

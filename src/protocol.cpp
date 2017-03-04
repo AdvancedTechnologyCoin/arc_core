@@ -43,11 +43,11 @@ const char *GETSPORKS="getsporks";
 const char *GOLDMINENODEPAYMENTVOTE="mnw";
 const char *GOLDMINENODEPAYMENTBLOCK="mnwb";
 const char *GOLDMINENODEPAYMENTSYNC="mnget";
-const char *MNEVOLUTIONSYNC="mnvs"; // depreciated since 12.1
-const char *MNEVOLUTIONVOTE="mvote"; // depreciated since 12.1
-const char *MNEVOLUTIONPROPOSAL="mprop"; // depreciated since 12.1
-const char *MNEVOLUTIONFINAL="fbs"; // depreciated since 12.1
-const char *MNEVOLUTIONFINALVOTE="fbvote"; // depreciated since 12.1
+const char *GMEVOLUTIONSYNC="mnvs"; // depreciated since 12.1
+const char *GMEVOLUTIONVOTE="mvote"; // depreciated since 12.1
+const char *GMEVOLUTIONPROPOSAL="mprop"; // depreciated since 12.1
+const char *GMEVOLUTIONFINAL="fbs"; // depreciated since 12.1
+const char *GMEVOLUTIONFINALVOTE="fbvote"; // depreciated since 12.1
 const char *MNQUORUM="mn quorum"; // not implemented
 const char *MNANNOUNCE="mnb";
 const char *MNPING="mnp";
@@ -80,10 +80,10 @@ static const char* ppszTypeName[] =
     NetMsgType::SPORK,
     NetMsgType::GOLDMINENODEPAYMENTVOTE,
     NetMsgType::GOLDMINENODEPAYMENTBLOCK, // reusing, was MNSCANERROR previousely, was NOT used in 12.0, we need this for inv
-    NetMsgType::MNEVOLUTIONVOTE, // depreciated since 12.1
-    NetMsgType::MNEVOLUTIONPROPOSAL, // depreciated since 12.1
-    NetMsgType::MNEVOLUTIONFINAL, // depreciated since 12.1
-    NetMsgType::MNEVOLUTIONFINALVOTE, // depreciated since 12.1
+    NetMsgType::GMEVOLUTIONVOTE, // depreciated since 12.1
+    NetMsgType::GMEVOLUTIONPROPOSAL, // depreciated since 12.1
+    NetMsgType::GMEVOLUTIONFINAL, // depreciated since 12.1
+    NetMsgType::GMEVOLUTIONFINALVOTE, // depreciated since 12.1
     NetMsgType::MNQUORUM, // not implemented
     NetMsgType::MNANNOUNCE,
     NetMsgType::MNPING,

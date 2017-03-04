@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -36,9 +36,17 @@ WalletModel::WalletModel(const PlatformStyle *platformStyle, CWallet *wallet, Op
     QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
     transactionTableModel(0),
     recentRequestsTableModel(0),
-    cachedBalance(0), cachedUnconfirmedBalance(0), cachedImmatureBalance(0),
+    cachedBalance(0),
+    cachedUnconfirmedBalance(0),
+    cachedImmatureBalance(0),
+    cachedAnonymizedBalance(0),
+    cachedWatchOnlyBalance(0),
+    cachedWatchUnconfBalance(0),
+    cachedWatchImmatureBalance(0),
     cachedEncryptionStatus(Unencrypted),
-    cachedNumBlocks(0)
+    cachedNumBlocks(0),
+    cachedTxLocks(0),
+    cachedSpySendRounds(0)
 {
     fHaveWatchOnly = wallet->HaveWatchOnly();
     fForceCheckBalanceChanged = false;

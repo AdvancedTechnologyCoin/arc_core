@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,6 +22,8 @@
 #include "ui_interface.h"
 #include "txmempool.h"
 #include "wallet/wallet.h"
+
+#include "spysend.h"
 
 #include <QMessageBox>
 #include <QScrollBar>
@@ -260,7 +262,7 @@ void SendCoinsDialog::on_sendButton_clicked()
         strFunds = tr("using") + " <b>" + tr("anonymous funds") + "</b>";
         QString strNearestAmount(
             BitcoinUnits::formatWithUnit(
-                model->getOptionsModel()->getDisplayUnit(), 0.1 * COIN));
+                model->getOptionsModel()->getDisplayUnit(), vecSpySendDenominations.back()));
         strFee = QString(tr(
             "(privatesend requires this amount to be rounded up to the nearest %1)."
         ).arg(strNearestAmount));

@@ -87,7 +87,7 @@ class MaxUploadTest(BitcoinTestFramework):
  
     def add_options(self, parser):
         parser.add_option("--testbinary", dest="testbinary",
-                          default=os.getenv("ARCD", "arcticcoind"),
+                          default=os.getenv("ARCTICCOIND", "arcticcoind"),
                           help="arcticcoind binary to test")
 
     def setup_chain(self):

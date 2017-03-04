@@ -3,7 +3,7 @@ AC_PREREQ([2.60])
 define(_CLIENT_VERSION_MAJOR, 0)
 define(_CLIENT_VERSION_MINOR, 12)
 define(_CLIENT_VERSION_REVISION, 1)
-define(_CLIENT_VERSION_BUILD, 0)
+define(_CLIENT_VERSION_BUILD, 2)
 define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2017)
 AC_INIT([Arctic Core],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/ArcticCore/arcticcoin/issues],[arcticcore])
@@ -14,9 +14,9 @@ AC_CONFIG_MACRO_DIR([build-aux/m4])
 
 AC_CANONICAL_HOST
 
-AH_TOP([#ifndef ARC_CONFIG_H])
-AH_TOP([#define ARC_CONFIG_H])
-AH_BOTTOM([#endif //ARC_CONFIG_H])
+AH_TOP([#ifndef ARCTIC_CONFIG_H])
+AH_TOP([#define ARCTIC_CONFIG_H])
+AH_BOTTOM([#endif //ARCTIC_CONFIG_H])
 
 dnl faketime breaks configure and is only needed for make. Disable it here.
 unset FAKETIME

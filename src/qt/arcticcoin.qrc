@@ -52,7 +52,7 @@
         <file alias="about_qt">res/icons/arcgreen/about_qt.png</file>
         <file alias="verify">res/icons/arcgreen/verify.png</file>
     </qresource>
-     <qresource prefix="/icons/trad">
+    <qresource prefix="/icons/trad">
         <file alias="address-book">res/icons/trad/address-book.png</file>
         <file alias="quit">res/icons/trad/quit.png</file>
         <file alias="send">res/icons/trad/send.png</file>
@@ -120,7 +120,7 @@
         <file alias="splash">res/images/arcgreen/splash.png</file>
         <file alias="splash_testnet">res/images/arcgreen/splash_testnet.png</file>
     </qresource>
-     <qresource prefix="/images/trad">
+    <qresource prefix="/images/trad">
         <file alias="about">res/images/trad/about.png</file>
         <file alias="arcticcoin_logo_horizontal">res/images/trad/arcticcoin_logo_horizontal.png</file>
         <file alias="arcgreen_downArrow">res/images/trad/arcgreen_downArrow.png</file>

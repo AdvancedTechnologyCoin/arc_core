@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -262,17 +262,17 @@ bool CWallet::Unlock(const SecureString& strWalletPassphrase, bool fForMixingOnl
     }
 
     CCrypter crypter;
-    CKeyingMaterial vMasterKey;
+    CKeyingMaterial vGoldmineKey;
 
     {
         LOCK(cs_wallet);
-        BOOST_FOREACH(const MasterKeyMap::value_type& pMasterKey, mapMasterKeys)
+        BOOST_FOREACH(const GoldmineKeyMap::value_type& pGoldmineKey, mapGoldmineKeys)
         {
-            if (!crypter.SetKeyFromPassphrase(strWalletPassphraseFinal, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod))
+            if (!crypter.SetKeyFromPassphrase(strWalletPassphraseFinal, pGoldmineKey.second.vchSalt, pGoldmineKey.second.nDeriveIterations, pGoldmineKey.second.nDerivationMethod))
                 return false;
-            if (!crypter.Decrypt(pMasterKey.second.vchCryptedKey, vMasterKey))
-                continue; // try another master key
-            if (CCryptoKeyStore::Unlock(vMasterKey, fForMixingOnly)) {
+            if (!crypter.Decrypt(pGoldmineKey.second.vchCryptedKey, vGoldmineKey))
+                continue; // try another goldmine key
+            if (CCryptoKeyStore::Unlock(vGoldmineKey, fForMixingOnly)) {
                 if(nWalletBackups == -2) {
                     TopUpKeyPool();
                     LogPrintf("Keypool replenished, re-initializing automatic backups.\n");
@@ -310,33 +310,33 @@ bool CWallet::ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase,
         Lock();
 
         CCrypter crypter;
-        CKeyingMaterial vMasterKey;
-        BOOST_FOREACH(MasterKeyMap::value_type& pMasterKey, mapMasterKeys)
+        CKeyingMaterial vGoldmineKey;
+        BOOST_FOREACH(GoldmineKeyMap::value_type& pGoldmineKey, mapGoldmineKeys)
         {
-            if(!crypter.SetKeyFromPassphrase(strOldWalletPassphraseFinal, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod))
+            if(!crypter.SetKeyFromPassphrase(strOldWalletPassphraseFinal, pGoldmineKey.second.vchSalt, pGoldmineKey.second.nDeriveIterations, pGoldmineKey.second.nDerivationMethod))
                 return false;
-            if (!crypter.Decrypt(pMasterKey.second.vchCryptedKey, vMasterKey))
+            if (!crypter.Decrypt(pGoldmineKey.second.vchCryptedKey, vGoldmineKey))
                 return false;
-            if (CCryptoKeyStore::Unlock(vMasterKey))
+            if (CCryptoKeyStore::Unlock(vGoldmineKey))
             {
                 int64_t nStartTime = GetTimeMillis();
-                crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod);
-                pMasterKey.second.nDeriveIterations = pMasterKey.second.nDeriveIterations * (100 / ((double)(GetTimeMillis() - nStartTime)));
+                crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pGoldmineKey.second.vchSalt, pGoldmineKey.second.nDeriveIterations, pGoldmineKey.second.nDerivationMethod);
+                pGoldmineKey.second.nDeriveIterations = pGoldmineKey.second.nDeriveIterations * (100 / ((double)(GetTimeMillis() - nStartTime)));
 
                 nStartTime = GetTimeMillis();
-                crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod);
-                pMasterKey.second.nDeriveIterations = (pMasterKey.second.nDeriveIterations + pMasterKey.second.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime))) / 2;
+                crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pGoldmineKey.second.vchSalt, pGoldmineKey.second.nDeriveIterations, pGoldmineKey.second.nDerivationMethod);
+                pGoldmineKey.second.nDeriveIterations = (pGoldmineKey.second.nDeriveIterations + pGoldmineKey.second.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime))) / 2;
 
-                if (pMasterKey.second.nDeriveIterations < 25000)
-                    pMasterKey.second.nDeriveIterations = 25000;
+                if (pGoldmineKey.second.nDeriveIterations < 25000)
+                    pGoldmineKey.second.nDeriveIterations = 25000;
 
-                LogPrintf("Wallet passphrase changed to an nDeriveIterations of %i\n", pMasterKey.second.nDeriveIterations);
+                LogPrintf("Wallet passphrase changed to an nDeriveIterations of %i\n", pGoldmineKey.second.nDeriveIterations);
 
-                if (!crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod))
+                if (!crypter.SetKeyFromPassphrase(strNewWalletPassphrase, pGoldmineKey.second.vchSalt, pGoldmineKey.second.nDeriveIterations, pGoldmineKey.second.nDerivationMethod))
                     return false;
-                if (!crypter.Encrypt(vMasterKey, pMasterKey.second.vchCryptedKey))
+                if (!crypter.Encrypt(vGoldmineKey, pGoldmineKey.second.vchCryptedKey))
                     return false;
-                CWalletDB(strWalletFile).WriteMasterKey(pMasterKey.first, pMasterKey.second);
+                CWalletDB(strWalletFile).WriteGoldmineKey(pGoldmineKey.first, pGoldmineKey.second);
                 if (fWasLocked)
                     Lock();
 
@@ -565,40 +565,40 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
     if (IsCrypted())
         return false;
 
-    CKeyingMaterial vMasterKey;
+    CKeyingMaterial vGoldmineKey;
     RandAddSeedPerfmon();
 
-    vMasterKey.resize(WALLET_CRYPTO_KEY_SIZE);
-    GetRandBytes(&vMasterKey[0], WALLET_CRYPTO_KEY_SIZE);
+    vGoldmineKey.resize(WALLET_CRYPTO_KEY_SIZE);
+    GetRandBytes(&vGoldmineKey[0], WALLET_CRYPTO_KEY_SIZE);
 
-    CMasterKey kMasterKey;
+    CGoldmineKey kGoldmineKey;
     RandAddSeedPerfmon();
 
-    kMasterKey.vchSalt.resize(WALLET_CRYPTO_SALT_SIZE);
-    GetRandBytes(&kMasterKey.vchSalt[0], WALLET_CRYPTO_SALT_SIZE);
+    kGoldmineKey.vchSalt.resize(WALLET_CRYPTO_SALT_SIZE);
+    GetRandBytes(&kGoldmineKey.vchSalt[0], WALLET_CRYPTO_SALT_SIZE);
 
     CCrypter crypter;
     int64_t nStartTime = GetTimeMillis();
-    crypter.SetKeyFromPassphrase(strWalletPassphrase, kMasterKey.vchSalt, 25000, kMasterKey.nDerivationMethod);
-    kMasterKey.nDeriveIterations = 2500000 / ((double)(GetTimeMillis() - nStartTime));
+    crypter.SetKeyFromPassphrase(strWalletPassphrase, kGoldmineKey.vchSalt, 25000, kGoldmineKey.nDerivationMethod);
+    kGoldmineKey.nDeriveIterations = 2500000 / ((double)(GetTimeMillis() - nStartTime));
 
     nStartTime = GetTimeMillis();
-    crypter.SetKeyFromPassphrase(strWalletPassphrase, kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
-    kMasterKey.nDeriveIterations = (kMasterKey.nDeriveIterations + kMasterKey.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime))) / 2;
+    crypter.SetKeyFromPassphrase(strWalletPassphrase, kGoldmineKey.vchSalt, kGoldmineKey.nDeriveIterations, kGoldmineKey.nDerivationMethod);
+    kGoldmineKey.nDeriveIterations = (kGoldmineKey.nDeriveIterations + kGoldmineKey.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime))) / 2;
 
-    if (kMasterKey.nDeriveIterations < 25000)
-        kMasterKey.nDeriveIterations = 25000;
+    if (kGoldmineKey.nDeriveIterations < 25000)
+        kGoldmineKey.nDeriveIterations = 25000;
 
-    LogPrintf("Encrypting Wallet with an nDeriveIterations of %i\n", kMasterKey.nDeriveIterations);
+    LogPrintf("Encrypting Wallet with an nDeriveIterations of %i\n", kGoldmineKey.nDeriveIterations);
 
-    if (!crypter.SetKeyFromPassphrase(strWalletPassphrase, kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod))
+    if (!crypter.SetKeyFromPassphrase(strWalletPassphrase, kGoldmineKey.vchSalt, kGoldmineKey.nDeriveIterations, kGoldmineKey.nDerivationMethod))
         return false;
-    if (!crypter.Encrypt(vMasterKey, kMasterKey.vchCryptedKey))
+    if (!crypter.Encrypt(vGoldmineKey, kGoldmineKey.vchCryptedKey))
         return false;
 
     {
         LOCK(cs_wallet);
-        mapMasterKeys[++nMasterKeyMaxID] = kMasterKey;
+        mapGoldmineKeys[++nGoldmineKeyMaxID] = kGoldmineKey;
         if (fFileBacked)
         {
             assert(!pwalletdbEncryption);
@@ -608,10 +608,10 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
                 pwalletdbEncryption = NULL;
                 return false;
             }
-            pwalletdbEncryption->WriteMasterKey(nMasterKeyMaxID, kMasterKey);
+            pwalletdbEncryption->WriteGoldmineKey(nGoldmineKeyMaxID, kGoldmineKey);
         }
 
-        if (!EncryptKeys(vMasterKey))
+        if (!EncryptKeys(vGoldmineKey))
         {
             if (fFileBacked) {
                 pwalletdbEncryption->TxnAbort();
@@ -2111,11 +2111,11 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
                 if(nCoinType == ONLY_DENOMINATED) {
                     found = IsDenominatedAmount(pcoin->vout[i].nValue);
                 } else if(nCoinType == ONLY_NOT1000IFMN) {
-                    found = !(fMasterNode && pcoin->vout[i].nValue == 1000*COIN);
+                    found = !(fGoldmineNode && pcoin->vout[i].nValue == 1000*COIN);
                 } else if(nCoinType == ONLY_NONDENOMINATED_NOT1000IFMN) {
                     if (IsCollateralAmount(pcoin->vout[i].nValue)) continue; // do not use collateral amounts
                     found = !IsDenominatedAmount(pcoin->vout[i].nValue);
-                    if(found && fMasterNode) found = pcoin->vout[i].nValue != 1000*COIN; // do not use Hot MN funds
+                    if(found && fGoldmineNode) found = pcoin->vout[i].nValue != 1000*COIN; // do not use Hot MN funds
                 } else if(nCoinType == ONLY_1000) {
                     found = pcoin->vout[i].nValue == 1000*COIN;
                 } else if(nCoinType == ONLY_PRIVATESEND_COLLATERAL) {
@@ -2590,7 +2590,7 @@ bool CWallet::SelectCoinsGrouppedByAddresses(std::vector<CompactTallyItem>& vecT
             if(fAnonymizable) {
                 // ignore collaterals
                 if(IsCollateralAmount(wtx.vout[i].nValue)) continue;
-                if(fMasterNode && wtx.vout[i].nValue == 1000*COIN) continue;
+                if(fGoldmineNode && wtx.vout[i].nValue == 1000*COIN) continue;
                 // ignore outputs that are 10 times smaller then the smallest denomination
                 // otherwise they will just lead to higher fee / lower priority
                 if(wtx.vout[i].nValue <= vecSpySendDenominations.back()/10) continue;
@@ -2655,7 +2655,7 @@ bool CWallet::SelectCoinsDark(CAmount nValueMin, CAmount nValueMax, std::vector<
         if(out.tx->vout[out.i].nValue < CENT) continue;
         //do not allow collaterals to be selected
         if(IsCollateralAmount(out.tx->vout[out.i].nValue)) continue;
-        if(fMasterNode && out.tx->vout[out.i].nValue == 1000*COIN) continue; //goldminenode input
+        if(fGoldmineNode && out.tx->vout[out.i].nValue == 1000*COIN) continue; //goldminenode input
 
         if(nValueRet + out.tx->vout[out.i].nValue <= nValueMax){
             CTxIn txin = CTxIn(out.tx->GetHash(),out.i);
@@ -3133,7 +3133,7 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
                     txNew.vin.push_back(txin);
                 }
 
-                // BIP69 https://github.com/kristovatlas/bips/blob/master/bip-0069.mediawiki
+                // BIP69 https://github.com/kristovatlas/bips/blob/goldmine/bip-0069.mediawiki
                 sort(txNew.vin.begin(), txNew.vin.end());
                 sort(txNew.vout.begin(), txNew.vout.end());
 

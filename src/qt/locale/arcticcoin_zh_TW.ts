@@ -737,7 +737,7 @@ Address: %4
         <translation>複製找零金額</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
         <translation>選擇了非匿名的輸入。 &lt;b&gt; 匿名發送將會被禁用。&lt;/ b&gt;&lt;br&gt; &lt;br&gt;如果你仍然想用匿名發送，請先取消選取所有非匿名的輸入，然後再勾選匿名發送的核取方塊</translation>
     </message>
     <message>
@@ -838,9 +838,9 @@ Address: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
+        <source>Configure SpySend</source>
         <translation>配置匿名發送</translation>
     </message>
     <message>
@@ -888,19 +888,19 @@ Address: %4
         <translation>這是最慢的和最安全的選頁。耗費最多的匿名處理費</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
+        <source>SpySend Configuration</source>
         <translation>匿名發送配置</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
         <translation>匿名發送已成功設置為一般(%1到2次循環)。你可以隨時打開達世幣配置窗口來修改。</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
         <translation>匿名發送已成功設置為高(%1到8次循環)。你可以隨時打開達世幣配置窗口來修改。</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
         <translation>匿名發送已成功設置為最高(%1到16次循環)。你可以隨時打開達世幣配置窗口來修改。</translation>
     </message>
 </context>
@@ -1142,11 +1142,11 @@ Address: %4
         <translation>(0 表示程式自動決定，小於 0 表示保留處理器核心不用的數目)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
+        <source>SpySend rounds to use</source>
         <translation>匿名發送的循環次數</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
         <translation>此金額為關閉匿名發送的門檻。</translation>
     </message>
     <message>
@@ -1419,7 +1419,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>完成度:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
+        <source>SpySend Balance:</source>
         <translation>匿名發送餘額:</translation>
     </message>
     <message>
@@ -1439,7 +1439,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>不適用</translation>
     </message>
     <message>
-        <source>Spysend</source>
+        <source>SpySend</source>
         <translation>匿名發送</translation>
     </message>
     <message>
@@ -1459,7 +1459,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>(最近一次信息)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
+        <source>Try to manually submit a SpySend request.</source>
         <translation>嘗試手動提交匿名發送請求。</translation>
     </message>
     <message>
@@ -1467,7 +1467,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>嘗試混合</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
         <translation>重置目前匿名發送狀態(此操作可能會影響您目前正在執行的混合過程，並且產生費用!)</translation>
     </message>
     <message>
@@ -1483,11 +1483,11 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>己禁用</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
+        <source>Start SpySend Mixing</source>
         <translation>開始匿名發送混合</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
+        <source>Stop SpySend Mixing</source>
         <translation>停止匿名發送混合</translation>
     </message>
     <message>
@@ -1527,7 +1527,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>己啟用</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
         <translation>最近收到的匿名發送訊息:
 </translation>
@@ -1537,7 +1537,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>不適用</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
+        <source>SpySend was successfully reset.</source>
         <translation>匿名發送成功重置。</translation>
     </message>
     </context>
@@ -2336,7 +2336,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>增加收款人(&amp;R)</translation>
     </message>
     <message>
-        <source>Spysend</source>
+        <source>SpySend</source>
         <translation>匿名發送</translation>
     </message>
     <message>
@@ -2960,7 +2960,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>收款來自</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
+        <source>Received via SpySend</source>
         <translation>經由匿名發送收到</translation>
     </message>
     <message>
@@ -3330,7 +3330,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>發現區塊資料庫壞掉了</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
+        <source>SpySend options:</source>
         <translation>匿名發送選項:</translation>
     </message>
     <message>
@@ -3394,7 +3394,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>錯誤: 錢包被鎖定，無法創建交易！</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
+        <source>Error: You already have pending entries in the SpySend pool</source>
         <translation>錯誤: 你已經有待處理項目在匿名發送資金池中</translation>
     </message>
     <message>
@@ -3538,15 +3538,15 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>沒辦法解析 -rpcbind 參數值 %s 為網路位址</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
+        <source>SpySend is idle.</source>
         <translation>匿名發送處於閒置狀態。</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
+        <source>SpySend request complete:</source>
         <translation>完成匿名發送請求:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
+        <source>SpySend request incomplete:</source>
         <translation>未完成匿名發送請求:</translation>
     </message>
     <message>
@@ -3722,7 +3722,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>同步完成</translation>
     </message>
     <message>
-        <source>Synchronizing evolutions...</source>
+        <source>Synchronizing budgets...</source>
         <translation>正在跟預算案進行同步...</translation>
     </message>
     <message>

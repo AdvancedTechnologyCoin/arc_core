@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 
 /*
  * FIELDS AND CLASSIFICATION

@@ -214,7 +214,7 @@ RES_ICONS = \
   qt/res/icons/arcgreen/about.png \
   qt/res/icons/arcgreen/about_qt.png \
   qt/res/icons/arcgreen/verify.png \
-   qt/res/icons/trad/add.png \
+  qt/res/icons/trad/add.png \
   qt/res/icons/trad/address-book.png \
   qt/res/icons/trad/browse.png \
   qt/res/icons/trad/clock1.png \
@@ -336,7 +336,7 @@ RES_IMAGES = \
   qt/res/images/arcgreen/arcgreen_rightArrow_small.png \
   qt/res/images/arcgreen/arcgreen_qtreeview_selected.png \
   qt/res/images/arcgreen/arcgreen_walletFrame_bg.png \
-   qt/res/images/trad/about.png \
+  qt/res/images/trad/about.png \
   qt/res/images/trad/splash.png \
   qt/res/images/trad/splash_testnet.png \
   qt/res/images/trad/arcticcoin_logo_horizontal.png \
@@ -349,7 +349,7 @@ RES_IMAGES = \
   qt/res/images/trad/arcgreen_walletFrame_bg.png
 
 RES_CSS = \
-  qt/res/css/arcgreen.css
+  qt/res/css/arcgreen.css 
 
 RES_MOVIES = $(wildcard qt/res/movies/spinner-*.png)
 

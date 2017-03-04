@@ -1,10 +1,10 @@
 
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SPYSEND_RELAY_H
-#define SPYSEND_RELAY_H
+#ifndef DARKSEND_RELAY_H
+#define DARKSEND_RELAY_H
 
 #include "main.h"
 #include "activegoldminenode.h"

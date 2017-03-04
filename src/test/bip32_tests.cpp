@@ -21,10 +21,10 @@ struct TestDerivation {
 };
 
 struct TestVector {
-    std::string strHexMaster;
+    std::string strHexGoldmine;
     std::vector<TestDerivation> vDerive;
 
-    TestVector(std::string strHexMasterIn) : strHexMaster(strHexMasterIn) {}
+    TestVector(std::string strHexGoldmineIn) : strHexGoldmine(strHexGoldmineIn) {}
 
     TestVector& operator()(std::string pub, std::string prv, unsigned int nChild) {
         vDerive.push_back(TestDerivation());
@@ -79,10 +79,10 @@ TestVector test2 =
      0);
 
 void RunTest(const TestVector &test) {
-    std::vector<unsigned char> seed = ParseHex(test.strHexMaster);
+    std::vector<unsigned char> seed = ParseHex(test.strHexGoldmine);
     CExtKey key;
     CExtPubKey pubkey;
-    key.SetMaster(&seed[0], seed.size());
+    key.SetGoldmine(&seed[0], seed.size());
     pubkey = key.Neuter();
     BOOST_FOREACH(const TestDerivation &derive, test.vDerive) {
         unsigned char data[74];

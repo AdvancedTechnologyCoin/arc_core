@@ -110,7 +110,7 @@ to see it.
 
 **testnet and regtest modes**
 
-Run with the -testnet option to run with "play bitcoins" on the test network, if you
+Run with the -testnet option to run with "play coins" on the test network, if you
 are testing multi-machine code that needs to operate across the internet.
 
 If you are testing something that can run on one machine, run with the -regtest option.
@@ -154,7 +154,7 @@ Threads
 
 - ThreadMapPort : Universal plug-and-play startup/shutdown
 
-- ThreadSocketHandler : Sends/Receives data from peers on port 8333.
+- ThreadSocketHandler : Sends/Receives data from peers on port 9999.
 
 - ThreadOpenAddedConnections : Opens network connections to added nodes.
 
@@ -168,7 +168,7 @@ Threads
 
 - ThreadRPCServer : Remote procedure call handler, listens on port 7208 for connections and services them.
 
-- BitcoinMiner : Generates bitcoins (if wallet is enabled).
+- BitcoinMiner : Generates coins (if wallet is enabled).
 
 - ThreadCheckDarkSendPool : Runs goldminenode list and sync data update loops
 
@@ -223,7 +223,7 @@ General Arctic Core
 - Make sure pull requests pass Travis CI before merging
 
   - *Rationale*: Makes sure that they pass thorough testing, and that the tester will keep passing
-     on the master branch. Otherwise all new pull requests will start failing the tests, resulting in
+     on the goldmine branch. Otherwise all new pull requests will start failing the tests, resulting in
      confusion and mayhem
  
   - *Explanation*: If the test suite is to be updated for a change, this has to

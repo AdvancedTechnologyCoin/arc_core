@@ -49,7 +49,7 @@ genisoimage is used to create the initial DMG. It is not deterministic as-is,
 so it has been patched. A system genisoimage will work fine, but it will not
 be deterministic because the file-order will change between invocations.
 The patch can be seen here:
-https://raw.githubusercontent.com/theuni/osx-cross-depends/master/patches/cdrtools/genisoimage.diff
+https://raw.githubusercontent.com/theuni/osx-cross-depends/goldmine/patches/cdrtools/genisoimage.diff
 No effort was made to fix this cleanly, so it likely leaks memory badly. But
 it's only used for a single invocation, so that's no real concern.
 

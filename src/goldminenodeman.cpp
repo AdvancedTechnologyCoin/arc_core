@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -102,6 +102,9 @@ CGoldminenodeMan::CGoldminenodeMan()
   mAskedUsForGoldminenodeList(),
   mWeAskedForGoldminenodeList(),
   mWeAskedForGoldminenodeListEntry(),
+  mWeAskedForVerification(),
+  mMnbRecoveryRequests(),
+  mMnbRecoveryGoodReplies(),
   listScheduledMnbRequestConnections(),
   nLastIndexRebuildTime(0),
   indexGoldminenodes(),
@@ -906,7 +909,7 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
         BOOST_FOREACH(CGoldminenode& mn, vGoldminenodes) {
             if (vin != CTxIn() && vin != mn.vin) continue; // asked for specific vin but we are not there yet
             if (mn.addr.IsRFC1918() || mn.addr.IsLocal()) continue; // do not send local network goldminenode
-
+			if (mn.IsUpdateRequired()) continue; // do not send outdated goldminenodes
             LogPrint("goldminenode", "DSEG -- Sending Goldminenode entry: goldminenode=%s  addr=%s\n", mn.vin.prevout.ToStringShort(), mn.addr.ToString());
             CGoldminenodeBroadcast mnb = CGoldminenodeBroadcast(mn);
             uint256 hash = mnb.GetHash();
@@ -967,7 +970,6 @@ void CGoldminenodeMan::DoFullVerificationStep()
     LOCK2(cs_main, cs);
 
     int nCount = 0;
-    int nCountMax = std::max(10, (int)vGoldminenodes.size() / 100); // verify at least 10 goldminenode at once but at most 1% of all known goldminenodes
 
     int nMyRank = -1;
     int nRanksTotal = (int)vecGoldminenodeRanks.size();
@@ -983,7 +985,7 @@ void CGoldminenodeMan::DoFullVerificationStep()
         if(it->second.vin == activeGoldminenode.vin) {
             nMyRank = it->first;
             LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Found self at rank %d/%d, verifying up to %d goldminenodes\n",
-                        nMyRank, nRanksTotal, nCountMax);
+                        nMyRank, nRanksTotal, (int)MAX_POSE_CONNECTIONS);
             break;
         }
         ++it;
@@ -992,9 +994,9 @@ void CGoldminenodeMan::DoFullVerificationStep()
     // edge case: list is too short and this goldminenode is not enabled
     if(nMyRank == -1) return;
 
-    // send verify requests to up to nCountMax goldminenodes starting from
-    // (MAX_POSE_RANK + nCountMax * (nMyRank - 1) + 1)
-    int nOffset = MAX_POSE_RANK + nCountMax * (nMyRank - 1);
+    // send verify requests to up to MAX_POSE_CONNECTIONS goldminenodes
+    // starting from MAX_POSE_RANK + nMyRank and using MAX_POSE_CONNECTIONS as a step
+    int nOffset = MAX_POSE_RANK + nMyRank - 1;
     if(nOffset >= (int)vecGoldminenodeRanks.size()) return;
 
     std::vector<CGoldminenode*> vSortedByAddr;
@@ -1012,16 +1014,20 @@ void CGoldminenodeMan::DoFullVerificationStep()
                         it->second.IsPoSeVerified() && it->second.IsPoSeBanned() ? " and " : "",
                         it->second.IsPoSeBanned() ? "banned" : "",
                         it->second.vin.prevout.ToStringShort(), it->second.addr.ToString());
-            ++it;
+            nOffset += MAX_POSE_CONNECTIONS;
+            if(nOffset >= (int)vecGoldminenodeRanks.size()) break;
+            it += MAX_POSE_CONNECTIONS;
             continue;
         }
         LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Verifying goldminenode %s rank %d/%d address %s\n",
                     it->second.vin.prevout.ToStringShort(), it->first, nRanksTotal, it->second.addr.ToString());
         if(SendVerifyRequest((CAddress)it->second.addr, vSortedByAddr)) {
             nCount++;
-            if(nCount >= nCountMax) break;
+            if(nCount >= MAX_POSE_CONNECTIONS) break;
         }
-        ++it;
+        nOffset += MAX_POSE_CONNECTIONS;
+        if(nOffset >= (int)vecGoldminenodeRanks.size()) break;
+        it += MAX_POSE_CONNECTIONS;
     }
 
     LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Sent verification requests to %d goldminenodes\n", nCount);
@@ -1112,7 +1118,7 @@ bool CGoldminenodeMan::SendVerifyRequest(const CAddress& addr, const std::vector
 void CGoldminenodeMan::SendVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv)
 {
     // only goldminenodes can sign this, why would someone ask regular node?
-    if(!fMasterNode) {
+    if(!fGoldmineNode) {
         // do not ban, malicious node might be using my IP
         // and trying to confuse the node which tries to verify it
         return;
@@ -1456,7 +1462,7 @@ bool CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldmine
             Add(mnb);
             goldminenodeSync.AddedGoldminenodeList();
             // if it matches our Goldminenode privkey...
-            if(fMasterNode && mnb.pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
+            if(fGoldmineNode && mnb.pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
                 mnb.nPoSeBanScore = -GOLDMINENODE_POSE_BAN_MAX_SCORE;
                 if(mnb.nProtocolVersion == PROTOCOL_VERSION) {
                     // ... and PROTOCOL_VERSION, then we've been remotely activated ...
@@ -1490,7 +1496,7 @@ void CGoldminenodeMan::UpdateLastPaid()
     static bool IsFirstRun = true;
     // Do full scan on first run or if we are not a goldminenode
     // (MNs should update this info on every block, so limited scan should be enough for them)
-    int nMaxBlocksToScanBack = (IsFirstRun || !fMasterNode) ? mnpayments.GetStorageLimit() : LAST_PAID_SCAN_BLOCKS;
+    int nMaxBlocksToScanBack = (IsFirstRun || !fGoldmineNode) ? mnpayments.GetStorageLimit() : LAST_PAID_SCAN_BLOCKS;
 
     // LogPrint("mnpayments", "CGoldminenodeMan::UpdateLastPaid -- nHeight=%d, nMaxBlocksToScanBack=%d, IsFirstRun=%s\n",
     //                         pCurrentBlockIndex->nHeight, nMaxBlocksToScanBack, IsFirstRun ? "true" : "false");
@@ -1639,8 +1645,7 @@ void CGoldminenodeMan::UpdatedBlockTip(const CBlockIndex *pindex)
 
     CheckSameAddr();
 
-    if(fMasterNode) {
-        DoFullVerificationStep();
+    if(fGoldmineNode) {
         // normal wallet does not need to update this every block, doing update on rpc call should be enough
         UpdateLastPaid();
     }

@@ -1,10 +1,10 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef GOVERNANCE_CLASSES_H
 #define GOVERNANCE_CLASSES_H
 
-//#define ENABLE_ARC_DEBUG
+//#define ENABLE_ARCTIC_DEBUG
 
 #include "base58.h"
 #include "governance.h"

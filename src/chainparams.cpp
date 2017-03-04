@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,6 +45,7 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
+
 /**
  * Main network
  */
@@ -64,11 +65,11 @@ public:
         consensus.nSubsidyHalvingInterval = 210240; // Note: actual number of blocks per calendar year with DGW v3 is ~200700 (for example 449750 - 249050)
         consensus.nGoldminenodePaymentsStartBlock = 1; // not true, but it's ok as long as it's less then nGoldminenodePaymentsIncreaseBlock
         consensus.nInstantSendKeepLock = 24;
-        consensus.nEvolutionPaymentsStartBlock = 16616; // actual historical value
+        consensus.nEvolutionPaymentsStartBlock = 105000; // actual historical value
         consensus.nEvolutionPaymentsCycleBlocks = 16616; // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
         consensus.nEvolutionPaymentsWindowBlocks = 100;
         consensus.nEvolutionProposalEstablishingTime = 60*60*24;
-        consensus.nSuperblockStartBlock = 1; // The block at which 12.1 goes live (end of final 12.0 evolution cycle)
+        consensus.nSuperblockStartBlock = 105001; // The block at which 12.1 goes live (end of final 12.0 budget cycle)
         consensus.nSuperblockCycle = 16616; // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
         consensus.nGovernanceMinQuorum = 10;
         consensus.nGovernanceFilterElements = 20000;
@@ -79,8 +80,8 @@ public:
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256S("0x00000f39e7fdff2d6025511f525bf1dce2f705c15d098d7f31c824a1785a254a");
         consensus.powLimit = uint256S("00000fffff000000000000000000000000000000000000000000000000000000");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // ArcticCoin: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // ArcticCoin: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
@@ -91,8 +92,8 @@ public:
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1486684801; // Feb 10th, 2017
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1518220801; // Feb 10th, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1486252800; // Feb 5th, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1517788800; // Feb 5th, 2018
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -177,11 +178,14 @@ public:
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210240;
         consensus.nGoldminenodePaymentsStartBlock = 10000; // not true, but it's ok as long as it's less then nGoldminenodePaymentsIncreaseBlock
+        consensus.nGoldminenodePaymentsIncreaseBlock = 46000;
+        consensus.nGoldminenodePaymentsIncreasePeriod = 576;
         consensus.nInstantSendKeepLock = 6;
+        consensus.nEvolutionPaymentsStartBlock = 100;
         consensus.nEvolutionPaymentsCycleBlocks = 50;
         consensus.nEvolutionPaymentsWindowBlocks = 10;
         consensus.nEvolutionProposalEstablishingTime = 60*20;
-        consensus.nSuperblockStartBlock = 100; // NOTE: Should satisfy nSuperblockStartBlock > nEvolutionPeymentsStartBlock
+        consensus.nSuperblockStartBlock = 61000; // NOTE: Should satisfy nSuperblockStartBlock > nEvolutionPeymentsStartBlock
         consensus.nSuperblockCycle = 24; // Superblocks can be issued hourly on testnet
         consensus.nGovernanceMinQuorum = 1;
         consensus.nGovernanceFilterElements = 500;
@@ -189,11 +193,11 @@ public:
         consensus.nMajorityEnforceBlockUpgrade = 51;
         consensus.nMajorityRejectBlockOutdated = 75;
         consensus.nMajorityWindow = 100;
-        consensus.BIP34Height = 1;
+        consensus.BIP34Height = 21111;
         consensus.BIP34Hash = uint256S("0x000007ddc82c93642da51870d1d549c6b91c44d290aad2b9d95e90f17ec2fc2b");
         consensus.powLimit = uint256S("00000fffff000000000000000000000000000000000000000000000000000000");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // ArcticCoin: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // ArcticCoin: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
@@ -249,7 +253,7 @@ public:
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
 
-        nPoolMaxTransactions = 3;
+		nPoolMaxTransactions = 3;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
         strSporkPubKey = "04d65cdbb409be1be32829855bd43a150666f731f422850ca1b101e56f4f1dcd3109402fd7b9068fc39d77666d4338982d9f30c4997ce948c4e0c770f99b7fc95b";
         strGoldminenodePaymentsPubKey = "04d65cdbb409be1be32829855bd43a150666f731f422850ca1b101e56f4f1dcd3109402fd7b9068fc39d77666d4338982d9f30c4997ce948c4e0c770f99b7fc95b";
@@ -276,8 +280,11 @@ public:
         strNetworkID = "regtest";
         consensus.nSubsidyHalvingInterval = 150;
         consensus.nGoldminenodePaymentsStartBlock = 240;
+        consensus.nGoldminenodePaymentsIncreaseBlock = 350;
+        consensus.nGoldminenodePaymentsIncreasePeriod = 10;
         consensus.nInstantSendKeepLock = 6;
         consensus.nEvolutionPaymentsStartBlock = 1000;
+        consensus.nEvolutionPaymentsCycleBlocks = 50;
         consensus.nEvolutionPaymentsWindowBlocks = 10;
         consensus.nEvolutionProposalEstablishingTime = 60*20;
         consensus.nSuperblockStartBlock = 1500;
@@ -291,8 +298,8 @@ public:
         consensus.BIP34Height = -1; // BIP34 has not necessarily activated on regtest
         consensus.BIP34Hash = uint256();
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // ArcticCoin: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // ArcticCoin: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 108; // 75% for testchains

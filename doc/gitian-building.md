@@ -41,7 +41,7 @@ Debian Linux was chosen as the host distribution because it has a lightweight in
 Any kind of virtualization can be used, for example:
 - [VirtualBox](https://www.virtualbox.org/) (covered by this guide)
 - [KVM](http://www.linux-kvm.org/page/Main_Page)
-- [LXC](https://linuxcontainers.org/), see also [Gitian host docker container](https://github.com/gdm85/tenku/tree/master/docker/gitian-bitcoin-host/README.md).
+- [LXC](https://linuxcontainers.org/), see also [Gitian host docker container](https://github.com/gdm85/tenku/tree/goldmine/docker/gitian-bitcoin-host/README.md).
 
 You can also install Gitian on actual hardware instead of using virtualization.
 
@@ -182,7 +182,7 @@ To select a different button, press `Tab`.
 
 ![](gitian-building/debian_install_19_software_selection.png)
 
-- Install the GRUB boot loader to the master boot record? -> Yes
+- Install the GRUB boot loader to the goldmine boot record? -> Yes
 
 ![](gitian-building/debian_install_20_install_grub.png)
 
@@ -476,6 +476,6 @@ Uploading signatures (not yet implemented)
 ---------------------
 
 In the future it will be possible to push your signatures (both the `.assert` and `.assert.sig` files) to the
-[arcticcoin/gitian.sigs](https://github.com/arcticcoinpay/gitian.sigs/) repository, or if that's not possible to create a pull
+[arcticcoin/gitian.sigs](https://github.com/ArcticCore/gitian.sigs/) repository, or if that's not possible to create a pull
 request.
 There will be an official announcement when this repository is online.

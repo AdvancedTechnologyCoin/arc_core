@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -140,6 +140,16 @@ bool CGovernanceObject::ProcessVote(CNode* pfrom,
         it2 = recVote.mapInstances.insert(vote_instance_m_t::value_type(int(eSignal), vote_instance_t())).first;
     }
     vote_instance_t& voteInstance = it2->second;
+
+    // Reject obsolete votes
+    if(vote.GetTimestamp() < voteInstance.nCreationTime) {
+        std::ostringstream ostr;
+        ostr << "CGovernanceObject::ProcessVote -- Obsolete vote" << "\n";
+        LogPrint("gobject", ostr.str().c_str());
+        exception = CGovernanceException(ostr.str(), GOVERNANCE_EXCEPTION_NONE);
+        return false;
+    }
+
     int64_t nNow = GetTime();
     int64_t nVoteTimeUpdate = voteInstance.nTime;
     if(governance.AreRateChecksEnabled()) {
@@ -168,7 +178,7 @@ bool CGovernanceObject::ProcessVote(CNode* pfrom,
         governance.AddInvalidVote(vote);
         return false;
     }
-    voteInstance = vote_instance_t(vote.GetOutcome(), nVoteTimeUpdate);
+    voteInstance = vote_instance_t(vote.GetOutcome(), nVoteTimeUpdate, vote.GetTimestamp());
     fileVotes.AddVote(vote);
     mnodeman.AddGovernanceVote(vote.GetVinGoldminenode(), vote.GetParentHash());
     fDirtyCache = true;

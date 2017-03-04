@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -31,13 +31,15 @@ UniValue privatesend(const UniValue& params, bool fHelp)
             "  start       - Start mixing\n"
             "  stop        - Stop mixing\n"
             "  reset       - Reset mixing\n"
-            + HelpRequiringPassphrase());
+            );
 
     if(params[0].get_str() == "start") {
-        if (pwalletMain->IsLocked(true))
-            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
+        {
+            LOCK(pwalletMain->cs_wallet);
+            EnsureWalletIsUnlocked();
+        }
 
-        if(fMasterNode)
+        if(fGoldmineNode)
             return "Mixing is not supported from goldminenodes";
 
         fEnableSpySend = true;
@@ -103,11 +105,10 @@ UniValue goldminenode(const UniValue& params, bool fHelp)
          strCommand != "debug" && strCommand != "current" && strCommand != "winner" && strCommand != "winners" && strCommand != "genkey" &&
          strCommand != "connect" && strCommand != "outputs" && strCommand != "status"))
             throw std::runtime_error(
-                "goldminenode \"command\"... ( \"passphrase\" )\n"
+                "goldminenode \"command\"...\n"
                 "Set of commands to execute goldminenode related actions\n"
                 "\nArguments:\n"
                 "1. \"command\"        (string or set of strings, required) The command to execute\n"
-                "2. \"passphrase\"     (string, optional) The wallet passphrase\n"
                 "\nAvailable commands:\n"
                 "  count        - Print number of all known goldminenodes (optional: 'ps', 'enabled', 'all', 'qualify')\n"
                 "  current      - Print info on current goldminenode winner to be paid the next block (calculated locally)\n"
@@ -173,7 +174,7 @@ UniValue goldminenode(const UniValue& params, bool fHelp)
             return nCount;
 
         if (strMode == "all")
-            return strprintf("Total: %d (PS Compatible: %d / Enabled: %d / Qualify: %d)",
+            return strprintf("Total: %d (SS Compatible: %d / Enabled: %d / Qualify: %d)",
                 mnodeman.size(), mnodeman.CountEnabled(MIN_PRIVATESEND_PEER_PROTO_VERSION),
                 mnodeman.CountEnabled(), nCount);
     }
@@ -222,7 +223,7 @@ UniValue goldminenode(const UniValue& params, bool fHelp)
 
     if (strCommand == "start")
     {
-        if(!fMasterNode)
+        if(!fGoldmineNode)
             throw JSONRPCError(RPC_INTERNAL_ERROR, "You must set goldminenode=1 in the configuration");
 
         {
@@ -383,7 +384,7 @@ UniValue goldminenode(const UniValue& params, bool fHelp)
 
     if (strCommand == "status")
     {
-        if (!fMasterNode)
+        if (!fGoldmineNode)
             throw JSONRPCError(RPC_INTERNAL_ERROR, "This is not a goldminenode");
 
         UniValue mnObj(UniValue::VOBJ);
@@ -572,17 +573,16 @@ UniValue goldminenodebroadcast(const UniValue& params, bool fHelp)
     if (fHelp  ||
         (strCommand != "create-alias" && strCommand != "create-all" && strCommand != "decode" && strCommand != "relay"))
         throw std::runtime_error(
-                "goldminenodebroadcast \"command\"... ( \"passphrase\" )\n"
+                "goldminenodebroadcast \"command\"...\n"
                 "Set of commands to create and relay goldminenode broadcast messages\n"
                 "\nArguments:\n"
                 "1. \"command\"        (string or set of strings, required) The command to execute\n"
-                "2. \"passphrase\"     (string, optional) The wallet passphrase\n"
                 "\nAvailable commands:\n"
                 "  create-alias  - Create single remote goldminenode broadcast message by assigned alias configured in goldminenode.conf\n"
                 "  create-all    - Create remote goldminenode broadcast messages for all goldminenodes configured in goldminenode.conf\n"
                 "  decode        - Decode goldminenode broadcast message\n"
                 "  relay         - Relay goldminenode broadcast message to the network\n"
-                + HelpRequiringPassphrase());
+                );
 
     if (strCommand == "create-alias")
     {

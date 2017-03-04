@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,7 +16,7 @@ CActiveGoldminenode activeGoldminenode;
 void CActiveGoldminenode::ManageState()
 {
     LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- Start\n");
-    if(!fMasterNode) {
+    if(!fGoldmineNode) {
         LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- Not a goldminenode, returning\n");
         return;
     }
@@ -242,7 +242,7 @@ void CActiveGoldminenode::ManageStateRemote()
         }
         if(service != infoMn.addr) {
             nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
-            strNotCapableReason = "Specified IP doesn't match our external address.";
+            strNotCapableReason = "Broadcasted IP doesn't match our external address. Make sure you issued a new broadcast if IP of this goldminenode changed recently.";
             LogPrintf("CActiveGoldminenode::ManageStateRemote -- %s: %s\n", GetStateString(), strNotCapableReason);
             return;
         }

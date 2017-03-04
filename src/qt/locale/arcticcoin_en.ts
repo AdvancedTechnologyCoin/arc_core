@@ -517,13 +517,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Open Wallet &amp;Configuration File</source>
-        <translation>Open Wallet &amp;Configuration File</translation>
+        <source>Open &amp;Configuration File</source>
+        <translation>Open &amp;Configuration File</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Open &amp;Goldmine Configuration File</source>
-        <translation>Open &amp;Goldmine Configuration File</translation>
+        <source>Open configuration file</source>
+        <translation>Open configuration file</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -933,8 +933,8 @@ Address: %4
     </message>
     <message>
         <location line="+329"/>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -1062,11 +1062,11 @@ Address: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
         <location filename="../forms/spysendconfig.ui" line="+14"/>
-        <source>Configure Spysend</source>
-        <translation>Configure Spysend</translation>
+        <source>Configure SpySend</source>
+        <translation>Configure SpySend</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -1127,23 +1127,23 @@ Address: %4
         <location filename="../spysendconfig.cpp" line="+43"/>
         <location line="+15"/>
         <location line="+15"/>
-        <source>Spysend Configuration</source>
-        <translation>Spysend Configuration</translation>
+        <source>SpySend Configuration</source>
+        <translation>SpySend Configuration</translation>
     </message>
     <message>
         <location line="-29"/>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
-        <translation>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
+        <translation>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
-        <translation>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
+        <translation>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
-        <translation>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</source>
+        <translation>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic&apos;s configuration screen.</translation>
     </message>
 </context>
 <context>
@@ -1441,13 +1441,13 @@ Address: %4
     </message>
     <message>
         <location line="+40"/>
-        <source>Spysend rounds to use</source>
-        <translation>Spysend rounds to use</translation>
+        <source>SpySend rounds to use</source>
+        <translation>SpySend rounds to use</translation>
     </message>
     <message>
         <location line="+24"/>
-        <source>This amount acts as a threshold to turn off Spysend once it&apos;s reached.</source>
-        <translation>This amount acts as a threshold to turn off Spysend once it&apos;s reached.</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it&apos;s reached.</source>
+        <translation>This amount acts as a threshold to turn off SpySend once it&apos;s reached.</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -1790,8 +1790,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>Spysend Balance:</source>
-        <translation>Spysend Balance:</translation>
+        <source>SpySend Balance:</source>
+        <translation>SpySend Balance:</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -1819,8 +1819,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <location line="+10"/>
         <location line="+10"/>
         <location line="+14"/>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <location line="+74"/>
@@ -1844,8 +1844,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+25"/>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Try to manually submit a Spysend request.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Try to manually submit a SpySend request.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1854,8 +1854,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+19"/>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it&apos;s in the process of Mixing, which can cost you money!)</source>
-        <translation>Reset the current status of Spysend (can interrupt Spysend if it&apos;s in the process of Mixing, which can cost you money!)</translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it&apos;s in the process of Mixing, which can cost you money!)</source>
+        <translation>Reset the current status of SpySend (can interrupt SpySend if it&apos;s in the process of Mixing, which can cost you money!)</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1881,14 +1881,14 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <location line="-288"/>
         <location line="+290"/>
         <location line="+91"/>
-        <source>Start Spysend Mixing</source>
-        <translation>Start Spysend Mixing</translation>
+        <source>Start SpySend Mixing</source>
+        <translation>Start SpySend Mixing</translation>
     </message>
     <message>
         <location line="-379"/>
         <location line="+382"/>
-        <source>Stop Spysend Mixing</source>
-        <translation>Stop Spysend Mixing</translation>
+        <source>Stop SpySend Mixing</source>
+        <translation>Stop SpySend Mixing</translation>
     </message>
     <message>
         <location line="-211"/>
@@ -1945,9 +1945,9 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Last Spysend message:
+        <translation>Last SpySend message:
 </translation>
     </message>
     <message>
@@ -1957,23 +1957,23 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend was successfully reset.</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend was successfully reset.</translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>If you don&apos;t want to see internal Spysend fees/transactions select &quot;Most Common&quot; as Type on the &quot;Transactions&quot; tab.</source>
-        <translation>If you don&apos;t want to see internal Spysend fees/transactions select &quot;Most Common&quot; as Type on the &quot;Transactions&quot; tab.</translation>
+        <source>If you don&apos;t want to see internal SpySend fees/transactions select &quot;Most Common&quot; as Type on the &quot;Transactions&quot; tab.</source>
+        <translation>If you don&apos;t want to see internal SpySend fees/transactions select &quot;Most Common&quot; as Type on the &quot;Transactions&quot; tab.</translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Spysend requires at least %1 to use.</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>SpySend requires at least %1 to use.</translation>
     </message>
     <message>
         <location line="+14"/>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Wallet is locked and user declined to unlock. Disabling Spysend.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Wallet is locked and user declined to unlock. Disabling SpySend.</translation>
     </message>
 </context>
 <context>
@@ -3015,8 +3015,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+38"/>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -3868,8 +3868,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Received via Spysend</source>
-        <translation>Received via Spysend</translation>
+        <source>Received via SpySend</source>
+        <translation>Received via SpySend</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -3888,23 +3888,23 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Denominate</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Denominate</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Collateral Payment</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Collateral Payment</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Make Collateral Inputs</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Make Collateral Inputs</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Create Denominations</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Create Denominations</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4012,23 +4012,23 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Make Collateral Inputs</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Make Collateral Inputs</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Create Denominations</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Create Denominations</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Denominate</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Denominate</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Collateral Payment</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Collateral Payment</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4255,8 +4255,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+12"/>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -4325,13 +4325,13 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Unable to locate enough Spysend denominated funds for this transaction.</translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Unable to locate enough SpySend denominated funds for this transaction.</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -4455,8 +4455,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>Spysend options:</source>
-        <translation>Spysend options:</translation>
+        <source>SpySend options:</source>
+        <translation>SpySend options:</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4545,8 +4545,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Error: You already have pending entries in the Spysend pool</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Error: You already have pending entries in the SpySend pool</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4590,8 +4590,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
-        <translation>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</translation>
+        <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
+        <translation>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4610,8 +4610,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</source>
+        <translation>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4700,8 +4700,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
-        <translation>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</translation>
+        <source>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
+        <translation>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -4847,18 +4847,18 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+2"/>
-        <source>Spysend is idle.</source>
-        <translation>Spysend is idle.</translation>
+        <source>SpySend is idle.</source>
+        <translation>SpySend is idle.</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Spysend request complete:</source>
-        <translation>Spysend request complete:</translation>
+        <source>SpySend request complete:</source>
+        <translation>SpySend request complete:</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Spysend request incomplete:</source>
-        <translation>Spysend request incomplete:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>SpySend request incomplete:</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5022,8 +5022,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+11"/>
-        <source>Last successful Spysend action was too recent.</source>
-        <translation>Last successful Spysend action was too recent.</translation>
+        <source>Last successful SpySend action was too recent.</source>
+        <translation>Last successful SpySend action was too recent.</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5042,8 +5042,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+3"/>
-        <source>Loading evolution cache...</source>
-        <translation>Loading evolution cache...</translation>
+        <source>Loading budget cache...</source>
+        <translation>Loading budget cache...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5237,8 +5237,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+2"/>
-        <source>Synchronizing evolutions...</source>
-        <translation>Synchronizing evolutions...</translation>
+        <source>Synchronizing budgets...</source>
+        <translation>Synchronizing budgets...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5367,8 +5367,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Last Spysend was too recent.</source>
-        <translation>Last Spysend was too recent.</translation>
+        <source>Last SpySend was too recent.</source>
+        <translation>Last SpySend was too recent.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -5682,8 +5682,8 @@ for example: alertnotify=echo %%s | mail -s &quot;Arctic Alert&quot; admin@foo.c
     </message>
     <message>
         <location line="+1"/>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Value more than Spysend pool maximum allows.</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Value more than SpySend pool maximum allows.</translation>
     </message>
     <message>
         <location line="+1"/>

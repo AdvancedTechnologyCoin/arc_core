@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -283,7 +283,7 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         txNew.vout[0].nValue = blockReward;
         txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
 
-        // Update coinbase transaction with additional info about goldminenode and governace payments,
+        // Update coinbase transaction with additional info about goldminenode and governance payments,
         // get some info back to pass to getblocktemplate
         FillBlockPayments(txNew, nHeight, blockReward, pblock->txoutGoldminenode, pblock->voutSuperblock);
         // LogPrintf("CreateNewBlock -- nBlockHeight %d blockReward %lld txoutGoldminenode %s txNew %s",

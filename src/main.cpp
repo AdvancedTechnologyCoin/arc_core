@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1742,6 +1742,7 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
 {
     double dDiff;
     CAmount nSubsidyBase;
+	CAmount nSuperblockPart = 0;
     dDiff = ConvertBitsToDouble(nPrevBits);
     
 
@@ -1775,8 +1776,7 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
         nSubsidy -= nSubsidy/6;
     }
 
-    // Hard fork to reduce the block reward by 10 extra percent (allowing evolution/superblocks)
-    CAmount nSuperblockPart = (nPrevHeight > consensusParams.nEvolutionPaymentsStartBlock) ? nSubsidy/10 : 0;
+    if (nPrevHeight > 0){nSuperblockPart = nSubsidy/10;}
 
     return fSuperblockPartOnly ? nSuperblockPart : nSubsidy - nSuperblockPart;
 }
@@ -3718,7 +3718,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
 
-    // ARCTIC : CHECK TRANSACTIONS FOR INSTANTSEND
+    // ARC : CHECK TRANSACTIONS FOR INSTANTSEND
 
     if(sporkManager.IsSporkActive(SPORK_3_INSTANTSEND_BLOCK_FILTERING)) {
         // We should never accept block which conflicts with completed transaction lock,
@@ -3748,7 +3748,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
         LogPrintf("CheckBlock(ARC): spork is off, skipping transaction locking checks\n");
     }
 
-    // END ARCTIC
+    // END ARC
 
     // Check transactions
     BOOST_FOREACH(const CTransaction& tx, block.vtx)
@@ -3791,9 +3791,20 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     const Consensus::Params& consensusParams = Params().GetConsensus();
     int nHeight = pindexPrev->nHeight + 1;
     // Check proof of work
-            if (nHeight > 97961 && block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+    if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
+        // architecture issues with DGW v1 and v2)
+        unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
+        double n1 = ConvertBitsToDouble(block.nBits);
+        double n2 = ConvertBitsToDouble(nBitsNext);
+
+        if (abs(n1-n2) > n1*0.5)
+            return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
+                            REJECT_INVALID, "bad-diffbits");
+    } else {
+        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
             return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
                             REJECT_INVALID, "bad-diffbits");
+    }
 
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
@@ -4941,7 +4952,7 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         return mnodeman.mapSeenGoldminenodePing.count(inv.hash);
 
     case MSG_DSTX:
-        return mapSpysendBroadcastTxes.count(inv.hash);
+        return mapSpySendBroadcastTxes.count(inv.hash);
 
     case MSG_GOVERNANCE_OBJECT:
     case MSG_GOVERNANCE_OBJECT_VOTE:
@@ -5164,10 +5175,10 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                 }
 
                 if (!pushed && inv.type == MSG_DSTX) {
-                    if(mapSpysendBroadcastTxes.count(inv.hash)) {
+                    if(mapSpySendBroadcastTxes.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << mapSpysendBroadcastTxes[inv.hash];
+                        ss << mapSpySendBroadcastTxes[inv.hash];
                         pfrom->PushMessage(NetMsgType::DSTX, ss);
                         pushed = true;
                     }
@@ -5706,7 +5717,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         vector<uint256> vEraseQueue;
         CTransaction tx;
         CTxLockRequest txLockRequest;
-        CSpysendBroadcastTx dstx;
+        CSpySendBroadcastTx dstx;
         int nInvType = MSG_TX;
 
         // Read data and assign inv type
@@ -5735,7 +5746,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         } else if (strCommand == NetMsgType::DSTX) {
             uint256 hashTx = tx.GetHash();
 
-            if(mapSpysendBroadcastTxes.count(hashTx)) {
+            if(mapSpySendBroadcastTxes.count(hashTx)) {
                 LogPrint("privatesend", "DSTX -- Already have %s, skipping...\n", hashTx.ToString());
                 return true; // not an error
             }
@@ -5776,7 +5787,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             if (strCommand == NetMsgType::DSTX) {
                 LogPrintf("DSTX -- Goldminenode transaction accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->id);
-                mapSpysendBroadcastTxes.insert(make_pair(tx.GetHash(), dstx));
+                mapSpySendBroadcastTxes.insert(make_pair(tx.GetHash(), dstx));
             } else if (strCommand == NetMsgType::TXLOCKREQUEST) {
                 LogPrintf("TXLOCKREQUEST -- Transaction Lock Request accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->id);

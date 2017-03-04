@@ -741,8 +741,8 @@ Adres: %4
         <translation>Skopiuj resztę</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Wybrano niezanonimizowane środki. &lt;b&gt;Spysend będzie wyłączony.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Jeśli wciąż chcesz użyć Spysend, cofnij wybór niezanonimizowanych środków i zaznacz kliknij ponownie na pole wyboru obok Spysend.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Wybrano niezanonimizowane środki. &lt;b&gt;SpySend będzie wyłączony.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Jeśli wciąż chcesz użyć SpySend, cofnij wybór niezanonimizowanych środków i zaznacz kliknij ponownie na pole wyboru obok SpySend.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -842,10 +842,10 @@ Adres: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Skonfiguruj Spysend</translation>
+        <source>Configure SpySend</source>
+        <translation>Skonfiguruj SpySend</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -865,15 +865,15 @@ Adres: %4
     </message>
     <message>
         <source>Use 2 separate goldminenodes to mix funds up to 1000 ARC</source>
-        <translation>Użyj 2 oddzielnych masternodów aby wymieszać środki max. do 1000 ARC</translation>
+        <translation>Użyj 2 oddzielnych goldminenodów aby wymieszać środki max. do 1000 ARC</translation>
     </message>
     <message>
         <source>Use 8 separate goldminenodes to mix funds up to 1000 ARC</source>
-        <translation>Użyj 8 oddzielnych masternodów aby wymieszać środki max. do 1000 ARC</translation>
+        <translation>Użyj 8 oddzielnych goldminenodów aby wymieszać środki max. do 1000 ARC</translation>
     </message>
     <message>
         <source>Use 16 separate goldminenodes</source>
-        <translation>Użyj 16 oddzielnych masternodów</translation>
+        <translation>Użyj 16 oddzielnych goldminenodów</translation>
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
@@ -892,20 +892,20 @@ Adres: %4
         <translation>Jest to najwolniejsza lecz najbardziej bezpieczna opcja. Maksymalny poziom zanonimizowania będzie kosztować</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Konfiguracja Spysend</translation>
+        <source>SpySend Configuration</source>
+        <translation>Konfiguracja SpySend</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend został pomyślnie ustawiony na poziom podstawowy (%1 oraz 2 rundy). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend został pomyślnie ustawiony na poziom podstawowy (%1 oraz 2 rundy). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend został pomyślnie ustawiony na poziom wysoki (%1 oraz 8 rund). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend został pomyślnie ustawiony na poziom wysoki (%1 oraz 8 rund). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend został pomyślnie ustawiony na poziom maksymalny (%1 oraz 16 rund). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend został pomyślnie ustawiony na poziom maksymalny (%1 oraz 16 rund). Możesz to zmienić kiedy chcesz, otwierając ekran z konfiguracją Arctic.</translation>
     </message>
 </context>
 <context>
@@ -1146,12 +1146,12 @@ Adres: %4
         <translation>(0=auto, &lt;0 = zostaw tyle wolnych rdzeni)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
-        <translation>Ilość rund Spysend.</translation>
+        <source>SpySend rounds to use</source>
+        <translation>Ilość rund SpySend.</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Ta kwota działa jako próg po którego przekroczeniu Spysend zostaje wyłączony.</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
+        <translation>Ta kwota działa jako próg po którego przekroczeniu SpySend zostaje wyłączony.</translation>
     </message>
     <message>
         <source>Amount of Arctic to keep anonymized</source>
@@ -1187,7 +1187,7 @@ Adres: %4
     </message>
     <message>
         <source>This setting determines the amount of individual goldminenodes that an input will be anonymized through.&lt;br/&gt;More rounds of anonymization gives a higher degree of privacy, but also costs more in fees.</source>
-        <translation>Tutaj możesz ustawić liczbę masternodów, przez które transakcja zostanie przepuszczona.&lt;br/&gt;Im większa liczba masternodów tym większy poziom anonimowości, ale opłata jest również wyższa.</translation>
+        <translation>Tutaj możesz ustawić liczbę goldminenodów, przez które transakcja zostanie przepuszczona.&lt;br/&gt;Im większa liczba goldminenodów tym większy poziom anonimowości, ale opłata jest również wyższa.</translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
@@ -1423,8 +1423,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Ukończone:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Bilans Spysend:</translation>
+        <source>SpySend Balance:</source>
+        <translation>Bilans SpySend:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
@@ -1443,8 +1443,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>nie dotyczy</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -1456,23 +1456,23 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Denominacje, które wysłałeś do Masternoda.&lt;br&gt;Aby zostały one wymieszane, inni użytkownicy muszą wysłać dokładnie takie same denominacje. </translation>
+        <translation>Denominacje, które wysłałeś do Goldminenoda.&lt;br&gt;Aby zostały one wymieszane, inni użytkownicy muszą wysłać dokładnie takie same denominacje. </translation>
     </message>
     <message>
         <source>(Last Message)</source>
         <translation>(Ostatnia Wiadomość)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Prubój ręcznie zgłosić żądanie Spysend.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Prubój ręcznie zgłosić żądanie SpySend.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Mieszaj</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Zresetuj obecny stan spysend (może przerwać Spysend, jeżeli jest w trakcie mieszania. Może Cię to kosztować! )</translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Zresetuj obecny stan spysend (może przerwać SpySend, jeżeli jest w trakcie mieszania. Może Cię to kosztować! )</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1487,12 +1487,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Wyłączony</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
-        <translation>Uruchom miksowanie Spysend</translation>
+        <source>Start SpySend Mixing</source>
+        <translation>Uruchom miksowanie SpySend</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
-        <translation>Zatrzymaj miksowanie Spysend</translation>
+        <source>Stop SpySend Mixing</source>
+        <translation>Zatrzymaj miksowanie SpySend</translation>
     </message>
     <message>
         <source>No inputs detected</source>
@@ -1535,9 +1535,9 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Włączony</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Ostatnia wiadomość Spysend:
+        <translation>Ostatnia wiadomość SpySend:
 </translation>
     </message>
     <message>
@@ -1545,20 +1545,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>NIEDOSTĘPNE</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend został pomyślnie zresetowany</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend został pomyślnie zresetowany</translation>
     </message>
     <message>
-        <source>If you don't want to see internal Spysend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
-        <translation>Jeśli nie chcesz widzieć wewnętrznych transakcji/opłat Spysend to wybierz "Najpopularniejsza" jako rodzaj transakcji w zakładce "Transakcje".</translation>
+        <source>If you don't want to see internal SpySend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
+        <translation>Jeśli nie chcesz widzieć wewnętrznych transakcji/opłat SpySend to wybierz "Najpopularniejsza" jako rodzaj transakcji w zakładce "Transakcje".</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Spysend wymaga użycia conajmniej %1</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>SpySend wymaga użycia conajmniej %1</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Portfel jest zablokowany a użytkownik odmówił odblokowania. Spysend zostaje wyłączony.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Portfel jest zablokowany a użytkownik odmówił odblokowania. SpySend zostaje wyłączony.</translation>
     </message>
 </context>
 <context>
@@ -1813,7 +1813,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Number of Goldminenodes</source>
-        <translation>Liczba masternodów</translation>
+        <translation>Liczba goldminenodów</translation>
     </message>
     <message>
         <source>&amp;Console</source>
@@ -2364,8 +2364,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Dodaj Odbio&amp;rce</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -3020,8 +3020,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Odebrano od</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>Otrzymane przez Spysend</translation>
+        <source>Received via SpySend</source>
+        <translation>Otrzymane przez SpySend</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -3036,20 +3036,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Wydobyto</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Denominacja Spysend</translation>
+        <source>SpySend Denominate</source>
+        <translation>Denominacja SpySend</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Płatność zabezpieczająca Spysend</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>Płatność zabezpieczająca SpySend</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend tworzy poboczne wejscia</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend tworzy poboczne wejscia</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend tworzy denominacje</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend tworzy denominacje</translation>
     </message>
     <message>
         <source>Darksent</source>
@@ -3135,20 +3135,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Darksent</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend tworzy poboczne wejscia</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend tworzy poboczne wejscia</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend tworzy denominacje</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend tworzy denominacje</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Denominacja Spysend</translation>
+        <source>SpySend Denominate</source>
+        <translation>Denominacja SpySend</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Płatność zabezpieczająca Spysend</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>Płatność zabezpieczająca SpySend</translation>
     </message>
     <message>
         <source>To yourself</source>
@@ -3330,8 +3330,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Nie można zablokować katalogu danych %s. Prawdopodobnie Arctic jest już uruchomiony. </translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend używa dokładnych denominowanych kwot do przesyłania środków, możliwe że musisz zanonimizować trochę więcej monet.</translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>SpySend używa dokładnych denominowanych kwot do przesyłania środków, możliwe że musisz zanonimizować trochę więcej monet.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3386,12 +3386,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Niezdolny do związania z %s na tym komputerze. Prawdopodobnie Arctic jest już uruchomiony. </translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Nie znaleziono wystarczających denominowanych środków Spysend do wykonania tej transakcji.</translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Nie znaleziono wystarczających denominowanych środków SpySend do wykonania tej transakcji.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Nie znaleziono wystarczającej ilości nie zdenominowanych środków Spysend dla tej transakcji, które nie równają się 1000 ARC</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Nie znaleziono wystarczającej ilości nie zdenominowanych środków SpySend dla tej transakcji, które nie równają się 1000 ARC</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3490,8 +3490,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Wykryto uszkodzoną bazę danych bloków</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Opcje Spysend:</translation>
+        <source>SpySend options:</source>
+        <translation>Opcje SpySend:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -3562,8 +3562,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Błąd: Portfel zamknięty, stworzenie transakcji jest niemożliwe!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Błąd: Już masz oczekujące wejścia do puli Spysend</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Błąd: Już masz oczekujące wejścia do puli SpySend</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3598,7 +3598,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Zwiąż z danym adresem oraz wpisz łączących się peerów na białą liste. Użyj notacji [host]:port dla IPv6. Opcja ta może być ustawiana wielokrotnie (domyślnie: połącz z wszystkimi interfejsami)</translation>
     </message>
     <message>
-        <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
+        <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
         <translation>Zmeń automatyczne głosowanie. mode=auto: Głosuj tylko na konkretny kompletny budżet, porównaj z wygenerowanym budżetem. (linijka, domyślnie: auto)</translation>
     </message>
     <message>
@@ -3614,8 +3614,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Usuń wszystkie transakcje portfela i odzyskaj tylko te części blockchainu - zeskanuj powonie na starcie.</translation>
     </message>
     <message>
-        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Wyłącz wszystkie dodatkowe funckje Arctic (Masternody, Spysend, InstanX, Budżetowanie) (0-1, domyślnie: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</source>
+        <translation>Wyłącz wszystkie dodatkowe funckje Arctic (Goldminenody, SpySend, InstanX, Budżetowanie) (0-1, domyślnie: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3627,7 +3627,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>Enable use of automated spysend for funds stored in this wallet (0-1, default: %u)</source>
-        <translation>Włącz możliwość automatyzacji Spysend dla środków zgromadzonych w  tym portfelu (0-1, domyślnie: %u)</translation>
+        <translation>Włącz możliwość automatyzacji SpySend dla środków zgromadzonych w  tym portfelu (0-1, domyślnie: %u)</translation>
     </message>
     <message>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
@@ -3686,8 +3686,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Informacje na temat debugowania danych wyjściowych (domyślnie: %u, podanie &lt;category&gt; jest opcjonalne)</translation>
     </message>
     <message>
-        <source>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
-        <translation>Dostarcz Spysend płynności przez rzadkie ale ciągłe mieszanie monet (0-100, domyślnie: %u, 1=bardzo często, wysokie opłaty, 100=bardzo rzadko, małe opłaty)</translation>
+        <source>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
+        <translation>Dostarcz SpySend płynności przez rzadkie ale ciągłe mieszanie monet (0-100, domyślnie: %u, 1=bardzo często, wysokie opłaty, 100=bardzo rzadko, małe opłaty)</translation>
     </message>
     <message>
         <source>Require high priority for relaying free or low-fee transactions (default:%u)</source>
@@ -3807,16 +3807,16 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Analiza -rpcbind wartości %s jako adresu sieci jest niemożliwa</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
-        <translation>Spysend jest w stanie spoczynku.</translation>
+        <source>SpySend is idle.</source>
+        <translation>SpySend jest w stanie spoczynku.</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
-        <translation>Żądanie Spysend zakończone:</translation>
+        <source>SpySend request complete:</source>
+        <translation>Żądanie SpySend zakończone:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
-        <translation>Żądanie Spysend niezakończone:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>Żądanie SpySend niezakończone:</translation>
     </message>
     <message>
         <source>Disable safemode, override a real safe mode event (default: %u)</source>
@@ -3947,8 +3947,8 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Nieprawidłowa kwota dla -paytxfee=&lt;kwota&gt;: '%s'</translation>
     </message>
     <message>
-        <source>Last successful Spysend action was too recent.</source>
-        <translation>Za mało czasu upłynęło od ostatniej udanej transakcji Spysend.</translation>
+        <source>Last successful SpySend action was too recent.</source>
+        <translation>Za mało czasu upłynęło od ostatniej udanej transakcji SpySend.</translation>
     </message>
     <message>
         <source>Limit size of signature cache to &lt;n&gt; entries (default: %u)</source>
@@ -3963,16 +3963,16 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Nasłuchuj połączeń na &lt;port&gt; (domyślnie: %u lub testnet: %u)</translation>
     </message>
     <message>
-        <source>Loading evolution cache...</source>
+        <source>Loading budget cache...</source>
         <translation>Ładuje pamięć podręczną budżetu...</translation>
     </message>
     <message>
         <source>Loading goldminenode cache...</source>
-        <translation>Ładuję pamięć podręczną masternoda...</translation>
+        <translation>Ładuję pamięć podręczną goldminenoda...</translation>
     </message>
     <message>
         <source>Loading goldminenode payment cache...</source>
-        <translation>Ładuję pamięć podręczną płatności masternodów...</translation>
+        <translation>Ładuję pamięć podręczną płatności goldminenodów...</translation>
     </message>
     <message>
         <source>Lock is already in place.</source>
@@ -3980,7 +3980,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Lock goldminenodes from goldminenode configuration file (default: %u)</source>
-        <translation>Zamknij masternody z pliku konfiguracji (domyślnie: %u)</translation>
+        <translation>Zamknij goldminenody z pliku konfiguracji (domyślnie: %u)</translation>
     </message>
     <message>
         <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
@@ -4004,15 +4004,15 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>No Goldminenodes detected.</source>
-        <translation>Nie wykryto żadnego Masternoda.</translation>
+        <translation>Nie wykryto żadnego Goldminenoda.</translation>
     </message>
     <message>
         <source>No compatible Goldminenode found.</source>
-        <translation>Nie znalezione zadnego kompatybilnego Masternoda.</translation>
+        <translation>Nie znalezione zadnego kompatybilnego Goldminenoda.</translation>
     </message>
     <message>
         <source>Not in the Goldminenode list.</source>
-        <translation>Nie istnieje na liście masternodów.</translation>
+        <translation>Nie istnieje na liście goldminenodów.</translation>
     </message>
     <message>
         <source>Number of automatic wallet backups (default: 10)</source>
@@ -4084,7 +4084,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Specify goldminenode configuration file (default: %s)</source>
-        <translation>Ustaw plik konfiguracji masternoda (domyślnie: %s)</translation>
+        <translation>Ustaw plik konfiguracji goldminenoda (domyślnie: %s)</translation>
     </message>
     <message>
         <source>Specify pid file (default: %s)</source>
@@ -4100,15 +4100,15 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Submitted following entries to goldminenode: %u / %d</source>
-        <translation>Następujące wpisy zostały przesłane do masternoda: %u / %d</translation>
+        <translation>Następujące wpisy zostały przesłane do goldminenoda: %u / %d</translation>
     </message>
     <message>
         <source>Submitted to goldminenode, waiting for more entries ( %u / %d ) %s</source>
-        <translation>Zapisano do masternoda, czekam na więcej wejść ( %u / %d ) %s</translation>
+        <translation>Zapisano do goldminenoda, czekam na więcej wejść ( %u / %d ) %s</translation>
     </message>
     <message>
         <source>Submitted to goldminenode, waiting in queue %s</source>
-        <translation>Przesłano do masterdnoda, czekaj na swoją kolej %s</translation>
+        <translation>Przesłano do goldminednoda, czekaj na swoją kolej %s</translation>
     </message>
     <message>
         <source>Synchronization failed</source>
@@ -4119,16 +4119,16 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Synchronizacja zakończona</translation>
     </message>
     <message>
-        <source>Synchronizing evolutions...</source>
+        <source>Synchronizing budgets...</source>
         <translation>Synchronizuję budżet...</translation>
     </message>
     <message>
         <source>Synchronizing goldminenode winners...</source>
-        <translation>Synchronizuję zwycięskie masternody...</translation>
+        <translation>Synchronizuję zwycięskie goldminenody...</translation>
     </message>
     <message>
         <source>Synchronizing goldminenodes...</source>
-        <translation>Synchronizuję masternody...</translation>
+        <translation>Synchronizuję goldminenody...</translation>
     </message>
     <message>
         <source>Synchronizing sporks...</source>
@@ -4148,7 +4148,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Use N separate goldminenodes to anonymize funds  (2-8, default: %u)</source>
-        <translation>Użyj N oddzielnych masternodów aby zanonimizować fundusze (2-8, domyślnie: %u)</translation>
+        <translation>Użyj N oddzielnych goldminenodów aby zanonimizować fundusze (2-8, domyślnie: %u)</translation>
     </message>
     <message>
         <source>Use UPnP to map the listening port (default: %u)</source>
@@ -4172,7 +4172,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Invalid goldminenodeprivkey. Please see documenation.</source>
-        <translation>Nieprawidłowy klucz prywatny masternoda. Przeczytaj dokumentację.</translation>
+        <translation>Nieprawidłowy klucz prywatny goldminenoda. Przeczytaj dokumentację.</translation>
     </message>
     <message>
         <source>(must be 7209 for mainnet)</source>
@@ -4180,7 +4180,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Can't find random Goldminenode.</source>
-        <translation>Nie można znaleźć przypadkowego masternoda.</translation>
+        <translation>Nie można znaleźć przypadkowego goldminenoda.</translation>
     </message>
     <message>
         <source>Can't mix while sync in progress.</source>
@@ -4223,8 +4223,8 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Utrzymuj najwyżej &lt;n&gt; niepodłączalnych transakcji w pamięci (domyślny: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
-        <translation>Za mało czasu upłynęło od ostatniej transakcji Spysend.</translation>
+        <source>Last SpySend was too recent.</source>
+        <translation>Za mało czasu upłynęło od ostatniej transakcji SpySend.</translation>
     </message>
     <message>
         <source>Line: %d</source>
@@ -4248,15 +4248,15 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Goldminenode options:</source>
-        <translation>Opcje masternodów:</translation>
+        <translation>Opcje goldminenodów:</translation>
     </message>
     <message>
         <source>Goldminenode queue is full.</source>
-        <translation>Kolejka masternodów jest pełna.</translation>
+        <translation>Kolejka goldminenodów jest pełna.</translation>
     </message>
     <message>
         <source>Goldminenode:</source>
-        <translation>Masternod:</translation>
+        <translation>Goldminenod:</translation>
     </message>
     <message>
         <source>Missing input transaction information.</source>
@@ -4360,7 +4360,7 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
     </message>
     <message>
         <source>Set the goldminenode private key</source>
-        <translation>Ustaw klucz prywatny masternoda</translation>
+        <translation>Ustaw klucz prywatny goldminenoda</translation>
     </message>
     <message>
         <source>Show all debugging options (usage: --help -help-debug)</source>
@@ -4475,8 +4475,8 @@ Zaleca się również aby ustawić alarm powiadomień tzw. alertnotify, aby dać
         <translation>Nazwa użytkownika dla połączeń JSON-RPC </translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Wartość jest większa niż ta maksymalnie dopuszczalna przez Spysend pool</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Wartość jest większa niż ta maksymalnie dopuszczalna przez SpySend pool</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>

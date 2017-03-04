@@ -1,16 +1,16 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SPYSEND_H
-#define SPYSEND_H
+#ifndef DARKSEND_H
+#define DARKSEND_H
 
 #include "goldminenode.h"
 #include "wallet/wallet.h"
 
-class CSpysendPool;
+class CSpySendPool;
 class CDarkSendSigner;
-class CSpysendBroadcastTx;
+class CSpySendBroadcastTx;
 
 // timeouts
 static const int PRIVATESEND_AUTO_TIMEOUT_MIN       = 5;
@@ -43,11 +43,11 @@ extern bool fEnableSpySend;
 extern bool fSpySendMultiSession;
 
 // The main object for accessing mixing
-extern CSpysendPool darkSendPool;
+extern CSpySendPool darkSendPool;
 // A helper object for signing messages from Goldminenodes
 extern CDarkSendSigner darkSendSigner;
 
-extern std::map<uint256, CSpysendBroadcastTx> mapSpysendBroadcastTxes;
+extern std::map<uint256, CSpySendBroadcastTx> mapSpySendBroadcastTxes;
 extern std::vector<CAmount> vecSpySendDenominations;
 
 /** Holds an mixing input
@@ -128,7 +128,7 @@ public:
 /**
  * A currently inprogress mixing merge and denomination information
  */
-class CSpysendQueue
+class CSpySendQueue
 {
 public:
     int nDenom;
@@ -139,7 +139,7 @@ public:
     // memory only
     bool fTried;
 
-    CSpysendQueue() :
+    CSpySendQueue() :
         nDenom(0),
         vin(CTxIn()),
         nTime(0),
@@ -148,7 +148,7 @@ public:
         fTried(false)
         {}
 
-    CSpysendQueue(int nDenom, CTxIn vin, int64_t nTime, bool fReady) :
+    CSpySendQueue(int nDenom, CTxIn vin, int64_t nTime, bool fReady) :
         nDenom(nDenom),
         vin(vin),
         nTime(nTime),
@@ -190,7 +190,7 @@ public:
                         nDenom, nTime, fReady ? "true" : "false", fTried ? "true" : "false", vin.prevout.ToStringShort());
     }
 
-    friend bool operator==(const CSpysendQueue& a, const CSpysendQueue& b)
+    friend bool operator==(const CSpySendQueue& a, const CSpySendQueue& b)
     {
         return a.nDenom == b.nDenom && a.vin.prevout == b.vin.prevout && a.nTime == b.nTime && a.fReady == b.fReady;
     }
@@ -198,7 +198,7 @@ public:
 
 /** Helper class to store mixing transaction (tx) information.
  */
-class CSpysendBroadcastTx
+class CSpySendBroadcastTx
 {
 public:
     CTransaction tx;
@@ -206,14 +206,14 @@ public:
     std::vector<unsigned char> vchSig;
     int64_t sigTime;
 
-    CSpysendBroadcastTx() :
+    CSpySendBroadcastTx() :
         tx(CTransaction()),
         vin(CTxIn()),
         vchSig(std::vector<unsigned char>()),
         sigTime(0)
         {}
 
-    CSpysendBroadcastTx(CTransaction tx, CTxIn vin, int64_t sigTime) :
+    CSpySendBroadcastTx(CTransaction tx, CTxIn vin, int64_t sigTime) :
         tx(tx),
         vin(vin),
         vchSig(std::vector<unsigned char>()),
@@ -251,7 +251,7 @@ public:
 
 /** Used to keep track of current status of mixing pool
  */
-class CSpysendPool
+class CSpySendPool
 {
 private:
     // pool responses
@@ -303,7 +303,7 @@ private:
     mutable CCriticalSection cs_spysend;
 
     // The current mixing sessions in progress on the network
-    std::vector<CSpysendQueue> vecSpysendQueue;
+    std::vector<CSpySendQueue> vecSpySendQueue;
     // Keep track of the used Goldminenodes
     std::vector<CTxIn> vecGoldminenodesUsed;
 
@@ -420,7 +420,7 @@ public:
     int nCachedNumBlocks; //used for the overview screen
     bool fCreateAutoBackups; //builtin support for automatic backups
 
-    CSpysendPool() :
+    CSpySendPool() :
         nCachedLastSuccessBlock(0),
         nMinBlockSpacing(0),
         fUnitTest(false),
@@ -459,7 +459,7 @@ public:
 
     void UnlockCoins();
 
-    int GetQueueSize() const { return vecSpysendQueue.size(); }
+    int GetQueueSize() const { return vecSpySendQueue.size(); }
     int GetState() const { return nState; }
     std::string GetStateString() const;
     std::string GetStatus();

@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -471,7 +471,7 @@ public:
         tx = txIn; i = iIn; nDepth = nDepthIn; fSpendable = fSpendableIn;
     }
 
-    //Used with Spysend. Will return largest nondenom, then denominations, then very small inputs
+    //Used with SpySend. Will return largest nondenom, then denominations, then very small inputs
     int Priority() const;
 
     std::string ToString() const;
@@ -570,9 +570,9 @@ public:
     std::set<int64_t> setKeyPool;
     std::map<CKeyID, CKeyMetadata> mapKeyMetadata;
 
-    typedef std::map<unsigned int, CMasterKey> MasterKeyMap;
-    MasterKeyMap mapMasterKeys;
-    unsigned int nMasterKeyMaxID;
+    typedef std::map<unsigned int, CGoldmineKey> GoldmineKeyMap;
+    GoldmineKeyMap mapGoldmineKeys;
+    unsigned int nGoldmineKeyMaxID;
 
     CWallet()
     {
@@ -598,7 +598,7 @@ public:
         nWalletVersion = FEATURE_BASE;
         nWalletMaxVersion = FEATURE_BASE;
         fFileBacked = false;
-        nMasterKeyMaxID = 0;
+        nGoldmineKeyMaxID = 0;
         pwalletdbEncryption = NULL;
         nOrderPosNext = 0;
         nNextResend = 0;

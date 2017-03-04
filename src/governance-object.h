@@ -1,11 +1,11 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef GOVERNANCE_OBJECT_H
 #define GOVERNANCE_OBJECT_H
 
-//#define ENABLE_ARC_DEBUG
+//#define ENABLE_ARCTIC_DEBUG
 
 #include "cachemultimap.h"
 #include "governance-exceptions.h"
@@ -62,10 +62,12 @@ struct vote_instance_t {
 
     vote_outcome_enum_t eOutcome;
     int64_t nTime;
+    int64_t nCreationTime;
 
-    vote_instance_t(vote_outcome_enum_t eOutcomeIn = VOTE_OUTCOME_NONE, int64_t nTimeIn = 0)
+    vote_instance_t(vote_outcome_enum_t eOutcomeIn = VOTE_OUTCOME_NONE, int64_t nTimeIn = 0, int64_t nCreationTimeIn = 0)
         : eOutcome(eOutcomeIn),
-          nTime(nTimeIn)
+          nTime(nTimeIn),
+          nCreationTime(nCreationTimeIn)
     {}
 
     ADD_SERIALIZE_METHODS;
@@ -76,6 +78,7 @@ struct vote_instance_t {
         int nOutcome = int(eOutcome);
         READWRITE(nOutcome);
         READWRITE(nTime);
+        READWRITE(nCreationTime);
         if(ser_action.ForRead()) {
             eOutcome = vote_outcome_enum_t(nOutcome);
         }
@@ -262,7 +265,7 @@ public:
 
     bool IsValidLocally(std::string& strError, bool& fMissingGoldminenode, bool fCheckCollateral);
 
-    /// Check the collateral transaction for the evolution proposal/finalized evolution
+    /// Check the collateral transaction for the budget proposal/finalized budget
     bool IsCollateralValid(std::string& strError);
 
     void UpdateLocalValidity();
@@ -316,6 +319,8 @@ public:
         if(nType & SER_DISK) {
             // Only include these for the disk file format
             LogPrint("gobject", "CGovernanceObject::SerializationOp Reading/writing votes from/to disk\n");
+            READWRITE(nDeletionTime);
+            READWRITE(fExpired);
             READWRITE(mapCurrentMNVotes);
             READWRITE(fileVotes);
             LogPrint("gobject", "CGovernanceObject::SerializationOp hash = %s, vote count = %d\n", GetHash().ToString(), fileVotes.GetVoteCount());

@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -795,7 +795,7 @@ bool SetStartOnSystemStartup(bool fAutoStart)
 
 
 #elif defined(Q_OS_MAC)
-// based on: https://github.com/Mozketo/LaunchAtLoginController/blob/master/LaunchAtLoginController.m
+// based on: https://github.com/Mozketo/LaunchAtLoginController/blob/goldmine/LaunchAtLoginController.m
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
@@ -908,7 +908,7 @@ QString getThemeName()
     if(!theme.isEmpty()){
         return theme;
     }
-    return QString("arcgreen");  
+    return QString("light");  
 }
 
 // Open CSS when configured
@@ -923,8 +923,8 @@ QString loadStyleSheet()
         cssName = QString(":/css/") + theme; 
     }
     else {
-        cssName = QString(":/css/arcgreen");  
-        settings.setValue("theme", "arcgreen");
+        cssName = QString(":/css/light");  
+        settings.setValue("theme", "light");
     }
     
     QFile qFile(cssName);      

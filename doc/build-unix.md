@@ -141,10 +141,10 @@ Berkeley DB
 It is recommended to use Berkeley DB 4.8. If you have to build it yourself:
 
 ```bash
-ARC_ROOT=$(pwd)
+ARCTIC_ROOT=$(pwd)
 
 # Pick some path to install BDB to, here we create a directory within the arcticcoin directory
-BDB_PREFIX="${ARC_ROOT}/db4"
+BDB_PREFIX="${ARCTIC_ROOT}/db4"
 mkdir -p $BDB_PREFIX
 
 # Fetch the source and verify that it is not tampered with
@@ -160,7 +160,7 @@ cd db-4.8.30.NC/build_unix/
 make install
 
 # Configure Arctic Core to use our own-built instance of BDB
-cd $ARC_ROOT
+cd $ARCTIC_ROOT
 ./autogen.sh
 ./configure LDFLAGS="-L${BDB_PREFIX}/lib/" CPPFLAGS="-I${BDB_PREFIX}/include/" # (other args...)
 ```

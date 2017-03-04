@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -24,12 +24,12 @@ int nLiquidityProvider = DEFAULT_PRIVATESEND_LIQUIDITY;
 bool fEnableSpySend = false;
 bool fSpySendMultiSession = DEFAULT_PRIVATESEND_MULTISESSION;
 
-CSpysendPool darkSendPool;
+CSpySendPool darkSendPool;
 CDarkSendSigner darkSendSigner;
-std::map<uint256, CSpysendBroadcastTx> mapSpysendBroadcastTxes;
+std::map<uint256, CSpySendBroadcastTx> mapSpySendBroadcastTxes;
 std::vector<CAmount> vecSpySendDenominations;
 
-void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
+void CSpySendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
     if(fLiteMode) return; // ignore all Arctic related functionality
     if(!goldminenodeSync.IsBlockchainSynced()) return;
@@ -42,7 +42,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(!fMasterNode) {
+        if(!fGoldmineNode) {
             LogPrintf("DSACCEPT -- not a Goldminenode!\n");
             PushStatus(pfrom, STATUS_REJECTED, ERR_NOT_A_MN);
             return;
@@ -98,11 +98,11 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        CSpysendQueue dsq;
+        CSpySendQueue dsq;
         vRecv >> dsq;
 
         // process every dsq only once
-        BOOST_FOREACH(CSpysendQueue q, vecSpysendQueue) {
+        BOOST_FOREACH(CSpySendQueue q, vecSpySendQueue) {
             if(q == dsq) {
                 // LogPrint("privatesend", "DSQUEUE -- %s seen\n", dsq.ToString());
                 return;
@@ -135,7 +135,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
                 SubmitDenominate();
             }
         } else {
-            BOOST_FOREACH(CSpysendQueue q, vecSpysendQueue) {
+            BOOST_FOREACH(CSpySendQueue q, vecSpySendQueue) {
                 if(q.vin == dsq.vin) {
                     // no way same mn can send another "not yet ready" dsq this soon
                     LogPrint("privatesend", "DSQUEUE -- Goldminenode %s is sending WAY too many dsq messages\n", pmn->addr.ToString());
@@ -158,7 +158,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             if(pSubmittedToGoldminenode && pSubmittedToGoldminenode->vin.prevout == dsq.vin.prevout) {
                 dsq.fTried = true;
             }
-            vecSpysendQueue.push_back(dsq);
+            vecSpySendQueue.push_back(dsq);
             dsq.Relay();
         }
 
@@ -170,7 +170,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(!fMasterNode) {
+        if(!fGoldmineNode) {
             LogPrintf("DSVIN -- not a Goldminenode!\n");
             PushStatus(pfrom, STATUS_REJECTED, ERR_NOT_A_MN);
             return;
@@ -279,7 +279,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(fMasterNode) {
+        if(fGoldmineNode) {
             // LogPrintf("DSSTATUSUPDATE -- Can't run on a Goldminenode!\n");
             return;
         }
@@ -329,7 +329,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(!fMasterNode) {
+        if(!fGoldmineNode) {
             LogPrintf("DSSIGNFINALTX -- not a Goldminenode!\n");
             return;
         }
@@ -361,7 +361,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(fMasterNode) {
+        if(fGoldmineNode) {
             // LogPrintf("DSFINALTX -- Can't run on a Goldminenode!\n");
             return;
         }
@@ -393,7 +393,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
             return;
         }
 
-        if(fMasterNode) {
+        if(fGoldmineNode) {
             // LogPrintf("DSCOMPLETE -- Can't run on a Goldminenode!\n");
             return;
         }
@@ -424,7 +424,7 @@ void CSpysendPool::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataSt
     }
 }
 
-void CSpysendPool::InitDenominations()
+void CSpySendPool::InitDenominations()
 {
     vecSpySendDenominations.clear();
     /* Denominations
@@ -433,8 +433,8 @@ void CSpysendPool::InitDenominations()
         is convertable to another.
 
         For example:
-        1ARC+1000 == (.1ARC+100)*10
-        10ARC+10000 == (1ARC+1000)*10
+        1DRK+1000 == (.1DRK+100)*10
+        10DRK+10000 == (1DRK+1000)*10
     */
     /* Disabled
     vecSpySendDenominations.push_back( (100      * COIN)+100000 );
@@ -448,7 +448,7 @@ void CSpysendPool::InitDenominations()
     */
 }
 
-void CSpysendPool::ResetPool()
+void CSpySendPool::ResetPool()
 {
     nCachedLastSuccessBlock = 0;
     txMyCollateral = CMutableTransaction();
@@ -457,7 +457,7 @@ void CSpysendPool::ResetPool()
     SetNull();
 }
 
-void CSpysendPool::SetNull()
+void CSpySendPool::SetNull()
 {
     // MN side
     vecSessionCollaterals.clear();
@@ -480,7 +480,7 @@ void CSpysendPool::SetNull()
 //
 // Unlock coins after mixing fails or succeeds
 //
-void CSpysendPool::UnlockCoins()
+void CSpySendPool::UnlockCoins()
 {
     while(true) {
         TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
@@ -493,7 +493,7 @@ void CSpysendPool::UnlockCoins()
     vecOutPointLocked.clear();
 }
 
-std::string CSpysendPool::GetStateString() const
+std::string CSpySendPool::GetStateString() const
 {
     switch(nState) {
         case POOL_STATE_IDLE:                   return "IDLE";
@@ -506,7 +506,7 @@ std::string CSpysendPool::GetStateString() const
     }
 }
 
-std::string CSpysendPool::GetStatus()
+std::string CSpySendPool::GetStatus()
 {
     static int nStatusMessageProgress = 0;
     nStatusMessageProgress += 10;
@@ -558,21 +558,21 @@ std::string CSpysendPool::GetStatus()
 //
 // Check the mixing progress and send client updates if a Goldminenode
 //
-void CSpysendPool::CheckPool()
+void CSpySendPool::CheckPool()
 {
-    if(fMasterNode) {
-        LogPrint("privatesend", "CSpysendPool::CheckPool -- entries count %lu\n", GetEntriesCount());
+    if(fGoldmineNode) {
+        LogPrint("privatesend", "CSpySendPool::CheckPool -- entries count %lu\n", GetEntriesCount());
 
         // If entries are full, create finalized transaction
         if(nState == POOL_STATE_ACCEPTING_ENTRIES && GetEntriesCount() >= GetMaxPoolTransactions()) {
-            LogPrint("privatesend", "CSpysendPool::CheckPool -- FINALIZE TRANSACTIONS\n");
+            LogPrint("privatesend", "CSpySendPool::CheckPool -- FINALIZE TRANSACTIONS\n");
             CreateFinalTransaction();
             return;
         }
 
         // If we have all of the signatures, try to compile the transaction
         if(nState == POOL_STATE_SIGNING && IsSignaturesComplete()) {
-            LogPrint("privatesend", "CSpysendPool::CheckPool -- SIGNING\n");
+            LogPrint("privatesend", "CSpySendPool::CheckPool -- SIGNING\n");
             CommitFinalTransaction();
             return;
         }
@@ -580,15 +580,15 @@ void CSpysendPool::CheckPool()
 
     // reset if we're here for 10 seconds
     if((nState == POOL_STATE_ERROR || nState == POOL_STATE_SUCCESS) && GetTimeMillis() - nTimeLastSuccessfulStep >= 10000) {
-        LogPrint("privatesend", "CSpysendPool::CheckPool -- timeout, RESETTING\n");
+        LogPrint("privatesend", "CSpySendPool::CheckPool -- timeout, RESETTING\n");
         UnlockCoins();
         SetNull();
     }
 }
 
-void CSpysendPool::CreateFinalTransaction()
+void CSpySendPool::CreateFinalTransaction()
 {
-    LogPrint("privatesend", "CSpysendPool::CreateFinalTransaction -- FINALIZE TRANSACTIONS\n");
+    LogPrint("privatesend", "CSpySendPool::CreateFinalTransaction -- FINALIZE TRANSACTIONS\n");
 
     CMutableTransaction txNew;
 
@@ -601,26 +601,26 @@ void CSpysendPool::CreateFinalTransaction()
             txNew.vin.push_back(txdsin);
     }
 
-    // BIP69 https://github.com/kristovatlas/bips/blob/master/bip-0069.mediawiki
+    // BIP69 https://github.com/kristovatlas/bips/blob/goldmine/bip-0069.mediawiki
     sort(txNew.vin.begin(), txNew.vin.end());
     sort(txNew.vout.begin(), txNew.vout.end());
 
     finalMutableTransaction = txNew;
-    LogPrint("privatesend", "CSpysendPool::CreateFinalTransaction -- finalMutableTransaction=%s", txNew.ToString());
+    LogPrint("privatesend", "CSpySendPool::CreateFinalTransaction -- finalMutableTransaction=%s", txNew.ToString());
 
     // request signatures from clients
     RelayFinalTransaction(finalMutableTransaction);
     SetState(POOL_STATE_SIGNING);
 }
 
-void CSpysendPool::CommitFinalTransaction()
+void CSpySendPool::CommitFinalTransaction()
 {
-    if(!fMasterNode) return; // check and relay final tx only on goldminenode
+    if(!fGoldmineNode) return; // check and relay final tx only on goldminenode
 
     CTransaction finalTransaction = CTransaction(finalMutableTransaction);
     uint256 hashTx = finalTransaction.GetHash();
 
-    LogPrint("privatesend", "CSpysendPool::CommitFinalTransaction -- finalTransaction=%s", finalTransaction.ToString());
+    LogPrint("privatesend", "CSpySendPool::CommitFinalTransaction -- finalTransaction=%s", finalTransaction.ToString());
 
     {
         // See if the transaction is valid
@@ -629,7 +629,7 @@ void CSpysendPool::CommitFinalTransaction()
         mempool.PrioritiseTransaction(hashTx, hashTx.ToString(), 1000, 0.1*COIN);
         if(!lockMain || !AcceptToMemoryPool(mempool, validationState, finalTransaction, false, NULL, false, true, true))
         {
-            LogPrintf("CSpysendPool::CommitFinalTransaction -- AcceptToMemoryPool() error: Transaction not valid\n");
+            LogPrintf("CSpySendPool::CommitFinalTransaction -- AcceptToMemoryPool() error: Transaction not valid\n");
             SetNull();
             // not much we can do in this case, just notify clients
             RelayCompletedTransaction(ERR_INVALID_TX);
@@ -637,16 +637,16 @@ void CSpysendPool::CommitFinalTransaction()
         }
     }
 
-    LogPrintf("CSpysendPool::CommitFinalTransaction -- CREATING DSTX\n");
+    LogPrintf("CSpySendPool::CommitFinalTransaction -- CREATING DSTX\n");
 
     // create and sign goldminenode dstx transaction
-    if(!mapSpysendBroadcastTxes.count(hashTx)) {
-        CSpysendBroadcastTx dstx(finalTransaction, activeGoldminenode.vin, GetAdjustedTime());
+    if(!mapSpySendBroadcastTxes.count(hashTx)) {
+        CSpySendBroadcastTx dstx(finalTransaction, activeGoldminenode.vin, GetAdjustedTime());
         dstx.Sign();
-        mapSpysendBroadcastTxes.insert(std::make_pair(hashTx, dstx));
+        mapSpySendBroadcastTxes.insert(std::make_pair(hashTx, dstx));
     }
 
-    LogPrintf("CSpysendPool::CommitFinalTransaction -- TRANSMITTING DSTX\n");
+    LogPrintf("CSpySendPool::CommitFinalTransaction -- TRANSMITTING DSTX\n");
 
     CInv inv(MSG_DSTX, hashTx);
     RelayInv(inv);
@@ -658,7 +658,7 @@ void CSpysendPool::CommitFinalTransaction()
     ChargeRandomFees();
 
     // Reset
-    LogPrint("privatesend", "CSpysendPool::CommitFinalTransaction -- COMPLETED -- RESETTING\n");
+    LogPrint("privatesend", "CSpySendPool::CommitFinalTransaction -- COMPLETED -- RESETTING\n");
     SetNull();
 }
 
@@ -674,9 +674,9 @@ void CSpysendPool::CommitFinalTransaction()
 // transaction for the client to be able to enter the pool. This transaction is kept by the Goldminenode
 // until the transaction is either complete or fails.
 //
-void CSpysendPool::ChargeFees()
+void CSpySendPool::ChargeFees()
 {
-    if(!fMasterNode) return;
+    if(!fGoldmineNode) return;
 
     //we don't need to charge collateral for every offence.
     if(GetRandInt(100) > 33) return;
@@ -692,7 +692,7 @@ void CSpysendPool::ChargeFees()
 
             // This queue entry didn't send us the promised transaction
             if(!fFound) {
-                LogPrintf("CSpysendPool::ChargeFees -- found uncooperative node (didn't send transaction), found offence\n");
+                LogPrintf("CSpySendPool::ChargeFees -- found uncooperative node (didn't send transaction), found offence\n");
                 vecOffendersCollaterals.push_back(txCollateral);
             }
         }
@@ -703,7 +703,7 @@ void CSpysendPool::ChargeFees()
         BOOST_FOREACH(const CDarkSendEntry entry, vecEntries) {
             BOOST_FOREACH(const CTxDSIn txdsin, entry.vecTxDSIn) {
                 if(!txdsin.fHasSig) {
-                    LogPrintf("CSpysendPool::ChargeFees -- found uncooperative node (didn't sign), found offence\n");
+                    LogPrintf("CSpySendPool::ChargeFees -- found uncooperative node (didn't sign), found offence\n");
                     vecOffendersCollaterals.push_back(entry.txCollateral);
                 }
             }
@@ -723,7 +723,7 @@ void CSpysendPool::ChargeFees()
     std::random_shuffle(vecOffendersCollaterals.begin(), vecOffendersCollaterals.end());
 
     if(nState == POOL_STATE_ACCEPTING_ENTRIES || nState == POOL_STATE_SIGNING) {
-        LogPrintf("CSpysendPool::ChargeFees -- found uncooperative node (didn't %s transaction), charging fees: %s\n",
+        LogPrintf("CSpySendPool::ChargeFees -- found uncooperative node (didn't %s transaction), charging fees: %s\n",
                 (nState == POOL_STATE_SIGNING) ? "sign" : "send", vecOffendersCollaterals[0].ToString());
 
         LOCK(cs_main);
@@ -732,7 +732,7 @@ void CSpysendPool::ChargeFees()
         bool fMissingInputs;
         if(!AcceptToMemoryPool(mempool, state, vecOffendersCollaterals[0], false, &fMissingInputs, false, true)) {
             // should never really happen
-            LogPrintf("CSpysendPool::ChargeFees -- ERROR: AcceptToMemoryPool failed!\n");
+            LogPrintf("CSpySendPool::ChargeFees -- ERROR: AcceptToMemoryPool failed!\n");
         } else {
             RelayTransaction(vecOffendersCollaterals[0]);
         }
@@ -749,11 +749,11 @@ void CSpysendPool::ChargeFees()
     with using it to stop abuse. Otherwise it could serve as an attack vector and
     allow endless transaction that would bloat Arctic and make it unusable. To
     stop these kinds of attacks 1 in 10 successful transactions are charged. This
-    adds up to a cost of 0.001ARC per transaction on average.
+    adds up to a cost of 0.001DRK per transaction on average.
 */
-void CSpysendPool::ChargeRandomFees()
+void CSpySendPool::ChargeRandomFees()
 {
-    if(!fMasterNode) return;
+    if(!fGoldmineNode) return;
 
     LOCK(cs_main);
 
@@ -761,13 +761,13 @@ void CSpysendPool::ChargeRandomFees()
 
         if(GetRandInt(100) > 10) return;
 
-        LogPrintf("CSpysendPool::ChargeRandomFees -- charging random fees, txCollateral=%s", txCollateral.ToString());
+        LogPrintf("CSpySendPool::ChargeRandomFees -- charging random fees, txCollateral=%s", txCollateral.ToString());
 
         CValidationState state;
         bool fMissingInputs;
         if(!AcceptToMemoryPool(mempool, state, txCollateral, false, &fMissingInputs, false, true)) {
             // should never really happen
-            LogPrintf("CSpysendPool::ChargeRandomFees -- ERROR: AcceptToMemoryPool failed!\n");
+            LogPrintf("CSpySendPool::ChargeRandomFees -- ERROR: AcceptToMemoryPool failed!\n");
         } else {
             RelayTransaction(txCollateral);
         }
@@ -777,33 +777,33 @@ void CSpysendPool::ChargeRandomFees()
 //
 // Check for various timeouts (queue objects, mixing, etc)
 //
-void CSpysendPool::CheckTimeout()
+void CSpySendPool::CheckTimeout()
 {
     {
         TRY_LOCK(cs_spysend, lockDS);
         if(!lockDS) return; // it's ok to fail here, we run this quite frequently
 
         // check mixing queue objects for timeouts
-        std::vector<CSpysendQueue>::iterator it = vecSpysendQueue.begin();
-        while(it != vecSpysendQueue.end()) {
+        std::vector<CSpySendQueue>::iterator it = vecSpySendQueue.begin();
+        while(it != vecSpySendQueue.end()) {
             if((*it).IsExpired()) {
-                LogPrint("privatesend", "CSpysendPool::CheckTimeout -- Removing expired queue (%s)\n", (*it).ToString());
-                it = vecSpysendQueue.erase(it);
+                LogPrint("privatesend", "CSpySendPool::CheckTimeout -- Removing expired queue (%s)\n", (*it).ToString());
+                it = vecSpySendQueue.erase(it);
             } else ++it;
         }
     }
 
-    if(!fEnableSpySend && !fMasterNode) return;
+    if(!fEnableSpySend && !fGoldmineNode) return;
 
     // catching hanging sessions
-    if(!fMasterNode) {
+    if(!fGoldmineNode) {
         switch(nState) {
             case POOL_STATE_ERROR:
-                LogPrint("privatesend", "CSpysendPool::CheckTimeout -- Pool error -- Running CheckPool\n");
+                LogPrint("privatesend", "CSpySendPool::CheckTimeout -- Pool error -- Running CheckPool\n");
                 CheckPool();
                 break;
             case POOL_STATE_SUCCESS:
-                LogPrint("privatesend", "CSpysendPool::CheckTimeout -- Pool success -- Running CheckPool\n");
+                LogPrint("privatesend", "CSpySendPool::CheckTimeout -- Pool success -- Running CheckPool\n");
                 CheckPool();
                 break;
             default:
@@ -811,12 +811,12 @@ void CSpysendPool::CheckTimeout()
         }
     }
 
-    int nLagTime = fMasterNode ? 0 : 10000; // if we're the client, give the server a few extra seconds before resetting.
+    int nLagTime = fGoldmineNode ? 0 : 10000; // if we're the client, give the server a few extra seconds before resetting.
     int nTimeout = (nState == POOL_STATE_SIGNING) ? PRIVATESEND_SIGNING_TIMEOUT : PRIVATESEND_QUEUE_TIMEOUT;
     bool fTimeout = GetTimeMillis() - nTimeLastSuccessfulStep >= nTimeout*1000 + nLagTime;
 
     if(nState != POOL_STATE_IDLE && fTimeout) {
-        LogPrint("privatesend", "CSpysendPool::CheckTimeout -- %s timed out (%ds) -- restting\n",
+        LogPrint("privatesend", "CSpySendPool::CheckTimeout -- %s timed out (%ds) -- restting\n",
                 (nState == POOL_STATE_SIGNING) ? "Signing" : "Session", nTimeout);
         ChargeFees();
         UnlockCoins();
@@ -831,22 +831,22 @@ void CSpysendPool::CheckTimeout()
     After receiving multiple dsa messages, the queue will switch to "accepting entries"
     which is the active state right before merging the transaction
 */
-void CSpysendPool::CheckForCompleteQueue()
+void CSpySendPool::CheckForCompleteQueue()
 {
-    if(!fEnableSpySend && !fMasterNode) return;
+    if(!fEnableSpySend && !fGoldmineNode) return;
 
     if(nState == POOL_STATE_QUEUE && IsSessionReady()) {
         SetState(POOL_STATE_ACCEPTING_ENTRIES);
 
-        CSpysendQueue dsq(nSessionDenom, activeGoldminenode.vin, GetTime(), true);
-        LogPrint("privatesend", "CSpysendPool::CheckForCompleteQueue -- queue is ready, signing and relaying (%s)\n", dsq.ToString());
+        CSpySendQueue dsq(nSessionDenom, activeGoldminenode.vin, GetTime(), true);
+        LogPrint("privatesend", "CSpySendPool::CheckForCompleteQueue -- queue is ready, signing and relaying (%s)\n", dsq.ToString());
         dsq.Sign();
         dsq.Relay();
     }
 }
 
 // Check to make sure a given input matches an input in the pool and its scriptSig is valid
-bool CSpysendPool::IsInputScriptSigValid(const CTxIn& txin)
+bool CSpySendPool::IsInputScriptSigValid(const CTxIn& txin)
 {
     CMutableTransaction txNew;
     txNew.vin.clear();
@@ -874,22 +874,22 @@ bool CSpysendPool::IsInputScriptSigValid(const CTxIn& txin)
 
     if(nTxInIndex >= 0) { //might have to do this one input at a time?
         txNew.vin[nTxInIndex].scriptSig = txin.scriptSig;
-        LogPrint("privatesend", "CSpysendPool::IsInputScriptSigValid -- verifying scriptSig %s\n", ScriptToAsmStr(txin.scriptSig).substr(0,24));
+        LogPrint("privatesend", "CSpySendPool::IsInputScriptSigValid -- verifying scriptSig %s\n", ScriptToAsmStr(txin.scriptSig).substr(0,24));
         if(!VerifyScript(txNew.vin[nTxInIndex].scriptSig, sigPubKey, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC, MutableTransactionSignatureChecker(&txNew, nTxInIndex))) {
-            LogPrint("privatesend", "CSpysendPool::IsInputScriptSigValid -- VerifyScript() failed on input %d\n", nTxInIndex);
+            LogPrint("privatesend", "CSpySendPool::IsInputScriptSigValid -- VerifyScript() failed on input %d\n", nTxInIndex);
             return false;
         }
     } else {
-        LogPrint("privatesend", "CSpysendPool::IsInputScriptSigValid -- Failed to find matching input in pool, %s\n", txin.ToString());
+        LogPrint("privatesend", "CSpySendPool::IsInputScriptSigValid -- Failed to find matching input in pool, %s\n", txin.ToString());
         return false;
     }
 
-    LogPrint("privatesend", "CSpysendPool::IsInputScriptSigValid -- Successfully validated input and scriptSig\n");
+    LogPrint("privatesend", "CSpySendPool::IsInputScriptSigValid -- Successfully validated input and scriptSig\n");
     return true;
 }
 
 // check to make sure the collateral provided by the client is valid
-bool CSpysendPool::IsCollateralValid(const CTransaction& txCollateral)
+bool CSpySendPool::IsCollateralValid(const CTransaction& txCollateral)
 {
     if(txCollateral.vout.empty()) return false;
     if(txCollateral.nLockTime != 0) return false;
@@ -902,7 +902,7 @@ bool CSpysendPool::IsCollateralValid(const CTransaction& txCollateral)
         nValueOut += txout.nValue;
 
         if(!txout.scriptPubKey.IsNormalPaymentScript()) {
-            LogPrintf ("CSpysendPool::IsCollateralValid -- Invalid Script, txCollateral=%s", txCollateral.ToString());
+            LogPrintf ("CSpySendPool::IsCollateralValid -- Invalid Script, txCollateral=%s", txCollateral.ToString());
             return false;
         }
     }
@@ -919,23 +919,23 @@ bool CSpysendPool::IsCollateralValid(const CTransaction& txCollateral)
     }
 
     if(fMissingTx) {
-        LogPrint("privatesend", "CSpysendPool::IsCollateralValid -- Unknown inputs in collateral transaction, txCollateral=%s", txCollateral.ToString());
+        LogPrint("privatesend", "CSpySendPool::IsCollateralValid -- Unknown inputs in collateral transaction, txCollateral=%s", txCollateral.ToString());
         return false;
     }
 
     //collateral transactions are required to pay out PRIVATESEND_COLLATERAL as a fee to the miners
     if(nValueIn - nValueOut < PRIVATESEND_COLLATERAL) {
-        LogPrint("privatesend", "CSpysendPool::IsCollateralValid -- did not include enough fees in transaction: fees: %d, txCollateral=%s", nValueOut - nValueIn, txCollateral.ToString());
+        LogPrint("privatesend", "CSpySendPool::IsCollateralValid -- did not include enough fees in transaction: fees: %d, txCollateral=%s", nValueOut - nValueIn, txCollateral.ToString());
         return false;
     }
 
-    LogPrint("privatesend", "CSpysendPool::IsCollateralValid -- %s", txCollateral.ToString());
+    LogPrint("privatesend", "CSpySendPool::IsCollateralValid -- %s", txCollateral.ToString());
 
     {
         LOCK(cs_main);
         CValidationState validationState;
         if(!AcceptToMemoryPool(mempool, validationState, txCollateral, false, NULL, false, true, true)) {
-            LogPrint("privatesend", "CSpysendPool::IsCollateralValid -- didn't pass AcceptToMemoryPool()\n");
+            LogPrint("privatesend", "CSpySendPool::IsCollateralValid -- didn't pass AcceptToMemoryPool()\n");
             return false;
         }
     }
@@ -947,26 +947,26 @@ bool CSpysendPool::IsCollateralValid(const CTransaction& txCollateral)
 //
 // Add a clients transaction to the pool
 //
-bool CSpysendPool::AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessageIDRet)
+bool CSpySendPool::AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessageIDRet)
 {
-    if(!fMasterNode) return false;
+    if(!fGoldmineNode) return false;
 
     BOOST_FOREACH(CTxIn txin, entryNew.vecTxDSIn) {
         if(txin.prevout.IsNull()) {
-            LogPrint("privatesend", "CSpysendPool::AddEntry -- input not valid!\n");
+            LogPrint("privatesend", "CSpySendPool::AddEntry -- input not valid!\n");
             nMessageIDRet = ERR_INVALID_INPUT;
             return false;
         }
     }
 
     if(!IsCollateralValid(entryNew.txCollateral)) {
-        LogPrint("privatesend", "CSpysendPool::AddEntry -- collateral not valid!\n");
+        LogPrint("privatesend", "CSpySendPool::AddEntry -- collateral not valid!\n");
         nMessageIDRet = ERR_INVALID_COLLATERAL;
         return false;
     }
 
     if(GetEntriesCount() >= GetMaxPoolTransactions()) {
-        LogPrint("privatesend", "CSpysendPool::AddEntry -- entries is full!\n");
+        LogPrint("privatesend", "CSpySendPool::AddEntry -- entries is full!\n");
         nMessageIDRet = ERR_ENTRIES_FULL;
         return false;
     }
@@ -976,7 +976,7 @@ bool CSpysendPool::AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessag
         BOOST_FOREACH(const CDarkSendEntry& entry, vecEntries) {
             BOOST_FOREACH(const CTxDSIn& txdsin, entry.vecTxDSIn) {
                 if(txdsin.prevout == txin.prevout) {
-                    LogPrint("privatesend", "CSpysendPool::AddEntry -- found in txin\n");
+                    LogPrint("privatesend", "CSpySendPool::AddEntry -- found in txin\n");
                     nMessageIDRet = ERR_ALREADY_HAVE;
                     return false;
                 }
@@ -986,53 +986,53 @@ bool CSpysendPool::AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessag
 
     vecEntries.push_back(entryNew);
 
-    LogPrint("privatesend", "CSpysendPool::AddEntry -- adding entry\n");
+    LogPrint("privatesend", "CSpySendPool::AddEntry -- adding entry\n");
     nMessageIDRet = MSG_ENTRIES_ADDED;
     nTimeLastSuccessfulStep = GetTimeMillis();
 
     return true;
 }
 
-bool CSpysendPool::AddScriptSig(const CTxIn& txinNew)
+bool CSpySendPool::AddScriptSig(const CTxIn& txinNew)
 {
-    LogPrint("privatesend", "CSpysendPool::AddScriptSig -- scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
+    LogPrint("privatesend", "CSpySendPool::AddScriptSig -- scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
 
     BOOST_FOREACH(const CDarkSendEntry& entry, vecEntries) {
         BOOST_FOREACH(const CTxDSIn& txdsin, entry.vecTxDSIn) {
             if(txdsin.scriptSig == txinNew.scriptSig) {
-                LogPrint("privatesend", "CSpysendPool::AddScriptSig -- already exists\n");
+                LogPrint("privatesend", "CSpySendPool::AddScriptSig -- already exists\n");
                 return false;
             }
         }
     }
 
     if(!IsInputScriptSigValid(txinNew)) {
-        LogPrint("privatesend", "CSpysendPool::AddScriptSig -- Invalid scriptSig\n");
+        LogPrint("privatesend", "CSpySendPool::AddScriptSig -- Invalid scriptSig\n");
         return false;
     }
 
-    LogPrint("privatesend", "CSpysendPool::AddScriptSig -- scriptSig=%s new\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
+    LogPrint("privatesend", "CSpySendPool::AddScriptSig -- scriptSig=%s new\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
 
     BOOST_FOREACH(CTxIn& txin, finalMutableTransaction.vin) {
         if(txinNew.prevout == txin.prevout && txin.nSequence == txinNew.nSequence) {
             txin.scriptSig = txinNew.scriptSig;
             txin.prevPubKey = txinNew.prevPubKey;
-            LogPrint("privatesend", "CSpysendPool::AddScriptSig -- adding to finalMutableTransaction, scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
+            LogPrint("privatesend", "CSpySendPool::AddScriptSig -- adding to finalMutableTransaction, scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
         }
     }
     for(int i = 0; i < GetEntriesCount(); i++) {
         if(vecEntries[i].AddScriptSig(txinNew)) {
-            LogPrint("privatesend", "CSpysendPool::AddScriptSig -- adding to entries, scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
+            LogPrint("privatesend", "CSpySendPool::AddScriptSig -- adding to entries, scriptSig=%s\n", ScriptToAsmStr(txinNew.scriptSig).substr(0,24));
             return true;
         }
     }
 
-    LogPrintf("CSpysendPool::AddScriptSig -- Couldn't set sig!\n" );
+    LogPrintf("CSpySendPool::AddScriptSig -- Couldn't set sig!\n" );
     return false;
 }
 
 // Check to make sure everything is signed
-bool CSpysendPool::IsSignaturesComplete()
+bool CSpySendPool::IsSignaturesComplete()
 {
     BOOST_FOREACH(const CDarkSendEntry& entry, vecEntries)
         BOOST_FOREACH(const CTxDSIn& txdsin, entry.vecTxDSIn)
@@ -1045,15 +1045,15 @@ bool CSpysendPool::IsSignaturesComplete()
 // Execute a mixing denomination via a Goldminenode.
 // This is only ran from clients
 //
-bool CSpysendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::vector<CTxOut>& vecTxOut)
+bool CSpySendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::vector<CTxOut>& vecTxOut)
 {
-    if(fMasterNode) {
-        LogPrintf("CSpysendPool::SendDenominate -- SpySend from a Goldminenode is not supported currently.\n");
+    if(fGoldmineNode) {
+        LogPrintf("CSpySendPool::SendDenominate -- SpySend from a Goldminenode is not supported currently.\n");
         return false;
     }
 
     if(txMyCollateral == CMutableTransaction()) {
-        LogPrintf("CSpysendPool:SendDenominate -- SpySend collateral not set\n");
+        LogPrintf("CSpySendPool:SendDenominate -- SpySend collateral not set\n");
         return false;
     }
 
@@ -1066,7 +1066,7 @@ bool CSpysendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::
 
     // we should already be connected to a Goldminenode
     if(!nSessionID) {
-        LogPrintf("CSpysendPool::SendDenominate -- No Goldminenode has been selected yet.\n");
+        LogPrintf("CSpySendPool::SendDenominate -- No Goldminenode has been selected yet.\n");
         UnlockCoins();
         SetNull();
         return false;
@@ -1076,14 +1076,14 @@ bool CSpysendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::
         UnlockCoins();
         SetNull();
         fEnableSpySend = false;
-        LogPrintf("CSpysendPool::SendDenominate -- Not enough disk space, disabling SpySend.\n");
+        LogPrintf("CSpySendPool::SendDenominate -- Not enough disk space, disabling SpySend.\n");
         return false;
     }
 
     SetState(POOL_STATE_ACCEPTING_ENTRIES);
     strLastMessage = "";
 
-    LogPrintf("CSpysendPool::SendDenominate -- Added transaction to pool.\n");
+    LogPrintf("CSpySendPool::SendDenominate -- Added transaction to pool.\n");
 
     //check it against the memory pool to make sure it's valid
     {
@@ -1091,21 +1091,21 @@ bool CSpysendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::
         CMutableTransaction tx;
 
         BOOST_FOREACH(const CTxIn& txin, vecTxIn) {
-            LogPrint("privatesend", "CSpysendPool::SendDenominate -- txin=%s\n", txin.ToString());
+            LogPrint("privatesend", "CSpySendPool::SendDenominate -- txin=%s\n", txin.ToString());
             tx.vin.push_back(txin);
         }
 
         BOOST_FOREACH(const CTxOut& txout, vecTxOut) {
-            LogPrint("privatesend", "CSpysendPool::SendDenominate -- txout=%s\n", txout.ToString());
+            LogPrint("privatesend", "CSpySendPool::SendDenominate -- txout=%s\n", txout.ToString());
             tx.vout.push_back(txout);
         }
 
-        LogPrintf("CSpysendPool::SendDenominate -- Submitting partial tx %s", tx.ToString());
+        LogPrintf("CSpySendPool::SendDenominate -- Submitting partial tx %s", tx.ToString());
 
         mempool.PrioritiseTransaction(tx.GetHash(), tx.GetHash().ToString(), 1000, 0.1*COIN);
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain || !AcceptToMemoryPool(mempool, validationState, CTransaction(tx), false, NULL, false, true, true)) {
-            LogPrintf("CSpysendPool::SendDenominate -- AcceptToMemoryPool() failed! tx=%s", tx.ToString());
+            LogPrintf("CSpySendPool::SendDenominate -- AcceptToMemoryPool() failed! tx=%s", tx.ToString());
             UnlockCoins();
             SetNull();
             return false;
@@ -1122,9 +1122,9 @@ bool CSpysendPool::SendDenominate(const std::vector<CTxIn>& vecTxIn, const std::
 }
 
 // Incoming message from Goldminenode updating the progress of mixing
-bool CSpysendPool::CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNew, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID, int nSessionIDNew)
+bool CSpySendPool::CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNew, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID, int nSessionIDNew)
 {
-    if(fMasterNode) return false;
+    if(fGoldmineNode) return false;
 
     // do not update state when mixing client state is one of these
     if(nState == POOL_STATE_IDLE || nState == POOL_STATE_ERROR || nState == POOL_STATE_SUCCESS) return false;
@@ -1133,7 +1133,7 @@ bool CSpysendPool::CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNe
 
     // if rejected at any state
     if(nStatusUpdate == STATUS_REJECTED) {
-        LogPrintf("CSpysendPool::CheckPoolStateUpdate -- entry is rejected by Goldminenode\n");
+        LogPrintf("CSpySendPool::CheckPoolStateUpdate -- entry is rejected by Goldminenode\n");
         UnlockCoins();
         SetNull();
         SetState(POOL_STATE_ERROR);
@@ -1146,14 +1146,14 @@ bool CSpysendPool::CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNe
             // new session id should be set only in POOL_STATE_QUEUE state
             nSessionID = nSessionIDNew;
             nTimeLastSuccessfulStep = GetTimeMillis();
-            LogPrintf("CSpysendPool::CheckPoolStateUpdate -- set nSessionID to %d\n", nSessionID);
+            LogPrintf("CSpySendPool::CheckPoolStateUpdate -- set nSessionID to %d\n", nSessionID);
             return true;
         }
         else if(nStateNew == POOL_STATE_ACCEPTING_ENTRIES && nEntriesCount != nEntriesCountNew) {
             nEntriesCount = nEntriesCountNew;
             nTimeLastSuccessfulStep = GetTimeMillis();
             fLastEntryAccepted = true;
-            LogPrintf("CSpysendPool::CheckPoolStateUpdate -- new entry accepted!\n");
+            LogPrintf("CSpySendPool::CheckPoolStateUpdate -- new entry accepted!\n");
             return true;
         }
     }
@@ -1167,12 +1167,12 @@ bool CSpysendPool::CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNe
 // check it to make sure it's what we want, then sign it if we agree.
 // If we refuse to sign, it's possible we'll be charged collateral
 //
-bool CSpysendPool::SignFinalTransaction(const CTransaction& finalTransactionNew, CNode* pnode)
+bool CSpySendPool::SignFinalTransaction(const CTransaction& finalTransactionNew, CNode* pnode)
 {
-    if(fMasterNode || pnode == NULL) return false;
+    if(fGoldmineNode || pnode == NULL) return false;
 
     finalMutableTransaction = finalTransactionNew;
-    LogPrintf("CSpysendPool::SignFinalTransaction -- finalMutableTransaction=%s", finalMutableTransaction.ToString());
+    LogPrintf("CSpySendPool::SignFinalTransaction -- finalMutableTransaction=%s", finalMutableTransaction.ToString());
 
     std::vector<CTxIn> sigs;
 
@@ -1213,7 +1213,7 @@ bool CSpysendPool::SignFinalTransaction(const CTransaction& finalTransactionNew,
                 if(nFoundOutputsCount < nTargetOuputsCount || nValue1 != nValue2) {
                     // in this case, something went wrong and we'll refuse to sign. It's possible we'll be charged collateral. But that's
                     // better then signing if the transaction doesn't look like what we wanted.
-                    LogPrintf("CSpysendPool::SignFinalTransaction -- My entries are not correct! Refusing to sign: nFoundOutputsCount: %d, nTargetOuputsCount: %d\n", nFoundOutputsCount, nTargetOuputsCount);
+                    LogPrintf("CSpySendPool::SignFinalTransaction -- My entries are not correct! Refusing to sign: nFoundOutputsCount: %d, nTargetOuputsCount: %d\n", nFoundOutputsCount, nTargetOuputsCount);
                     UnlockCoins();
                     SetNull();
 
@@ -1222,20 +1222,20 @@ bool CSpysendPool::SignFinalTransaction(const CTransaction& finalTransactionNew,
 
                 const CKeyStore& keystore = *pwalletMain;
 
-                LogPrint("privatesend", "CSpysendPool::SignFinalTransaction -- Signing my input %i\n", nMyInputIndex);
+                LogPrint("privatesend", "CSpySendPool::SignFinalTransaction -- Signing my input %i\n", nMyInputIndex);
                 if(!SignSignature(keystore, prevPubKey, finalMutableTransaction, nMyInputIndex, int(SIGHASH_ALL|SIGHASH_ANYONECANPAY))) { // changes scriptSig
-                    LogPrint("privatesend", "CSpysendPool::SignFinalTransaction -- Unable to sign my own transaction!\n");
+                    LogPrint("privatesend", "CSpySendPool::SignFinalTransaction -- Unable to sign my own transaction!\n");
                     // not sure what to do here, it will timeout...?
                 }
 
                 sigs.push_back(finalMutableTransaction.vin[nMyInputIndex]);
-                LogPrint("privatesend", "CSpysendPool::SignFinalTransaction -- nMyInputIndex: %d, sigs.size(): %d, scriptSig=%s\n", nMyInputIndex, (int)sigs.size(), ScriptToAsmStr(finalMutableTransaction.vin[nMyInputIndex].scriptSig));
+                LogPrint("privatesend", "CSpySendPool::SignFinalTransaction -- nMyInputIndex: %d, sigs.size(): %d, scriptSig=%s\n", nMyInputIndex, (int)sigs.size(), ScriptToAsmStr(finalMutableTransaction.vin[nMyInputIndex].scriptSig));
             }
         }
     }
 
     if(sigs.empty()) {
-        LogPrintf("CSpysendPool::SignFinalTransaction -- can't sign anything!\n");
+        LogPrintf("CSpySendPool::SignFinalTransaction -- can't sign anything!\n");
         UnlockCoins();
         SetNull();
 
@@ -1243,7 +1243,7 @@ bool CSpysendPool::SignFinalTransaction(const CTransaction& finalTransactionNew,
     }
 
     // push all of our signatures to the Goldminenode
-    LogPrintf("CSpysendPool::SignFinalTransaction -- pushing sigs to the goldminenode, finalMutableTransaction=%s", finalMutableTransaction.ToString());
+    LogPrintf("CSpySendPool::SignFinalTransaction -- pushing sigs to the goldminenode, finalMutableTransaction=%s", finalMutableTransaction.ToString());
     pnode->PushMessage(NetMsgType::DSSIGNFINALTX, sigs);
     SetState(POOL_STATE_SIGNING);
     nTimeLastSuccessfulStep = GetTimeMillis();
@@ -1251,22 +1251,22 @@ bool CSpysendPool::SignFinalTransaction(const CTransaction& finalTransactionNew,
     return true;
 }
 
-void CSpysendPool::NewBlock()
+void CSpySendPool::NewBlock()
 {
     static int64_t nTimeNewBlockReceived = 0;
 
     //we we're processing lots of blocks, we'll just leave
     if(GetTime() - nTimeNewBlockReceived < 10) return;
     nTimeNewBlockReceived = GetTime();
-    LogPrint("privatesend", "CSpysendPool::NewBlock\n");
+    LogPrint("privatesend", "CSpySendPool::NewBlock\n");
 
     CheckTimeout();
 }
 
 // mixing transaction was completed (failed or successful)
-void CSpysendPool::CompletedTransaction(PoolMessage nMessageID)
+void CSpySendPool::CompletedTransaction(PoolMessage nMessageID)
 {
-    if(fMasterNode) return;
+    if(fGoldmineNode) return;
 
     if(nMessageID == MSG_SUCCESS) {
         LogPrintf("CompletedTransaction -- success\n");
@@ -1282,9 +1282,9 @@ void CSpysendPool::CompletedTransaction(PoolMessage nMessageID)
 //
 // Passively run mixing in the background to anonymize funds based on the given configuration.
 //
-bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
+bool CSpySendPool::DoAutomaticDenominating(bool fDryRun)
 {
-    if(!fEnableSpySend || fMasterNode || !pCurrentBlockIndex) return false;
+    if(!fEnableSpySend || fGoldmineNode || !pCurrentBlockIndex) return false;
     if(!pwalletMain || pwalletMain->IsLocked(true)) return false;
     if(nState != POOL_STATE_IDLE) return false;
 
@@ -1295,7 +1295,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
     switch(nWalletBackups) {
         case 0:
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- Automatic backups disabled, no mixing available.\n");
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- Automatic backups disabled, no mixing available.\n");
             strAutoDenomResult = _("Automatic backups disabled") + ", " + _("no mixing available.");
             fEnableSpySend = false; // stop mixing
             pwalletMain->nKeysLeftSinceAutoBackup = 0; // no backup, no "keys since last backup"
@@ -1304,43 +1304,43 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
             // Automatic backup failed, nothing else we can do until user fixes the issue manually.
             // There is no way to bring user attention in daemon mode so we just update status and
             // keep spaming if debug is on.
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- ERROR! Failed to create automatic backup.\n");
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- ERROR! Failed to create automatic backup.\n");
             strAutoDenomResult = _("ERROR! Failed to create automatic backup") + ", " + _("see debug.log for details.");
             return false;
         case -2:
             // We were able to create automatic backup but keypool was not replenished because wallet is locked.
             // There is no way to bring user attention in daemon mode so we just update status and
             // keep spaming if debug is on.
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- WARNING! Failed to create replenish keypool, please unlock your wallet to do so.\n");
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- WARNING! Failed to create replenish keypool, please unlock your wallet to do so.\n");
             strAutoDenomResult = _("WARNING! Failed to replenish keypool, please unlock your wallet to do so.") + ", " + _("see debug.log for details.");
             return false;
     }
 
     if(pwalletMain->nKeysLeftSinceAutoBackup < PRIVATESEND_KEYS_THRESHOLD_STOP) {
         // We should never get here via mixing itself but probably smth else is still actively using keypool
-        LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- Very low number of keys left: %d, no mixing available.\n", pwalletMain->nKeysLeftSinceAutoBackup);
+        LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- Very low number of keys left: %d, no mixing available.\n", pwalletMain->nKeysLeftSinceAutoBackup);
         strAutoDenomResult = strprintf(_("Very low number of keys left: %d") + ", " + _("no mixing available."), pwalletMain->nKeysLeftSinceAutoBackup);
         // It's getting really dangerous, stop mixing
         fEnableSpySend = false;
         return false;
     } else if(pwalletMain->nKeysLeftSinceAutoBackup < PRIVATESEND_KEYS_THRESHOLD_WARNING) {
         // Low number of keys left but it's still more or less safe to continue
-        LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- Very low number of keys left: %d\n", pwalletMain->nKeysLeftSinceAutoBackup);
+        LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- Very low number of keys left: %d\n", pwalletMain->nKeysLeftSinceAutoBackup);
         strAutoDenomResult = strprintf(_("Very low number of keys left: %d"), pwalletMain->nKeysLeftSinceAutoBackup);
 
         if(fCreateAutoBackups) {
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- Trying to create new backup.\n");
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- Trying to create new backup.\n");
             std::string warningString;
             std::string errorString;
 
             if(!AutoBackupWallet(pwalletMain, "", warningString, errorString)) {
                 if(!warningString.empty()) {
                     // There were some issues saving backup but yet more or less safe to continue
-                    LogPrintf("CSpysendPool::DoAutomaticDenominating -- WARNING! Something went wrong on automatic backup: %s\n", warningString);
+                    LogPrintf("CSpySendPool::DoAutomaticDenominating -- WARNING! Something went wrong on automatic backup: %s\n", warningString);
                 }
                 if(!errorString.empty()) {
                     // Things are really broken
-                    LogPrintf("CSpysendPool::DoAutomaticDenominating -- ERROR! Failed to create automatic backup: %s\n", errorString);
+                    LogPrintf("CSpySendPool::DoAutomaticDenominating -- ERROR! Failed to create automatic backup: %s\n", errorString);
                     strAutoDenomResult = strprintf(_("ERROR! Failed to create automatic backup") + ": %s", errorString);
                     return false;
                 }
@@ -1351,7 +1351,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
         }
     }
 
-    LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- Keys left since latest backup: %d\n", pwalletMain->nKeysLeftSinceAutoBackup);
+    LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- Keys left since latest backup: %d\n", pwalletMain->nKeysLeftSinceAutoBackup);
 
     if(GetEntriesCount() > 0) {
         strAutoDenomResult = _("Mixing in progress...");
@@ -1370,13 +1370,13 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     }
 
     if(!fSpySendMultiSession && pCurrentBlockIndex->nHeight - nCachedLastSuccessBlock < nMinBlockSpacing) {
-        LogPrintf("CSpysendPool::DoAutomaticDenominating -- Last successful SpySend action was too recent\n");
+        LogPrintf("CSpySendPool::DoAutomaticDenominating -- Last successful SpySend action was too recent\n");
         strAutoDenomResult = _("Last successful SpySend action was too recent.");
         return false;
     }
 
     if(mnodeman.size() == 0) {
-        LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- No Goldminenodes detected\n");
+        LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- No Goldminenodes detected\n");
         strAutoDenomResult = _("No Goldminenodes detected.");
         return false;
     }
@@ -1400,12 +1400,12 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
     // anonymizable balance is way too small
     if(nBalanceNeedsAnonymized < nLowestDenom) {
-        LogPrintf("CSpysendPool::DoAutomaticDenominating -- Not enough funds to anonymize\n");
+        LogPrintf("CSpySendPool::DoAutomaticDenominating -- Not enough funds to anonymize\n");
         strAutoDenomResult = _("Not enough funds to anonymize.");
         return false;
     }
 
-    LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- nLowestDenom: %f, nBalanceNeedsAnonymized: %f\n", (float)nLowestDenom/COIN, (float)nBalanceNeedsAnonymized/COIN);
+    LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- nLowestDenom: %f, nBalanceNeedsAnonymized: %f\n", (float)nLowestDenom/COIN, (float)nBalanceNeedsAnonymized/COIN);
 
     // select coins that should be given to the pool
     if(!pwalletMain->SelectCoinsDark(nValueMin, nBalanceNeedsAnonymized, vecTxIn, nValueIn, 0, nSpySendRounds))
@@ -1417,7 +1417,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
             if(nBalanceNeedsDenominated > nValueIn) nBalanceNeedsDenominated = nValueIn;
 
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- `SelectCoinsDark` (%f - (%f + %f - %f = %f) ) = %f\n",
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- `SelectCoinsDark` (%f - (%f + %f - %f = %f) ) = %f\n",
                             (float)nBalanceNeedsAnonymized/COIN,
                             (float)pwalletMain->GetDenominatedBalance(true)/COIN,
                             (float)pwalletMain->GetDenominatedBalance()/COIN,
@@ -1426,7 +1426,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
                             (float)nBalanceNeedsDenominated/COIN);
 
             if(nBalanceNeedsDenominated < nLowestDenom) { // most likely we are just waiting for denoms to confirm
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- No funds detected in need of denominating\n");
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- No funds detected in need of denominating\n");
                 strAutoDenomResult = _("No funds detected in need of denominating.");
                 return false;
             }
@@ -1434,7 +1434,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
             return true;
         } else {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- Can't denominate (no compatible inputs left)\n");
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- Can't denominate (no compatible inputs left)\n");
             strAutoDenomResult = _("Can't denominate: no compatible inputs left.");
             return false;
         }
@@ -1444,7 +1444,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
     nOnlyDenominatedBalance = pwalletMain->GetDenominatedBalance(true) + pwalletMain->GetDenominatedBalance() - pwalletMain->GetAnonymizedBalance();
     nBalanceNeedsDenominated = nBalanceNeedsAnonymized - nOnlyDenominatedBalance;
-    LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- 'nBalanceNeedsDenominated > 0' (%f - (%f + %f - %f = %f) ) = %f\n",
+    LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- 'nBalanceNeedsDenominated > 0' (%f - (%f + %f - %f = %f) ) = %f\n",
                     (float)nBalanceNeedsAnonymized/COIN,
                     (float)pwalletMain->GetDenominatedBalance(true)/COIN,
                     (float)pwalletMain->GetDenominatedBalance()/COIN,
@@ -1470,7 +1470,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     SetNull();
 
     if(!fSpySendMultiSession && pwalletMain->GetDenominatedBalance(true) > 0) { //get denominated unconfirmed inputs
-        LogPrintf("CSpysendPool::DoAutomaticDenominating -- Found unconfirmed denominated outputs, will wait till they confirm to continue.\n");
+        LogPrintf("CSpySendPool::DoAutomaticDenominating -- Found unconfirmed denominated outputs, will wait till they confirm to continue.\n");
         strAutoDenomResult = _("Found unconfirmed denominated outputs, will wait till they confirm to continue.");
         return false;
     }
@@ -1479,14 +1479,14 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     std::string strReason;
     if(txMyCollateral == CMutableTransaction()) {
         if(!pwalletMain->CreateCollateralTransaction(txMyCollateral, strReason)) {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- create collateral error:%s\n", strReason);
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- create collateral error:%s\n", strReason);
             return false;
         }
     } else {
         if(!IsCollateralValid(txMyCollateral)) {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- invalid collateral, recreating...\n");
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- invalid collateral, recreating...\n");
             if(!pwalletMain->CreateCollateralTransaction(txMyCollateral, strReason)) {
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- create collateral error: %s\n", strReason);
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- create collateral error: %s\n", strReason);
                 return false;
             }
         }
@@ -1509,7 +1509,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     if(nLiquidityProvider || fUseQueue) {
 
         // Look through the queues and see if anything matches
-        BOOST_FOREACH(CSpysendQueue& dsq, vecSpysendQueue) {
+        BOOST_FOREACH(CSpySendQueue& dsq, vecSpySendQueue) {
             // only try each queue once
             if(dsq.fTried) continue;
             dsq.fTried = true;
@@ -1518,7 +1518,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
 
             CGoldminenode* pmn = mnodeman.Find(dsq.vin);
             if(pmn == NULL) {
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- dsq goldminenode is not in goldminenode list, goldminenode=%s\n", dsq.vin.prevout.ToStringShort());
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- dsq goldminenode is not in goldminenode list, goldminenode=%s\n", dsq.vin.prevout.ToStringShort());
                 continue;
             }
 
@@ -1528,37 +1528,53 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
             if(dsq.nDenom >= (1 << vecSpySendDenominations.size())) continue;
 
             // mixing rate limit i.e. nLastDsq check should already pass in DSQUEUE ProcessMessage
-            // in order for dsq to get into vecSpysendQueue, so we should be safe to mix already,
+            // in order for dsq to get into vecSpySendQueue, so we should be safe to mix already,
             // no need for additional verification here
 
-            LogPrint("privatesend", "CSpysendPool::DoAutomaticDenominating -- found valid queue: %s\n", dsq.ToString());
+            LogPrint("privatesend", "CSpySendPool::DoAutomaticDenominating -- found valid queue: %s\n", dsq.ToString());
 
             std::vector<CTxIn> vecTxInTmp;
             std::vector<COutput> vCoinsTmp;
             // Try to match their denominations if possible
             if(!pwalletMain->SelectCoinsByDenominations(dsq.nDenom, nValueMin, nBalanceNeedsAnonymized, vecTxInTmp, vCoinsTmp, nValueIn, 0, nSpySendRounds)) {
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- Couldn't match denominations %d (%s)\n", dsq.nDenom, GetDenominationsToString(dsq.nDenom));
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- Couldn't match denominations %d (%s)\n", dsq.nDenom, GetDenominationsToString(dsq.nDenom));
                 continue;
             }
 
             vecGoldminenodesUsed.push_back(dsq.vin);
 
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- attempt to connect to goldminenode from queue, addr=%s\n", pmn->addr.ToString());
+            CNode* pnodeFound = NULL;
+            {
+                LOCK(cs_vNodes);
+                pnodeFound = FindNode(pmn->addr);
+                if(pnodeFound) {
+                    if(pnodeFound->fDisconnect) {
+                        continue;
+                    } else {
+                        pnodeFound->AddRef();
+                    }
+                }
+            }
+
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- attempt to connect to goldminenode from queue, addr=%s\n", pmn->addr.ToString());
             // connect to Goldminenode and submit the queue request
-            CNode* pnode = ConnectNode((CAddress)pmn->addr, NULL, true);
+            CNode* pnode = (pnodeFound && pnodeFound->fGoldminenode) ? pnodeFound : ConnectNode((CAddress)pmn->addr, NULL, true);
             if(pnode) {
                 pSubmittedToGoldminenode = pmn;
                 nSessionDenom = dsq.nDenom;
 
                 pnode->PushMessage(NetMsgType::DSACCEPT, nSessionDenom, txMyCollateral);
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- connected (from queue), sending DSACCEPT: nSessionDenom: %d (%s), addr=%s\n",
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- connected (from queue), sending DSACCEPT: nSessionDenom: %d (%s), addr=%s\n",
                         nSessionDenom, GetDenominationsToString(nSessionDenom), pnode->addr.ToString());
                 strAutoDenomResult = _("Mixing in progress...");
                 SetState(POOL_STATE_QUEUE);
                 nTimeLastSuccessfulStep = GetTimeMillis();
+                if(pnodeFound) {
+                    pnodeFound->Release();
+                }
                 return true;
             } else {
-                LogPrintf("CSpysendPool::DoAutomaticDenominating -- can't connect, addr=%s\n", pmn->addr.ToString());
+                LogPrintf("CSpySendPool::DoAutomaticDenominating -- can't connect, addr=%s\n", pmn->addr.ToString());
                 strAutoDenomResult = _("Error connecting to Goldminenode.");
                 continue;
             }
@@ -1574,14 +1590,14 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     while(nTries < 10) {
         CGoldminenode* pmn = mnodeman.FindRandomNotInVec(vecGoldminenodesUsed, MIN_PRIVATESEND_PEER_PROTO_VERSION);
         if(pmn == NULL) {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- Can't find random goldminenode!\n");
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- Can't find random goldminenode!\n");
             strAutoDenomResult = _("Can't find random Goldminenode.");
             return false;
         }
         vecGoldminenodesUsed.push_back(pmn->vin);
 
         if(pmn->nLastDsq != 0 && pmn->nLastDsq + nMnCountEnabled/5 > mnodeman.nDsqCount) {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- Too early to mix on this goldminenode!"
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- Too early to mix on this goldminenode!"
                         " goldminenode=%s  addr=%s  nLastDsq=%d  CountEnabled/5=%d  nDsqCount=%d\n",
                         pmn->vin.prevout.ToStringShort(), pmn->addr.ToString(), pmn->nLastDsq,
                         nMnCountEnabled/5, mnodeman.nDsqCount);
@@ -1589,10 +1605,24 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
             continue;
         }
 
-        LogPrintf("CSpysendPool::DoAutomaticDenominating -- attempt %d connection to Goldminenode %s\n", nTries, pmn->addr.ToString());
-        CNode* pnode = ConnectNode((CAddress)pmn->addr, NULL, true);
+        CNode* pnodeFound = NULL;
+        {
+            LOCK(cs_vNodes);
+            pnodeFound = FindNode(pmn->addr);
+            if(pnodeFound) {
+                if(pnodeFound->fDisconnect) {
+                    nTries++;
+                    continue;
+                } else {
+                    pnodeFound->AddRef();
+                }
+            }
+        }
+
+        LogPrintf("CSpySendPool::DoAutomaticDenominating -- attempt %d connection to Goldminenode %s\n", nTries, pmn->addr.ToString());
+        CNode* pnode = (pnodeFound && pnodeFound->fGoldminenode) ? pnodeFound : ConnectNode((CAddress)pmn->addr, NULL, true);
         if(pnode) {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- connected, addr=%s\n", pmn->addr.ToString());
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- connected, addr=%s\n", pmn->addr.ToString());
             pSubmittedToGoldminenode = pmn;
 
             std::vector<CAmount> vecAmounts;
@@ -1603,14 +1633,17 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
             }
 
             pnode->PushMessage(NetMsgType::DSACCEPT, nSessionDenom, txMyCollateral);
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- connected, sending DSACCEPT, nSessionDenom: %d (%s)\n",
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- connected, sending DSACCEPT, nSessionDenom: %d (%s)\n",
                     nSessionDenom, GetDenominationsToString(nSessionDenom));
             strAutoDenomResult = _("Mixing in progress...");
             SetState(POOL_STATE_QUEUE);
             nTimeLastSuccessfulStep = GetTimeMillis();
+            if(pnodeFound) {
+                pnodeFound->Release();
+            }
             return true;
         } else {
-            LogPrintf("CSpysendPool::DoAutomaticDenominating -- can't connect, addr=%s\n", pmn->addr.ToString());
+            LogPrintf("CSpySendPool::DoAutomaticDenominating -- can't connect, addr=%s\n", pmn->addr.ToString());
             nTries++;
             continue;
         }
@@ -1620,7 +1653,7 @@ bool CSpysendPool::DoAutomaticDenominating(bool fDryRun)
     return false;
 }
 
-bool CSpysendPool::SubmitDenominate()
+bool CSpySendPool::SubmitDenominate()
 {
     std::string strError;
     std::vector<CTxIn> vecTxInRet;
@@ -1630,25 +1663,25 @@ bool CSpysendPool::SubmitDenominate()
     // Try to use only inputs with the same number of rounds starting from lowest number of rounds possible
     for(int i = 0; i < nSpySendRounds; i++) {
         if(PrepareDenominate(i, i+1, strError, vecTxInRet, vecTxOutRet)) {
-            LogPrintf("CSpysendPool::SubmitDenominate -- Running SpySend denominate for %d rounds, success\n", i);
+            LogPrintf("CSpySendPool::SubmitDenominate -- Running SpySend denominate for %d rounds, success\n", i);
             return SendDenominate(vecTxInRet, vecTxOutRet);
         }
-        LogPrintf("CSpysendPool::SubmitDenominate -- Running SpySend denominate for %d rounds, error: %s\n", i, strError);
+        LogPrintf("CSpySendPool::SubmitDenominate -- Running SpySend denominate for %d rounds, error: %s\n", i, strError);
     }
 
     // We failed? That's strange but let's just make final attempt and try to mix everything
     if(PrepareDenominate(0, nSpySendRounds, strError, vecTxInRet, vecTxOutRet)) {
-        LogPrintf("CSpysendPool::SubmitDenominate -- Running SpySend denominate for all rounds, success\n");
+        LogPrintf("CSpySendPool::SubmitDenominate -- Running SpySend denominate for all rounds, success\n");
         return SendDenominate(vecTxInRet, vecTxOutRet);
     }
 
     // Should never actually get here but just in case
-    LogPrintf("CSpysendPool::SubmitDenominate -- Running SpySend denominate for all rounds, error: %s\n", strError);
+    LogPrintf("CSpySendPool::SubmitDenominate -- Running SpySend denominate for all rounds, error: %s\n", strError);
     strAutoDenomResult = strError;
     return false;
 }
 
-bool CSpysendPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::string& strErrorRet, std::vector<CTxIn>& vecTxInRet, std::vector<CTxOut>& vecTxOutRet)
+bool CSpySendPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::string& strErrorRet, std::vector<CTxIn>& vecTxInRet, std::vector<CTxOut>& vecTxOutRet)
 {
     if (pwalletMain->IsLocked(true)) {
         strErrorRet = "Wallet locked, unable to create transaction!";
@@ -1681,7 +1714,7 @@ bool CSpysendPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::string
         return false;
     }
 
-    LogPrintf("CSpysendPool::PrepareDenominate -- max value: %f\n", (double)nValueIn/COIN);
+    LogPrintf("CSpySendPool::PrepareDenominate -- max value: %f\n", (double)nValueIn/COIN);
 
     {
         LOCK(pwalletMain->cs_wallet);
@@ -1768,11 +1801,11 @@ bool CSpysendPool::PrepareDenominate(int nMinRounds, int nMaxRounds, std::string
 }
 
 // Create collaterals by looping through inputs grouped by addresses
-bool CSpysendPool::MakeCollateralAmounts()
+bool CSpySendPool::MakeCollateralAmounts()
 {
     std::vector<CompactTallyItem> vecTally;
     if(!pwalletMain->SelectCoinsGrouppedByAddresses(vecTally, false)) {
-        LogPrint("privatesend", "CSpysendPool::MakeCollateralAmounts -- SelectCoinsGrouppedByAddresses can't find any inputs!\n");
+        LogPrint("privatesend", "CSpySendPool::MakeCollateralAmounts -- SelectCoinsGrouppedByAddresses can't find any inputs!\n");
         return false;
     }
 
@@ -1781,12 +1814,12 @@ bool CSpysendPool::MakeCollateralAmounts()
         return true;
     }
 
-    LogPrintf("CSpysendPool::MakeCollateralAmounts -- failed!\n");
+    LogPrintf("CSpySendPool::MakeCollateralAmounts -- failed!\n");
     return false;
 }
 
 // Split up large inputs or create fee sized inputs
-bool CSpysendPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
+bool CSpySendPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
 {
     CWalletTx wtx;
     CAmount nFeeRet = 0;
@@ -1820,12 +1853,12 @@ bool CSpysendPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
     if(!fSuccess) {
         // if we failed (most likeky not enough funds), try to use all coins instead -
         // MN-like funds should not be touched in any case and we can't mix denominated without collaterals anyway
-        LogPrintf("CSpysendPool::MakeCollateralAmounts -- ONLY_NONDENOMINATED_NOT1000IFMN Error: %s\n", strFail);
+        LogPrintf("CSpySendPool::MakeCollateralAmounts -- ONLY_NONDENOMINATED_NOT1000IFMN Error: %s\n", strFail);
         CCoinControl *coinControlNull = NULL;
         fSuccess = pwalletMain->CreateTransaction(vecSend, wtx, reservekeyChange,
                 nFeeRet, nChangePosRet, strFail, coinControlNull, true, ONLY_NOT1000IFMN);
         if(!fSuccess) {
-            LogPrintf("CSpysendPool::MakeCollateralAmounts -- ONLY_NOT1000IFMN Error: %s\n", strFail);
+            LogPrintf("CSpySendPool::MakeCollateralAmounts -- ONLY_NOT1000IFMN Error: %s\n", strFail);
             reservekeyCollateral.ReturnKey();
             return false;
         }
@@ -1833,11 +1866,11 @@ bool CSpysendPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
 
     reservekeyCollateral.KeepKey();
 
-    LogPrintf("CSpysendPool::MakeCollateralAmounts -- txid=%s\n", wtx.GetHash().GetHex());
+    LogPrintf("CSpySendPool::MakeCollateralAmounts -- txid=%s\n", wtx.GetHash().GetHex());
 
     // use the same nCachedLastSuccessBlock as for DS mixinx to prevent race
     if(!pwalletMain->CommitTransaction(wtx, reservekeyChange)) {
-        LogPrintf("CSpysendPool::MakeCollateralAmounts -- CommitTransaction failed!\n");
+        LogPrintf("CSpySendPool::MakeCollateralAmounts -- CommitTransaction failed!\n");
         return false;
     }
 
@@ -1847,11 +1880,11 @@ bool CSpysendPool::MakeCollateralAmounts(const CompactTallyItem& tallyItem)
 }
 
 // Create denominations by looping through inputs grouped by addresses
-bool CSpysendPool::CreateDenominated()
+bool CSpySendPool::CreateDenominated()
 {
     std::vector<CompactTallyItem> vecTally;
     if(!pwalletMain->SelectCoinsGrouppedByAddresses(vecTally)) {
-        LogPrint("privatesend", "CSpysendPool::CreateDenominated -- SelectCoinsGrouppedByAddresses can't find any inputs!\n");
+        LogPrint("privatesend", "CSpySendPool::CreateDenominated -- SelectCoinsGrouppedByAddresses can't find any inputs!\n");
         return false;
     }
 
@@ -1862,12 +1895,12 @@ bool CSpysendPool::CreateDenominated()
         return true;
     }
 
-    LogPrintf("CSpysendPool::CreateDenominated -- failed!\n");
+    LogPrintf("CSpySendPool::CreateDenominated -- failed!\n");
     return false;
 }
 
 // Create denominations
-bool CSpysendPool::CreateDenominated(const CompactTallyItem& tallyItem, bool fCreateMixingCollaterals)
+bool CSpySendPool::CreateDenominated(const CompactTallyItem& tallyItem, bool fCreateMixingCollaterals)
 {
     std::vector<CRecipient> vecSend;
     CAmount nValueLeft = tallyItem.nAmount;
@@ -1911,7 +1944,7 @@ bool CSpysendPool::CreateDenominated(const CompactTallyItem& tallyItem, bool fCr
                 // find new denoms to skip if any (ignore the largest one)
                 if(nDenomValue != vecSpySendDenominations[0] && pwalletMain->CountInputsWithAmount(nDenomValue) > DENOMS_COUNT_MAX) {
                     strAutoDenomResult = strprintf(_("Too many %f denominations, removing."), (float)nDenomValue/COIN);
-                    LogPrintf("CSpysendPool::CreateDenominated -- %s\n", strAutoDenomResult);
+                    LogPrintf("CSpySendPool::CreateDenominated -- %s\n", strAutoDenomResult);
                     vecDenominationsSkipped.push_back(nDenomValue);
                     continue;
                 }
@@ -1966,7 +1999,7 @@ bool CSpysendPool::CreateDenominated(const CompactTallyItem& tallyItem, bool fCr
     bool fSuccess = pwalletMain->CreateTransaction(vecSend, wtx, reservekeyChange,
             nFeeRet, nChangePosRet, strFail, &coinControl, true, ONLY_NONDENOMINATED_NOT1000IFMN);
     if(!fSuccess) {
-        LogPrintf("CSpysendPool::CreateDenominated -- Error: %s\n", strFail);
+        LogPrintf("CSpySendPool::CreateDenominated -- Error: %s\n", strFail);
         // TODO: return reservekeyDenom here
         reservekeyCollateral.ReturnKey();
         return false;
@@ -1976,44 +2009,44 @@ bool CSpysendPool::CreateDenominated(const CompactTallyItem& tallyItem, bool fCr
     reservekeyCollateral.KeepKey();
 
     if(!pwalletMain->CommitTransaction(wtx, reservekeyChange)) {
-        LogPrintf("CSpysendPool::CreateDenominated -- CommitTransaction failed!\n");
+        LogPrintf("CSpySendPool::CreateDenominated -- CommitTransaction failed!\n");
         return false;
     }
 
     // use the same nCachedLastSuccessBlock as for DS mixing to prevent race
     nCachedLastSuccessBlock = pCurrentBlockIndex->nHeight;
-    LogPrintf("CSpysendPool::CreateDenominated -- txid=%s\n", wtx.GetHash().GetHex());
+    LogPrintf("CSpySendPool::CreateDenominated -- txid=%s\n", wtx.GetHash().GetHex());
 
     return true;
 }
 
-bool CSpysendPool::IsOutputsCompatibleWithSessionDenom(const std::vector<CTxDSOut>& vecTxDSOut)
+bool CSpySendPool::IsOutputsCompatibleWithSessionDenom(const std::vector<CTxDSOut>& vecTxDSOut)
 {
     if(GetDenominations(vecTxDSOut) == 0) return false;
 
     BOOST_FOREACH(const CDarkSendEntry entry, vecEntries) {
-        LogPrintf("CSpysendPool::IsOutputsCompatibleWithSessionDenom -- vecTxDSOut denom %d, entry.vecTxDSOut denom %d\n", GetDenominations(vecTxDSOut), GetDenominations(entry.vecTxDSOut));
+        LogPrintf("CSpySendPool::IsOutputsCompatibleWithSessionDenom -- vecTxDSOut denom %d, entry.vecTxDSOut denom %d\n", GetDenominations(vecTxDSOut), GetDenominations(entry.vecTxDSOut));
         if(GetDenominations(vecTxDSOut) != GetDenominations(entry.vecTxDSOut)) return false;
     }
 
     return true;
 }
 
-bool CSpysendPool::IsAcceptableDenomAndCollateral(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
+bool CSpySendPool::IsAcceptableDenomAndCollateral(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
 {
-    if(!fMasterNode) return false;
+    if(!fGoldmineNode) return false;
 
     // is denom even smth legit?
     std::vector<int> vecBits;
     if(!GetDenominationsBits(nDenom, vecBits)) {
-        LogPrint("privatesend", "CSpysendPool::IsAcceptableDenomAndCollateral -- denom not valid!\n");
+        LogPrint("privatesend", "CSpySendPool::IsAcceptableDenomAndCollateral -- denom not valid!\n");
         nMessageIDRet = ERR_DENOM;
         return false;
     }
 
     // check collateral
     if(!fUnitTest && !IsCollateralValid(txCollateral)) {
-        LogPrint("privatesend", "CSpysendPool::IsAcceptableDenomAndCollateral -- collateral not valid!\n");
+        LogPrint("privatesend", "CSpySendPool::IsAcceptableDenomAndCollateral -- collateral not valid!\n");
         nMessageIDRet = ERR_INVALID_COLLATERAL;
         return false;
     }
@@ -2021,14 +2054,14 @@ bool CSpysendPool::IsAcceptableDenomAndCollateral(int nDenom, CTransaction txCol
     return true;
 }
 
-bool CSpysendPool::CreateNewSession(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
+bool CSpySendPool::CreateNewSession(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
 {
-    if(!fMasterNode || nSessionID != 0) return false;
+    if(!fGoldmineNode || nSessionID != 0) return false;
 
     // new session can only be started in idle mode
     if(nState != POOL_STATE_IDLE) {
         nMessageIDRet = ERR_MODE;
-        LogPrintf("CSpysendPool::CreateNewSession -- incompatible mode: nState=%d\n", nState);
+        LogPrintf("CSpySendPool::CreateNewSession -- incompatible mode: nState=%d\n", nState);
         return false;
     }
 
@@ -2046,23 +2079,23 @@ bool CSpysendPool::CreateNewSession(int nDenom, CTransaction txCollateral, PoolM
 
     if(!fUnitTest) {
         //broadcast that I'm accepting entries, only if it's the first entry through
-        CSpysendQueue dsq(nDenom, activeGoldminenode.vin, GetTime(), false);
-        LogPrint("privatesend", "CSpysendPool::CreateNewSession -- signing and relaying new queue: %s\n", dsq.ToString());
+        CSpySendQueue dsq(nDenom, activeGoldminenode.vin, GetTime(), false);
+        LogPrint("privatesend", "CSpySendPool::CreateNewSession -- signing and relaying new queue: %s\n", dsq.ToString());
         dsq.Sign();
         dsq.Relay();
-        vecSpysendQueue.push_back(dsq);
+        vecSpySendQueue.push_back(dsq);
     }
 
     vecSessionCollaterals.push_back(txCollateral);
-    LogPrintf("CSpysendPool::CreateNewSession -- new session created, nSessionID: %d  nSessionDenom: %d (%s)  vecSessionCollaterals.size(): %d\n",
+    LogPrintf("CSpySendPool::CreateNewSession -- new session created, nSessionID: %d  nSessionDenom: %d (%s)  vecSessionCollaterals.size(): %d\n",
             nSessionID, nSessionDenom, GetDenominationsToString(nSessionDenom), vecSessionCollaterals.size());
 
     return true;
 }
 
-bool CSpysendPool::AddUserToExistingSession(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
+bool CSpySendPool::AddUserToExistingSession(int nDenom, CTransaction txCollateral, PoolMessage& nMessageIDRet)
 {
-    if(!fMasterNode || nSessionID == 0 || IsSessionReady()) return false;
+    if(!fGoldmineNode || nSessionID == 0 || IsSessionReady()) return false;
 
     if(!IsAcceptableDenomAndCollateral(nDenom, txCollateral, nMessageIDRet)) {
         return false;
@@ -2071,12 +2104,12 @@ bool CSpysendPool::AddUserToExistingSession(int nDenom, CTransaction txCollatera
     // we only add new users to an existing session when we are in queue mode
     if(nState != POOL_STATE_QUEUE) {
         nMessageIDRet = ERR_MODE;
-        LogPrintf("CSpysendPool::AddUserToExistingSession -- incompatible mode: nState=%d\n", nState);
+        LogPrintf("CSpySendPool::AddUserToExistingSession -- incompatible mode: nState=%d\n", nState);
         return false;
     }
 
     if(nDenom != nSessionDenom) {
-        LogPrintf("CSpysendPool::AddUserToExistingSession -- incompatible denom %d (%s) != nSessionDenom %d (%s)\n",
+        LogPrintf("CSpySendPool::AddUserToExistingSession -- incompatible denom %d (%s) != nSessionDenom %d (%s)\n",
                     nDenom, GetDenominationsToString(nDenom), nSessionDenom, GetDenominationsToString(nSessionDenom));
         nMessageIDRet = ERR_DENOM;
         return false;
@@ -2088,7 +2121,7 @@ bool CSpysendPool::AddUserToExistingSession(int nDenom, CTransaction txCollatera
     nTimeLastSuccessfulStep = GetTimeMillis();
     vecSessionCollaterals.push_back(txCollateral);
 
-    LogPrintf("CSpysendPool::AddUserToExistingSession -- new user accepted, nSessionID: %d  nSessionDenom: %d (%s)  vecSessionCollaterals.size(): %d\n",
+    LogPrintf("CSpySendPool::AddUserToExistingSession -- new user accepted, nSessionID: %d  nSessionDenom: %d (%s)  vecSessionCollaterals.size(): %d\n",
             nSessionID, nSessionDenom, GetDenominationsToString(nSessionDenom), vecSessionCollaterals.size());
 
     return true;
@@ -2104,7 +2137,7 @@ bool CSpysendPool::AddUserToExistingSession(int nDenom, CTransaction txCollatera
         bit 4 and so on - out-of-bounds
         none of above   - non-denom
 */
-std::string CSpysendPool::GetDenominationsToString(int nDenom)
+std::string CSpySendPool::GetDenominationsToString(int nDenom)
 {
     std::string strDenom = "";
     int nMaxDenoms = vecSpySendDenominations.size();
@@ -2126,7 +2159,7 @@ std::string CSpysendPool::GetDenominationsToString(int nDenom)
     return strDenom;
 }
 
-int CSpysendPool::GetDenominations(const std::vector<CTxDSOut>& vecTxDSOut)
+int CSpySendPool::GetDenominations(const std::vector<CTxDSOut>& vecTxDSOut)
 {
     std::vector<CTxOut> vecTxOut;
 
@@ -2145,7 +2178,7 @@ int CSpysendPool::GetDenominations(const std::vector<CTxDSOut>& vecTxDSOut)
         .1        - bit 3
         non-denom - 0, all bits off
 */
-int CSpysendPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool fSingleRandomDenom)
+int CSpySendPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool fSingleRandomDenom)
 {
     std::vector<std::pair<CAmount, int> > vecDenomUsed;
 
@@ -2177,7 +2210,7 @@ int CSpysendPool::GetDenominations(const std::vector<CTxOut>& vecTxOut, bool fSi
     return nDenom;
 }
 
-bool CSpysendPool::GetDenominationsBits(int nDenom, std::vector<int> &vecBitsRet)
+bool CSpySendPool::GetDenominationsBits(int nDenom, std::vector<int> &vecBitsRet)
 {
     // ( bit on if present, 4 denominations example )
     // bit 0 - 100ARC+1
@@ -2200,7 +2233,7 @@ bool CSpysendPool::GetDenominationsBits(int nDenom, std::vector<int> &vecBitsRet
     return !vecBitsRet.empty();
 }
 
-int CSpysendPool::GetDenominationsByAmounts(const std::vector<CAmount>& vecAmount)
+int CSpySendPool::GetDenominationsByAmounts(const std::vector<CAmount>& vecAmount)
 {
     CScript scriptTmp = CScript();
     std::vector<CTxOut> vecTxOut;
@@ -2213,7 +2246,7 @@ int CSpysendPool::GetDenominationsByAmounts(const std::vector<CAmount>& vecAmoun
     return GetDenominations(vecTxOut, true);
 }
 
-std::string CSpysendPool::GetMessageByID(PoolMessage nMessageID)
+std::string CSpySendPool::GetMessageByID(PoolMessage nMessageID)
 {
     switch (nMessageID) {
         case ERR_ALREADY_HAVE:          return _("Already have that input.");
@@ -2317,34 +2350,34 @@ bool CDarkSendEntry::AddScriptSig(const CTxIn& txin)
     return false;
 }
 
-bool CSpysendQueue::Sign()
+bool CSpySendQueue::Sign()
 {
-    if(!fMasterNode) return false;
+    if(!fGoldmineNode) return false;
 
     std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(nTime) + boost::lexical_cast<std::string>(fReady);
 
     if(!darkSendSigner.SignMessage(strMessage, vchSig, activeGoldminenode.keyGoldminenode)) {
-        LogPrintf("CSpysendQueue::Sign -- SignMessage() failed, %s\n", ToString());
+        LogPrintf("CSpySendQueue::Sign -- SignMessage() failed, %s\n", ToString());
         return false;
     }
 
     return CheckSignature(activeGoldminenode.pubKeyGoldminenode);
 }
 
-bool CSpysendQueue::CheckSignature(const CPubKey& pubKeyGoldminenode)
+bool CSpySendQueue::CheckSignature(const CPubKey& pubKeyGoldminenode)
 {
     std::string strMessage = vin.ToString() + boost::lexical_cast<std::string>(nDenom) + boost::lexical_cast<std::string>(nTime) + boost::lexical_cast<std::string>(fReady);
     std::string strError = "";
 
     if(!darkSendSigner.VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
-        LogPrintf("CSpysendQueue::CheckSignature -- Got bad Goldminenode queue signature: %s; error: %s\n", ToString(), strError);
+        LogPrintf("CSpySendQueue::CheckSignature -- Got bad Goldminenode queue signature: %s; error: %s\n", ToString(), strError);
         return false;
     }
 
     return true;
 }
 
-bool CSpysendQueue::Relay()
+bool CSpySendQueue::Relay()
 {
     std::vector<CNode*> vNodesCopy;
     {
@@ -2365,34 +2398,34 @@ bool CSpysendQueue::Relay()
     return true;
 }
 
-bool CSpysendBroadcastTx::Sign()
+bool CSpySendBroadcastTx::Sign()
 {
-    if(!fMasterNode) return false;
+    if(!fGoldmineNode) return false;
 
     std::string strMessage = tx.GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
 
     if(!darkSendSigner.SignMessage(strMessage, vchSig, activeGoldminenode.keyGoldminenode)) {
-        LogPrintf("CSpysendBroadcastTx::Sign -- SignMessage() failed\n");
+        LogPrintf("CSpySendBroadcastTx::Sign -- SignMessage() failed\n");
         return false;
     }
 
     return CheckSignature(activeGoldminenode.pubKeyGoldminenode);
 }
 
-bool CSpysendBroadcastTx::CheckSignature(const CPubKey& pubKeyGoldminenode)
+bool CSpySendBroadcastTx::CheckSignature(const CPubKey& pubKeyGoldminenode)
 {
     std::string strMessage = tx.GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
     std::string strError = "";
 
     if(!darkSendSigner.VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
-        LogPrintf("CSpysendBroadcastTx::CheckSignature -- Got bad dstx signature, error: %s\n", strError);
+        LogPrintf("CSpySendBroadcastTx::CheckSignature -- Got bad dstx signature, error: %s\n", strError);
         return false;
     }
 
     return true;
 }
 
-void CSpysendPool::RelayFinalTransaction(const CTransaction& txFinal)
+void CSpySendPool::RelayFinalTransaction(const CTransaction& txFinal)
 {
     LOCK(cs_vNodes);
     BOOST_FOREACH(CNode* pnode, vNodes)
@@ -2400,24 +2433,24 @@ void CSpysendPool::RelayFinalTransaction(const CTransaction& txFinal)
             pnode->PushMessage(NetMsgType::DSFINALTX, nSessionID, txFinal);
 }
 
-void CSpysendPool::RelayIn(const CDarkSendEntry& entry)
+void CSpySendPool::RelayIn(const CDarkSendEntry& entry)
 {
     if(!pSubmittedToGoldminenode) return;
 
     CNode* pnode = FindNode(pSubmittedToGoldminenode->addr);
     if(pnode != NULL) {
-        LogPrintf("CSpysendPool::RelayIn -- found master, relaying message to %s\n", pnode->addr.ToString());
+        LogPrintf("CSpySendPool::RelayIn -- found goldmine, relaying message to %s\n", pnode->addr.ToString());
         pnode->PushMessage(NetMsgType::DSVIN, entry);
     }
 }
 
-void CSpysendPool::PushStatus(CNode* pnode, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID)
+void CSpySendPool::PushStatus(CNode* pnode, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID)
 {
     if(!pnode) return;
     pnode->PushMessage(NetMsgType::DSSTATUSUPDATE, nSessionID, (int)nState, (int)vecEntries.size(), (int)nStatusUpdate, (int)nMessageID);
 }
 
-void CSpysendPool::RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID)
+void CSpySendPool::RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID)
 {
     LOCK(cs_vNodes);
     BOOST_FOREACH(CNode* pnode, vNodes)
@@ -2425,7 +2458,7 @@ void CSpysendPool::RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMess
             PushStatus(pnode, nStatusUpdate, nMessageID);
 }
 
-void CSpysendPool::RelayCompletedTransaction(PoolMessage nMessageID)
+void CSpySendPool::RelayCompletedTransaction(PoolMessage nMessageID)
 {
     LOCK(cs_vNodes);
     BOOST_FOREACH(CNode* pnode, vNodes)
@@ -2433,21 +2466,21 @@ void CSpysendPool::RelayCompletedTransaction(PoolMessage nMessageID)
             pnode->PushMessage(NetMsgType::DSCOMPLETE, nSessionID, (int)nMessageID);
 }
 
-void CSpysendPool::SetState(PoolState nStateNew)
+void CSpySendPool::SetState(PoolState nStateNew)
 {
-    if(fMasterNode && (nStateNew == POOL_STATE_ERROR || nStateNew == POOL_STATE_SUCCESS)) {
-        LogPrint("privatesend", "CSpysendPool::SetState -- Can't set state to ERROR or SUCCESS as a Goldminenode. \n");
+    if(fGoldmineNode && (nStateNew == POOL_STATE_ERROR || nStateNew == POOL_STATE_SUCCESS)) {
+        LogPrint("privatesend", "CSpySendPool::SetState -- Can't set state to ERROR or SUCCESS as a Goldminenode. \n");
         return;
     }
 
-    LogPrintf("CSpysendPool::SetState -- nState: %d, nStateNew: %d\n", nState, nStateNew);
+    LogPrintf("CSpySendPool::SetState -- nState: %d, nStateNew: %d\n", nState, nStateNew);
     nState = nStateNew;
 }
 
-void CSpysendPool::UpdatedBlockTip(const CBlockIndex *pindex)
+void CSpySendPool::UpdatedBlockTip(const CBlockIndex *pindex)
 {
     pCurrentBlockIndex = pindex;
-    LogPrint("privatesend", "CSpysendPool::UpdatedBlockTip -- pCurrentBlockIndex->nHeight: %d\n", pCurrentBlockIndex->nHeight);
+    LogPrint("privatesend", "CSpySendPool::UpdatedBlockTip -- pCurrentBlockIndex->nHeight: %d\n", pCurrentBlockIndex->nHeight);
 
     if(!fLiteMode && goldminenodeSync.IsGoldminenodeListSynced()) {
         NewBlock();
@@ -2493,6 +2526,9 @@ void ThreadCheckDarkSendPool()
                 mnodeman.CheckAndRemove();
                 mnpayments.CheckAndRemove();
                 instantsend.CheckAndRemove();
+            }
+            if(fGoldmineNode && (nTick % (60 * 5) == 0)) {
+                mnodeman.DoFullVerificationStep();
             }
 
             darkSendPool.CheckTimeout();

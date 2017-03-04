@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -348,9 +348,9 @@ static const CRPCCommand vRPCCommands[] =
     { "arcticcoin",               "goldminenodebroadcast",    &goldminenodebroadcast,    true  },
     { "arcticcoin",               "gobject",                &gobject,                true  },
     { "arcticcoin",               "getgovernanceinfo",      &getgovernanceinfo,      true  },
-    { "arcticcoin",               "getsuperblockevolution",    &getsuperblockevolution,    true  },
+    { "arcticcoin",               "getsuperblockbudget",    &getsuperblockbudget,    true  },
     { "arcticcoin",               "voteraw",                &voteraw,                true  },
-    { "arcticcoin",               "gmsync",                 &mnsync,                 true  },
+    { "arcticcoin",               "mnsync",                 &mnsync,                 true  },
     { "arcticcoin",               "spork",                  &spork,                  true  },
     { "arcticcoin",               "getpoolinfo",            &getpoolinfo,            true  },
 #ifdef ENABLE_WALLET

@@ -741,8 +741,8 @@ Osoite: %4
         <translation>Kopioi vaihtoraha</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Ei anonyymeja syötteitä valittu. &lt;b&gt;Spysend poistetaan käytöstä.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Jos silti haluat käyttää Spysend:iä, poista ei anonyymit valinnat ensin ja valitse uudelleen Spysend optio.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Ei anonyymeja syötteitä valittu. &lt;b&gt;SpySend poistetaan käytöstä.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Jos silti haluat käyttää SpySend:iä, poista ei anonyymit valinnat ensin ja valitse uudelleen SpySend optio.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -842,10 +842,10 @@ Osoite: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Spysend Asetukset</translation>
+        <source>Configure SpySend</source>
+        <translation>SpySend Asetukset</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -892,20 +892,20 @@ Osoite: %4
         <translation>Tämä vaihtoehto on hitain ja kaikkein anonyymi. Suurimman yksityisyyden käyttö maksaa</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Spysend Asetukset</translation>
+        <source>SpySend Configuration</source>
+        <translation>SpySend Asetukset</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend on asetettu perusasetuksiin (%1 and 2 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend on asetettu perusasetuksiin (%1 and 2 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend on asetettu keskitason asetuksiin (%1 and 8 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend on asetettu keskitason asetuksiin (%1 and 8 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend on asetettu maksimitason asetuksiin (%1 and 16 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend on asetettu maksimitason asetuksiin (%1 and 16 kierrosta). Voit muuttaa asetuksia milloin vain Arctic asetuksista.</translation>
     </message>
 </context>
 <context>
@@ -1147,12 +1147,12 @@ Varoitus: Jos käytät käyttöjärjestelmää (Live os) suoraan usb, dvd tai cd
         <translation>(0 = auto, &lt;0 = jätä näin monta prosessorin ydintä vapaaksi)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
-        <translation>Kuinka montaa Spysend kierrosta käytetään</translation>
+        <source>SpySend rounds to use</source>
+        <translation>Kuinka montaa SpySend kierrosta käytetään</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Tämä määrä toimii rajana keskeytykselle kun Spysend anonymisointi sen saavuttaa.</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
+        <translation>Tämä määrä toimii rajana keskeytykselle kun SpySend anonymisointi sen saavuttaa.</translation>
     </message>
     <message>
         <source>Amount of Arctic to keep anonymized</source>
@@ -1424,8 +1424,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Valmiina:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Spysend Saldo:</translation>
+        <source>SpySend Balance:</source>
+        <translation>SpySend Saldo:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
@@ -1444,8 +1444,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>e/s</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -1464,16 +1464,16 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>(Viimeisin Viesti)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Yritä manuaalisesti esittää Spysend sekoituspyyntö.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Yritä manuaalisesti esittää SpySend sekoituspyyntö.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Yritä Sekoittaa</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Nollaa nykyinen Spysend tila (voi keskeyttää Spysend sekoituksen, joka voi maksaa ylimääräisiä kuluja)</translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Nollaa nykyinen SpySend tila (voi keskeyttää SpySend sekoituksen, joka voi maksaa ylimääräisiä kuluja)</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1488,12 +1488,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Ei käytössä</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
-        <translation>Käynnistä Spysend Sekoitus</translation>
+        <source>Start SpySend Mixing</source>
+        <translation>Käynnistä SpySend Sekoitus</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
-        <translation>Lopeta Spysend Sekoitus</translation>
+        <source>Stop SpySend Mixing</source>
+        <translation>Lopeta SpySend Sekoitus</translation>
     </message>
     <message>
         <source>No inputs detected</source>
@@ -1536,9 +1536,9 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Käytössä</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Viimeisin Spysend viesti:
+        <translation>Viimeisin SpySend viesti:
 </translation>
     </message>
     <message>
@@ -1546,20 +1546,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>e/s</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend nollattu onnistuneesti.</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend nollattu onnistuneesti.</translation>
     </message>
     <message>
-        <source>If you don't want to see internal Spysend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
-        <translation>Jos et halua nähdä sisäisiä Spysend sekoituksen kuluja/tapahtumia, valitse "Yleiset" tyypiksi siirtotapahtumissa.</translation>
+        <source>If you don't want to see internal SpySend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
+        <translation>Jos et halua nähdä sisäisiä SpySend sekoituksen kuluja/tapahtumia, valitse "Yleiset" tyypiksi siirtotapahtumissa.</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Spysendin käyttö vaatii vähintään %1.</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>SpySendin käyttö vaatii vähintään %1.</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Lompakko on lukittu ja käyttäjä ei avannut sitä. Spysend asetetaan pois käytöstä.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Lompakko on lukittu ja käyttäjä ei avannut sitä. SpySend asetetaan pois käytöstä.</translation>
     </message>
 </context>
 <context>
@@ -2369,8 +2369,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Lisää &amp;Vastaanottaja</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -3025,8 +3025,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Vastaanotettu osoitteesta</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>Spysend vastaanotettu</translation>
+        <source>Received via SpySend</source>
+        <translation>SpySend vastaanotettu</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -3041,24 +3041,24 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Louhittu</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend denominointi</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend denominointi</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend vakuus maksu</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend vakuus maksu</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend luo vakuus syötteet</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend luo vakuus syötteet</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend denominointien luonti</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend denominointien luonti</translation>
     </message>
     <message>
         <source>Darksent</source>
-        <translation>Spysend lähetetty</translation>
+        <translation>SpySend lähetetty</translation>
     </message>
     <message>
         <source>watch-only</source>
@@ -3137,23 +3137,23 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
     </message>
     <message>
         <source>Darksent</source>
-        <translation>Spysend lähetetty</translation>
+        <translation>SpySend lähetetty</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend luo vakuus syötteet</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend luo vakuus syötteet</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend denominointien luonti</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend denominointien luonti</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend denominointi</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend denominointi</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend vakuus maksu</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend vakuus maksu</translation>
     </message>
     <message>
         <source>To yourself</source>
@@ -3335,8 +3335,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Ei voida lukita data hakemistoa %s. Arctic Core on luultavasti jo käynnissä.</translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend käyttää tarkalleen denominoituja syötteitä lähettäessään varoja, saatat tarvita anonymisoida lisää varoja.</translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>SpySend käyttää tarkalleen denominoituja syötteitä lähettäessään varoja, saatat tarvita anonymisoida lisää varoja.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3391,12 +3391,12 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Ei voida yhdistää %s tässä tietokoneessa. Arctic Core on luultavasti jo käynnissä.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Ei tarpeeksi Spysend anonymisoituja varoja tälle siirtotapahtumalle.</translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Ei tarpeeksi SpySend anonymisoituja varoja tälle siirtotapahtumalle.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Ei tarpeeksi Spysend ei-anonymisoituja varoja tälle siirtotapahtumalle, joka ei ole 1000 ARC.</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Ei tarpeeksi SpySend ei-anonymisoituja varoja tälle siirtotapahtumalle, joka ei ole 1000 ARC.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3495,8 +3495,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Vioittunut lohkotietokanta havaittu</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Spysend valinnat:</translation>
+        <source>SpySend options:</source>
+        <translation>SpySend valinnat:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -3567,8 +3567,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Virhe: Lompakko on lukittu, siirtotapahtumaa ei voida luoda!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Virhe: Sinulla on jo odottavia merkintöjä Spysend varannossa</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Virhe: Sinulla on jo odottavia merkintöjä SpySend varannossa</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3603,7 +3603,7 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Kytkeydy annettuun osoitteeseen kuunnellaksesi JSON-RPC yhteyksiä. Käytä [host]:port merkintätapaa IPv6:lle. Tämä asetus voidaan määrittää useita kertoja  (oletus: kytkeydy kaikkiin rajapintoihin)</translation>
     </message>
     <message>
-        <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
+        <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
         <translation>Vaihda automaattisesti viimeistellyn budjetin äänestyskäyttäytyminen. mode=auto: Äänestä vain tarkkaan viimeisteltyä budjettia joka täsmää itse tekemääni budjettiin. (string, oletus: auto)</translation>
     </message>
     <message>
@@ -3619,8 +3619,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Poista kaikki lompakon siirtotapahtumat ja palauta vain nuo osat lohkoketjusta -rescan valinnan avulla käynnistyksessä</translation>
     </message>
     <message>
-        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Kytke pois käytöstä kaikki Arctic:in erityistoiminnot (Goldminenodet, Spysend, InstantX, Budjetointi) (0-1, oletus: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</source>
+        <translation>Kytke pois käytöstä kaikki Arctic:in erityistoiminnot (Goldminenodet, SpySend, InstantX, Budjetointi) (0-1, oletus: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3632,7 +3632,7 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
     </message>
     <message>
         <source>Enable use of automated spysend for funds stored in this wallet (0-1, default: %u)</source>
-        <translation>Ota käyttöön automaattinen Spysend rahavaroille tässä lompakossa  (0-1, oletus: %u)</translation>
+        <translation>Ota käyttöön automaattinen SpySend rahavaroille tässä lompakossa  (0-1, oletus: %u)</translation>
     </message>
     <message>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
@@ -3691,8 +3691,8 @@ Näillä toiminnoilla voit korjata korruptoituneen lohkoketjun tai puuttuvat/van
         <translation>Tulosta debuggaustieto (oletus: %u, tarjottava &lt;category&gt; on valinnainen)</translation>
     </message>
     <message>
-        <source>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
-        <translation>Tarjoa Spysend:ille likviditeettiä jatkuvaa kolikoiden sekoitusta varten (0-100, oletus: %u, 1=usein, isot maksukulut, 100=harvoin, pienet maksukulut)</translation>
+        <source>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
+        <translation>Tarjoa SpySend:ille likviditeettiä jatkuvaa kolikoiden sekoitusta varten (0-100, oletus: %u, 1=usein, isot maksukulut, 100=harvoin, pienet maksukulut)</translation>
     </message>
     <message>
         <source>Require high priority for relaying free or low-fee transactions (default:%u)</source>
@@ -3815,16 +3815,16 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Ei voida jäsentää -rpcbind arvoa %s verkko-osoitteena</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
-        <translation>Spysend odottaa.</translation>
+        <source>SpySend is idle.</source>
+        <translation>SpySend odottaa.</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
-        <translation>Spysend pyyntö valmis:</translation>
+        <source>SpySend request complete:</source>
+        <translation>SpySend pyyntö valmis:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
-        <translation>Spysend pyyntö kesken:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>SpySend pyyntö kesken:</translation>
     </message>
     <message>
         <source>Disable safemode, override a real safe mode event (default: %u)</source>
@@ -3955,8 +3955,8 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Virheellinen määrä -paytxfee=&lt;amount&gt;: '%s'</translation>
     </message>
     <message>
-        <source>Last successful Spysend action was too recent.</source>
-        <translation>Viimeinen onnistunut Spysend tapahtuma oli liian äskettäin.</translation>
+        <source>Last successful SpySend action was too recent.</source>
+        <translation>Viimeinen onnistunut SpySend tapahtuma oli liian äskettäin.</translation>
     </message>
     <message>
         <source>Limit size of signature cache to &lt;n&gt; entries (default: %u)</source>
@@ -3971,7 +3971,7 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Kuuntele yhteyksiä portissa &lt;port&gt; (oletus: %u tai testiverkossa: %u)</translation>
     </message>
     <message>
-        <source>Loading evolution cache...</source>
+        <source>Loading budget cache...</source>
         <translation>Ladataan budjetti välimuistia...</translation>
     </message>
     <message>
@@ -4127,7 +4127,7 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Synkronointi valmis</translation>
     </message>
     <message>
-        <source>Synchronizing evolutions...</source>
+        <source>Synchronizing budgets...</source>
         <translation>Synkronoidaan budjetit...</translation>
     </message>
     <message>
@@ -4231,8 +4231,8 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Pidä enintään &lt;n&gt; ei yhdistettyä siirtotapahtumaa muistissa (oletus: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
-        <translation>Viimeisin Spysend oli liian äskettäin.</translation>
+        <source>Last SpySend was too recent.</source>
+        <translation>Viimeisin SpySend oli liian äskettäin.</translation>
     </message>
     <message>
         <source>Line: %d</source>
@@ -4483,8 +4483,8 @@ esimerkiksi: alertnotify=echo %%s | mail -s "Arctic Hälytys" admin@foo.com
         <translation>Käyttäjätunnus JSON-RPC yhteyksille</translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Määrä on enemmän kuin Spysend varannon maksimi sallii.</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Määrä on enemmän kuin SpySend varannon maksimi sallii.</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>
