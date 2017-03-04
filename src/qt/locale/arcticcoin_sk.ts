@@ -177,7 +177,7 @@
     </message>
     <message>
         <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR ARC&lt;/b&gt;!</source>
-        <translation>Upozornenie: Ak zašifrujete vašu peňaženku a stratíte prístupové heslo, potom &lt;b&gt;prídete o všetky svoje ARC-y&lt;/b&gt;!</translation>
+        <translation>Upozornenie: Ak zašifrujete vašu peňaženku a stratíte prístupové heslo, potom &lt;b&gt;prídete o všetky svoje ARCTIC-y&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -740,8 +740,8 @@ Adresa: %4</translation>
         <translation>Kopírovať zmenu</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Vybratý ne-anonymizovaný vstup. &lt;b&gt;Spysend bude vypnutý.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ak si stále želáte použiť Spysend, najskôr odznačte všetky e-anonymizované vstup a potom znova zaškrtnite Spysend začiarkavacie políčko.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Vybratý ne-anonymizovaný vstup. &lt;b&gt;SpySend bude vypnutý.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ak si stále želáte použiť SpySend, najskôr odznačte všetky e-anonymizované vstup a potom znova zaškrtnite SpySend začiarkavacie políčko.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -841,10 +841,10 @@ Adresa: %4</translation>
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Konfigurovať Spysend</translation>
+        <source>Configure SpySend</source>
+        <translation>Konfigurovať SpySend</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -891,20 +891,20 @@ Adresa: %4</translation>
         <translation>Toto je najpomalšia a najviac bezpečná možnosť. Použitie maximálnej anonymity bude stáť</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Konfigurácia Spysend</translation>
+        <source>SpySend Configuration</source>
+        <translation>Konfigurácia SpySend</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend bol úspešne nastavený na základnú hodnotu (%1 a 2 kolá). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend bol úspešne nastavený na základnú hodnotu (%1 a 2 kolá). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend bol úspešne nastavený na vysokú hodnotu (%1 a 8 kôl). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend bol úspešne nastavený na vysokú hodnotu (%1 a 8 kôl). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend bol úspešne nastavený na maximálnu hodnotu (%1 a 16 kôl). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend bol úspešne nastavený na maximálnu hodnotu (%1 a 16 kôl). Toto nastavenie môžete kedykoľvek zmeniť otvorením konfiguračnej obrazovky Arctic.</translation>
     </message>
 </context>
 <context>
@@ -1145,12 +1145,12 @@ Adresa: %4</translation>
         <translation>(0 = auto, &lt;0 = nechať toľko jadier voľných)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
-        <translation>Použiť kôl Spysend</translation>
+        <source>SpySend rounds to use</source>
+        <translation>Použiť kôl SpySend</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Táto suma slúži ako hranica pre vypnutie Spysend akonáhle je dosiahnutá</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
+        <translation>Táto suma slúži ako hranica pre vypnutie SpySend akonáhle je dosiahnutá</translation>
     </message>
     <message>
         <source>Amount of Arctic to keep anonymized</source>
@@ -1422,8 +1422,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Dokončenie:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Bilancia Spysend:</translation>
+        <source>SpySend Balance:</source>
+        <translation>Bilancia SpySend:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
@@ -1442,8 +1442,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>nie je k dispozícii</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -1462,16 +1462,16 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>(Posledná správa)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Skúsiť manuálne odoslať Spysend požiadavku.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Skúsiť manuálne odoslať SpySend požiadavku.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Výskúšať mix</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Vynulovať súčasný stav Spysend (môže prerušiť Spysend ak je v procese miešania, čo Vás môže stáť peniaze!)</translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Vynulovať súčasný stav SpySend (môže prerušiť SpySend ak je v procese miešania, čo Vás môže stáť peniaze!)</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1486,11 +1486,11 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Vypnuté</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
+        <source>Start SpySend Mixing</source>
         <translation>Začať Dasksend miešanie</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
+        <source>Stop SpySend Mixing</source>
         <translation>Zastaviť Dasksend miešanie</translation>
     </message>
     <message>
@@ -1534,9 +1534,9 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Povolené </translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Posledná Spysend správa:
+        <translation>Posledná SpySend správa:
 </translation>
     </message>
     <message>
@@ -1544,20 +1544,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>nie je k dispozícii</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend bol úspešne obnovený</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend bol úspešne obnovený</translation>
     </message>
     <message>
-        <source>If you don't want to see internal Spysend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
-        <translation>Ak nechcete vidieť interné Spysend poplatky/transakcie, vyberte "Najčastejšie" ako typ na záložke "Transakcie".</translation>
+        <source>If you don't want to see internal SpySend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
+        <translation>Ak nechcete vidieť interné SpySend poplatky/transakcie, vyberte "Najčastejšie" ako typ na záložke "Transakcie".</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Pre použitie vyžaduje Spysend aspoň %1.</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>Pre použitie vyžaduje SpySend aspoň %1.</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Peňaženka je zamknutá a používateľ ju odmietol odomknúť. Vypínam Spysend.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Peňaženka je zamknutá a používateľ ju odmietol odomknúť. Vypínam SpySend.</translation>
     </message>
 </context>
 <context>
@@ -2363,8 +2363,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>&amp;Pridať príjemcu</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -2416,7 +2416,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>(spysend requires this amount to be rounded up to the nearest %1).</source>
-        <translation>(Spysend vyžaduje aby bola táto suma zaokrúhlená nahor k najbližšej %1).</translation>
+        <translation>(SpySend vyžaduje aby bola táto suma zaokrúhlená nahor k najbližšej %1).</translation>
     </message>
     <message>
         <source>any available funds (not recommended)</source>
@@ -3019,8 +3019,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Prijaté od:</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>Prijaté cez Spysend</translation>
+        <source>Received via SpySend</source>
+        <translation>Prijaté cez SpySend</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -3035,20 +3035,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Vyfárané</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Denominácia Spysend</translation>
+        <source>SpySend Denominate</source>
+        <translation>Denominácia SpySend</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Zaisťovacia Spysend platba</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>Zaisťovacia SpySend platba</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend uskutočnil zaisťovacie vstupy</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend uskutočnil zaisťovacie vstupy</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Vytvoriť denominácie Spysend</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>Vytvoriť denominácie SpySend</translation>
     </message>
     <message>
         <source>Darksent</source>
@@ -3134,20 +3134,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Darksent</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend uskutočnil zaisťovacie vstupy</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend uskutočnil zaisťovacie vstupy</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Vytvoriť denominácie Spysend</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>Vytvoriť denominácie SpySend</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Denominácia Spysend</translation>
+        <source>SpySend Denominate</source>
+        <translation>Denominácia SpySend</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Zaisťovacia Spysend platba</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>Zaisťovacia SpySend platba</translation>
     </message>
     <message>
         <source>To yourself</source>
@@ -3329,8 +3329,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Nedá sa zamknúť dátový adresár %s. Arctic Core už pravdepodobne beží.</translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Pre poslanie zdrojov používa Spysend presné sumy, potrebujete jednoducho anonymizovať viac mincí. </translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>Pre poslanie zdrojov používa SpySend presné sumy, potrebujete jednoducho anonymizovať viac mincí. </translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3385,12 +3385,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Nedá sa viazať ku %s na tomto počítači. Arctic Core už pravdepodobne beží.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Nedá sa nájsť dostatok denominácií Spysend pre túto transakciu. </translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Nedá sa nájsť dostatok denominácií SpySend pre túto transakciu. </translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Nedá sa nájsť dostatok ne-denominovaných Spysend zdrojov pre túto transakciu, ktoré nie sú rovné 1000 ARC.</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Nedá sa nájsť dostatok ne-denominovaných SpySend zdrojov pre túto transakciu, ktoré nie sú rovné 1000 ARC.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3489,8 +3489,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Zistený poškodený blok databázy</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Možnosti Spysend:</translation>
+        <source>SpySend options:</source>
+        <translation>Možnosti SpySend:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -3561,8 +3561,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Chyba: Peňaženka je zamknutá, transakcia sa nedá vytvoriť!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Chyba: Už máte čakajúce položky vo fronte Spysend</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Chyba: Už máte čakajúce položky vo fronte SpySend</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3597,7 +3597,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Spojiť s danou adresou pre počúvanie JSON-RPC spojení. Použite zápis [host]:port pre IPv6. Táto možnosť môže byt zadaná niekoľko krát (predvolené: spojiť so všetkými rozhraniami)</translation>
     </message>
     <message>
-        <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
+        <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
         <translation>Zmeniť vlastnosť hlasovania automaticky dokončených rozpočtov. mód=auto: Hlasovať iba pre konkrétny dokončený rozpočet, ktorý sa zhoduje mojím vygenerovaným rozpočtom. (reťazec, predvolené: auto)</translation>
     </message>
     <message>
@@ -3613,8 +3613,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Vymazať všetky transakcie z peňaženky a pri spustení znova získať z reťazca blokov iba tie získané pomocou -rescan</translation>
     </message>
     <message>
-        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Vypnúť všetky funkcie špecifické pre Arctic (Goldminenode, Spysend, InstantX, Rozpočty) (0-1, predvolené: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</source>
+        <translation>Vypnúť všetky funkcie špecifické pre Arctic (Goldminenode, SpySend, InstantX, Rozpočty) (0-1, predvolené: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3685,8 +3685,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Výstupné ladiace informácie (predvolené: %u, dodanie &lt;category&gt; je voliteľné)</translation>
     </message>
     <message>
-        <source>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
-        <translation>Poskytnúť likviditu pre Spysend nepravidelným miešaním mincí na kontinuálnej báze (0-100, predvolené: %u, 1=veľmi často, vysoké poplatky, 100=veľmi zriedkavo, malé poplatky)</translation>
+        <source>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
+        <translation>Poskytnúť likviditu pre SpySend nepravidelným miešaním mincí na kontinuálnej báze (0-100, predvolené: %u, 1=veľmi často, vysoké poplatky, 100=veľmi zriedkavo, malé poplatky)</translation>
     </message>
     <message>
         <source>Require high priority for relaying free or low-fee transactions (default:%u)</source>
@@ -3807,16 +3807,16 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>Nedá sa analyzovať -rpcbind hodnota %s ako sieťová adresa</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
-        <translation>Spysend je nečinný.</translation>
+        <source>SpySend is idle.</source>
+        <translation>SpySend je nečinný.</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
-        <translation>Spysend požiadavok dokončený:</translation>
+        <source>SpySend request complete:</source>
+        <translation>SpySend požiadavok dokončený:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
-        <translation>Spysend požiadavok nedokončený:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>SpySend požiadavok nedokončený:</translation>
     </message>
     <message>
         <source>Disable safemode, override a real safe mode event (default: %u)</source>
@@ -3947,7 +3947,7 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>Neplatná suma pre -paytxfee=&lt;amount&gt;: '%s'</translation>
     </message>
     <message>
-        <source>Last successful Spysend action was too recent.</source>
+        <source>Last successful SpySend action was too recent.</source>
         <translation>Posledná Dasksend akcia bola pred chvíľou.</translation>
     </message>
     <message>
@@ -3963,7 +3963,7 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>Počúvať pripojenia na &lt;port&gt; (predvolené: %u alebo testovacia sieť: %u)</translation>
     </message>
     <message>
-        <source>Loading evolution cache...</source>
+        <source>Loading budget cache...</source>
         <translation>Načíta sa vyrovnávacia pamäť rozpočtu...</translation>
     </message>
     <message>
@@ -3980,7 +3980,7 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
     </message>
     <message>
         <source>Lock goldminenodes from goldminenode configuration file (default: %u)</source>
-        <translation>Zamknúť masternody z konfiguračného súboru goldminenode (predvolené: %u)</translation>
+        <translation>Zamknúť goldminenody z konfiguračného súboru goldminenode (predvolené: %u)</translation>
     </message>
     <message>
         <source>Maintain at most &lt;n&gt; connections to peers (default: %u)</source>
@@ -4119,7 +4119,7 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>Synchronizácia dokončená</translation>
     </message>
     <message>
-        <source>Synchronizing evolutions...</source>
+        <source>Synchronizing budgets...</source>
         <translation>Synchronizujú sa rozpočty...</translation>
     </message>
     <message>
@@ -4223,7 +4223,7 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>V pamäti udržiavať najviac &lt;n&gt; nepotvrdených transakcií (predvolené: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
+        <source>Last SpySend was too recent.</source>
         <translation>Posledný Dasksend bol pred chvíľou.</translation>
     </message>
     <message>
@@ -4475,8 +4475,8 @@ napríklad: alertnotify=echo %%s | mail -s "Arctic Upozornenie" admin@foo.com
         <translation>Užívateľské meno pre JSON-RPC spojenia</translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Väčšia hodnota ako dovoľuje fronta Spysend.</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Väčšia hodnota ako dovoľuje fronta SpySend.</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>

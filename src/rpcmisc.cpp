@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -56,7 +56,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
             "  \"balance\": xxxxxxx,         (numeric) the total arcticcoin balance of the wallet\n"
-            "  \"privatesend_balance\": xxxxxx, (numeric) the anonymized arcticcoin balance of the wallet\n"
+            "  \"spysend_balance\": xxxxxx, (numeric) the anonymized arcticcoin balance of the wallet\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -92,7 +92,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
         obj.push_back(Pair("walletversion", pwalletMain->GetVersion()));
         obj.push_back(Pair("balance",       ValueFromAmount(pwalletMain->GetBalance())));
         if(!fLiteMode)
-            obj.push_back(Pair("privatesend_balance",       ValueFromAmount(pwalletMain->GetAnonymizedBalance())));
+            obj.push_back(Pair("spysend_balance",       ValueFromAmount(pwalletMain->GetAnonymizedBalance())));
     }
 #endif
     obj.push_back(Pair("blocks",        (int)chainActive.Height()));
@@ -242,7 +242,7 @@ UniValue spork(const UniValue& params, bool fHelp)
         }
 
         // SPORK VALUE
-        int64_t nValue = params[1].get_int();
+        int64_t nValue = params[1].get_int64();
 
         //broadcast new spork
         if(sporkManager.UpdateSpork(nSporkID, nValue)){

@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -422,7 +422,7 @@ UniValue sendtoaddress(const UniValue& params, bool fHelp)
             "                             to which you're sending the transaction. This is not part of the \n"
             "                             transaction, just kept in your wallet.\n"
             "5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
-            "                             The recipient will receive less bitcoins than you enter in the amount field.\n"
+            "                             The recipient will receive less amount of Arctic than you enter in the amount field.\n"
             "6. \"use_is\"      (bool, optional) Send this transaction as InstantSend (default: false)\n"
             "7. \"use_ps\"      (bool, optional) Use anonymized funds only (default: false)\n"
             "\nResult:\n"
@@ -489,7 +489,7 @@ UniValue instantsendtoaddress(const UniValue& params, bool fHelp)
             "                             to which you're sending the transaction. This is not part of the \n"
             "                             transaction, just kept in your wallet.\n"
             "5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.\n"
-            "                             The recipient will receive less bitcoins than you enter in the amount field.\n"
+            "                             The recipient will receive less amount of Arctic than you enter in the amount field.\n"
             "\nResult:\n"
             "\"transactionid\"  (string) The transaction id.\n"
             "\nExamples:\n"
@@ -2508,7 +2508,7 @@ UniValue listunspent(const UniValue& params, bool fHelp)
             "    \"scriptPubKey\" : \"key\", (string) the script key\n"
             "    \"amount\" : x.xxx,         (numeric) the transaction amount in " + CURRENCY_UNIT + "\n"
             "    \"confirmations\" : n       (numeric) The number of confirmations\n"
-            "    \"ps_rounds\" : n           (numeric) The number of PS round\n"
+            "    \"ps_rounds\" : n           (numeric) The number of SS round\n"
             "    \"spendable\" : true|false  (boolean) True if spendable\n"
             "  }\n"
             "  ,...\n"

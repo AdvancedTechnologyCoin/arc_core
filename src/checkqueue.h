@@ -21,9 +21,9 @@ class CCheckQueueControl;
   * The verifications are represented by a type T, which must provide an
   * operator(), returning a bool.
   *
-  * One thread (the master) is assumed to push batches of verifications
+  * One thread (the goldmine) is assumed to push batches of verifications
   * onto the queue, where they are processed by N-1 worker threads. When
-  * the master is done adding work, it temporarily joins the worker pool
+  * the goldmine is done adding work, it temporarily joins the worker pool
   * as an N'th worker, until all jobs are done.
   */
 template <typename T>
@@ -36,17 +36,17 @@ private:
     //! Worker threads block on this when out of work
     boost::condition_variable condWorker;
 
-    //! Master thread blocks on this when out of work
-    boost::condition_variable condMaster;
+    //! Goldmine thread blocks on this when out of work
+    boost::condition_variable condGoldmine;
 
     //! The queue of elements to be processed.
     //! As the order of booleans doesn't matter, it is used as a LIFO (stack)
     std::vector<T> queue;
 
-    //! The number of workers (including the master) that are idle.
+    //! The number of workers (including the goldmine) that are idle.
     int nIdle;
 
-    //! The total number of workers (including the master).
+    //! The total number of workers (including the goldmine).
     int nTotal;
 
     //! The temporary evaluation result.
@@ -66,9 +66,9 @@ private:
     unsigned int nBatchSize;
 
     /** Internal function that does bulk of the verification work. */
-    bool Loop(bool fMaster = false)
+    bool Loop(bool fGoldmine = false)
     {
-        boost::condition_variable& cond = fMaster ? condMaster : condWorker;
+        boost::condition_variable& cond = fGoldmine ? condGoldmine : condWorker;
         std::vector<T> vChecks;
         vChecks.reserve(nBatchSize);
         unsigned int nNow = 0;
@@ -80,20 +80,20 @@ private:
                 if (nNow) {
                     fAllOk &= fOk;
                     nTodo -= nNow;
-                    if (nTodo == 0 && !fMaster)
-                        // We processed the last element; inform the master it can exit and return the result
-                        condMaster.notify_one();
+                    if (nTodo == 0 && !fGoldmine)
+                        // We processed the last element; inform the goldmine it can exit and return the result
+                        condGoldmine.notify_one();
                 } else {
                     // first iteration
                     nTotal++;
                 }
                 // logically, the do loop starts here
                 while (queue.empty()) {
-                    if ((fMaster || fQuit) && nTodo == 0) {
+                    if ((fGoldmine || fQuit) && nTodo == 0) {
                         nTotal--;
                         bool fRet = fAllOk;
                         // reset the status for new work later
-                        if (fMaster)
+                        if (fGoldmine)
                             fAllOk = true;
                         // return the current status
                         return fRet;

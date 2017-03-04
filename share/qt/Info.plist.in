@@ -46,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>org.arcticcoin.ArcticPayment</string>
+      <string>org.arcticcoin.ArcticCorement</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>arcticcoin</string>
@@ -71,7 +71,7 @@
         <string>application/x-arcticcoin-payment-request</string>
         <key>public.filename-extension</key>
         <array>
-          <string>arcticcoinpaymentrequest</string>
+          <string>ArcticCorementrequest</string>
         </array>
       </dict>
     </dict>

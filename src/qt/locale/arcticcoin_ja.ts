@@ -642,7 +642,7 @@
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     </context>
 <context>
     <name>EditAddressDialog</name>

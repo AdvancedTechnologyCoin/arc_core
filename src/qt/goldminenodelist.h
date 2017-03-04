@@ -45,7 +45,7 @@ private:
     bool fFilterUpdated;
 
 public Q_SLOTS:
-    void updateMyGoldminenodeInfo(QString strAlias, QString strAddr, CGoldminenode *pmn);
+    void updateMyGoldminenodeInfo(QString strAlias, QString strAddr, goldminenode_info_t& infoMn);
     void updateMyNodeList(bool fForce = false);
     void updateNodeList();
 
@@ -56,7 +56,13 @@ private:
     Ui::GoldminenodeList *ui;
     ClientModel *clientModel;
     WalletModel *walletModel;
-    CCriticalSection cs_mnlistupdate;
+
+    // Protects tableWidgetGoldminenodes
+    CCriticalSection cs_mnlist;
+
+    // Protects tableWidgetMyGoldminenodes
+    CCriticalSection cs_mymnlist;
+
     QString strCurrentFilter;
 
 private Q_SLOTS:

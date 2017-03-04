@@ -272,7 +272,7 @@ extern UniValue goldminenodelist(const UniValue& params, bool fHelp);
 extern UniValue goldminenodebroadcast(const UniValue& params, bool fHelp);
 extern UniValue gobject(const UniValue& params, bool fHelp);
 extern UniValue getgovernanceinfo(const UniValue& params, bool fHelp);
-extern UniValue getsuperblockevolution(const UniValue& params, bool fHelp);
+extern UniValue getsuperblockbudget(const UniValue& params, bool fHelp);
 extern UniValue voteraw(const UniValue& params, bool fHelp);
 extern UniValue mnsync(const UniValue& params, bool fHelp);
 

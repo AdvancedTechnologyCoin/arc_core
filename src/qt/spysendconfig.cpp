@@ -12,9 +12,9 @@
 #include <QKeyEvent>
 #include <QSettings>
 
-SpysendConfig::SpysendConfig(QWidget *parent) :
+SpySendConfig::SpySendConfig(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SpysendConfig),
+    ui(new Ui::SpySendConfig),
     model(0)
 {
     ui->setupUi(this);
@@ -24,17 +24,17 @@ SpysendConfig::SpysendConfig(QWidget *parent) :
     connect(ui->buttonMax, SIGNAL(clicked()), this, SLOT(clickMax()));
 }
 
-SpysendConfig::~SpysendConfig()
+SpySendConfig::~SpySendConfig()
 {
     delete ui;
 }
 
-void SpysendConfig::setModel(WalletModel *model)
+void SpySendConfig::setModel(WalletModel *model)
 {
     this->model = model;
 }
 
-void SpysendConfig::clickBasic()
+void SpySendConfig::clickBasic()
 {
     configure(true, 1000, 2);
 
@@ -49,7 +49,7 @@ void SpysendConfig::clickBasic()
     close();
 }
 
-void SpysendConfig::clickHigh()
+void SpySendConfig::clickHigh()
 {
     configure(true, 1000, 8);
 
@@ -64,7 +64,7 @@ void SpysendConfig::clickHigh()
     close();
 }
 
-void SpysendConfig::clickMax()
+void SpySendConfig::clickMax()
 {
     configure(true, 1000, 16);
 
@@ -79,7 +79,7 @@ void SpysendConfig::clickMax()
     close();
 }
 
-void SpysendConfig::configure(bool enabled, int coins, int rounds) {
+void SpySendConfig::configure(bool enabled, int coins, int rounds) {
 
     QSettings settings;
 

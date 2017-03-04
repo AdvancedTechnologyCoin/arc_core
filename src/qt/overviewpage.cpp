@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -151,7 +151,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->labelSpySendSyncStatus->setText("(" + tr("out of sync") + ")");
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
 
-    // hide PS frame (helps to preserve saved size)
+    // hide SS frame (helps to preserve saved size)
     // we'll setup and make it visible in updateAdvancedPSUI() later if we are not in litemode
     ui->frameSpySend->setVisible(false);
 
@@ -161,8 +161,8 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     // that's it for litemode
     if(fLiteMode) return;
 
-    // Disable any PS UI for goldminenode or when autobackup is disabled or failed for whatever reason
-    if(fMasterNode || nWalletBackups <= 0){
+    // Disable any SS UI for goldminenode or when autobackup is disabled or failed for whatever reason
+    if(fGoldmineNode || nWalletBackups <= 0){
         DisableSpySendCompletely();
         if (nWalletBackups <= 0) {
             ui->labelSpySendEnabled->setToolTip(tr("Automatic backups are disabled, no mixing available!"));
@@ -191,7 +191,7 @@ void OverviewPage::handleTransactionClicked(const QModelIndex &index)
 
 OverviewPage::~OverviewPage()
 {
-    if(!fLiteMode && !fMasterNode) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
+    if(!fLiteMode && !fGoldmineNode) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
     delete ui;
 }
 
@@ -271,6 +271,8 @@ void OverviewPage::setWalletModel(WalletModel *model)
     this->walletModel = model;
     if(model && model->getOptionsModel())
     {
+        // update the display unit, to not use the default ("ARC")
+        updateDisplayUnit();
         // Keep up to date with wallet
         setBalance(model->getBalance(), model->getUnconfirmedBalance(), model->getImmatureBalance(), model->getAnonymizedBalance(),
                    model->getWatchBalance(), model->getWatchUnconfirmedBalance(), model->getWatchImmatureBalance());
@@ -280,7 +282,7 @@ void OverviewPage::setWalletModel(WalletModel *model)
         connect(model->getOptionsModel(), SIGNAL(privateSendRoundsChanged()), this, SLOT(updateSpySendProgress()));
         connect(model->getOptionsModel(), SIGNAL(privateSentAmountChanged()), this, SLOT(updateSpySendProgress()));
         connect(model->getOptionsModel(), SIGNAL(advancedPSUIChanged(bool)), this, SLOT(updateAdvancedPSUI(bool)));
-        // explicitly update PS frame and transaction list to reflect actual settings
+        // explicitly update SS frame and transaction list to reflect actual settings
         updateAdvancedPSUI(model->getOptionsModel()->getShowAdvancedPSUI());
 
         connect(ui->privateSendAuto, SIGNAL(clicked()), this, SLOT(privateSendAuto()));
@@ -290,9 +292,6 @@ void OverviewPage::setWalletModel(WalletModel *model)
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
-
-    // update the display unit, to not use the default ("ARC")
-    updateDisplayUnit();
 }
 
 void OverviewPage::updateDisplayUnit()
@@ -476,7 +475,7 @@ void OverviewPage::privateSendStatus()
         ui->toggleSpySend->setText(tr("Start Mixing"));
 
         QString strEnabled = tr("Disabled");
-        // Show how many keys left in advanced PS UI mode only
+        // Show how many keys left in advanced SS UI mode only
         if (fShowAdvancedPSUI) strEnabled += ", " + strKeysLeftText;
         ui->labelSpySendEnabled->setText(strEnabled);
 
@@ -524,7 +523,7 @@ void OverviewPage::privateSendStatus()
     }
 
     QString strEnabled = fEnableSpySend ? tr("Enabled") : tr("Disabled");
-    // Show how many keys left in advanced PS UI mode only
+    // Show how many keys left in advanced SS UI mode only
     if(fShowAdvancedPSUI) strEnabled += ", " + strKeysLeftText;
     ui->labelSpySendEnabled->setText(strEnabled);
 
@@ -636,7 +635,7 @@ void OverviewPage::toggleSpySend(){
         /* show spysend configuration if client has defaults set */
 
         if(nSpySendAmount == 0){
-            SpysendConfig dlg(this);
+            SpySendConfig dlg(this);
             dlg.setModel(walletModel);
             dlg.exec();
         }

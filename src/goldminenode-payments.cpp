@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -39,8 +39,8 @@ bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockRewar
     bool isBlockRewardValueMet = (block.vtx[0].GetValueOut() <= blockReward);
     if(fDebug) LogPrintf("block.vtx[0].GetValueOut() %lld <= blockReward %lld\n", block.vtx[0].GetValueOut(), blockReward);
 
-    // we are still using evolutions, but we have no data about them anymore,
-    // all we know is predefined evolution cycle and window
+    // we are still using budgets, but we have no data about them anymore,
+    // all we know is predefined budget cycle and window
 
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
@@ -50,21 +50,21 @@ bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockRewar
             nOffset < consensusParams.nEvolutionPaymentsWindowBlocks) {
             // NOTE: make sure SPORK_13_OLD_SUPERBLOCK_FLAG is disabled when 12.1 starts to go live
             if(goldminenodeSync.IsSynced() && !sporkManager.IsSporkActive(SPORK_13_OLD_SUPERBLOCK_FLAG)) {
-                // no evolution blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
-                LogPrint("gobject", "IsBlockValueValid -- Client synced but evolution spork is disabled, checking block value against block reward\n");
+                // no budget blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
+                LogPrint("gobject", "IsBlockValueValid -- Client synced but budget spork is disabled, checking block value against block reward\n");
                 if(!isBlockRewardValueMet) {
-                    strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, evolutions are disabled",
+                    strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, budgets are disabled",
                                             nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
                 }
                 return isBlockRewardValueMet;
             }
-            LogPrint("gobject", "IsBlockValueValid -- WARNING: Skipping evolution block value checks, accepting block\n");
+            LogPrint("gobject", "IsBlockValueValid -- WARNING: Skipping budget block value checks, accepting block\n");
             // TODO: reprocess blocks to make sure they are legit?
             return true;
         }
-        // LogPrint("gobject", "IsBlockValueValid -- Block is not in evolution cycle window, checking block value against block reward\n");
+        // LogPrint("gobject", "IsBlockValueValid -- Block is not in budget cycle window, checking block value against block reward\n");
         if(!isBlockRewardValueMet) {
-            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, block is not in evolution cycle window",
+            strErrorRet = strprintf("coinbase pays too much at height %d (actual=%d vs limit=%d), exceeded block reward, block is not in budget cycle window",
                                     nBlockHeight, block.vtx[0].GetValueOut(), blockReward);
         }
         return isBlockRewardValueMet;
@@ -132,12 +132,12 @@ bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockRewar
 bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount blockReward)
 {
     if(!goldminenodeSync.IsSynced()) {
-        //there is no evolution data to use to check anything, let's just accept the longest chain
+        //there is no budget data to use to check anything, let's just accept the longest chain
         if(fDebug) LogPrintf("IsBlockPayeeValid -- WARNING: Client not synced, skipping block payee checks\n");
         return true;
     }
 
-    // we are still using evolutions, but we have no data about them anymore,
+    // we are still using budgets, but we have no data about them anymore,
     // we can only check goldminenode payments
 
     const Consensus::Params& consensusParams = Params().GetConsensus();
@@ -152,12 +152,12 @@ bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount bloc
         if(nBlockHeight >= consensusParams.nEvolutionPaymentsStartBlock &&
             nOffset < consensusParams.nEvolutionPaymentsWindowBlocks) {
             if(!sporkManager.IsSporkActive(SPORK_13_OLD_SUPERBLOCK_FLAG)) {
-                // no evolution blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
-                LogPrint("gobject", "IsBlockPayeeValid -- ERROR: Client synced but evolution spork is disabled and goldminenode payment is invalid\n");
+                // no budget blocks should be accepted here, if SPORK_13_OLD_SUPERBLOCK_FLAG is disabled
+                LogPrint("gobject", "IsBlockPayeeValid -- ERROR: Client synced but budget spork is disabled and goldminenode payment is invalid\n");
                 return false;
             }
             // NOTE: this should never happen in real, SPORK_13_OLD_SUPERBLOCK_FLAG MUST be disabled when 12.1 starts to go live
-            LogPrint("gobject", "IsBlockPayeeValid -- WARNING: Probably valid evolution block, have no data, accepting\n");
+            LogPrint("gobject", "IsBlockPayeeValid -- WARNING: Probably valid budget block, have no data, accepting\n");
             // TODO: reprocess blocks to make sure they are legit?
             return true;
         }
@@ -660,7 +660,7 @@ bool CGoldminenodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std:
     if(!pmn) {
         strError = strprintf("Unknown Goldminenode: prevout=%s", vinGoldminenode.prevout.ToStringShort());
         // Only ask if we are already synced and still have no idea about that Goldminenode
-        if(goldminenodeSync.IsSynced()) {
+        if(goldminenodeSync.IsGoldminenodeListSynced()) {
             mnodeman.AskForMN(pnode, vinGoldminenode);
         }
 
@@ -683,7 +683,7 @@ bool CGoldminenodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std:
 
     // Only goldminenodes should try to check goldminenode rank for old votes - they need to pick the right winner for future blocks.
     // Regular clients (miners included) need to verify goldminenode rank for future block votes only.
-    if(!fMasterNode && nBlockHeight < nValidationHeight) return true;
+    if(!fGoldmineNode && nBlockHeight < nValidationHeight) return true;
 
     int nRank = mnodeman.GetGoldminenodeRank(vinGoldminenode, nBlockHeight - 101, nMinRequiredProtocol, false);
 
@@ -708,7 +708,7 @@ bool CGoldminenodePayments::ProcessBlock(int nBlockHeight)
 {
     // DETERMINE IF WE SHOULD BE VOTING FOR THE NEXT PAYEE
 
-    if(fLiteMode || !fMasterNode) return false;
+    if(fLiteMode || !fGoldmineNode) return false;
 
     // We have little chances to pick the right winner if winners list is out of sync
     // but we have no choice, so we'll try. However it doesn't make sense to even try to do so
@@ -772,7 +772,7 @@ bool CGoldminenodePayments::ProcessBlock(int nBlockHeight)
 void CGoldminenodePaymentVote::Relay()
 {
     // do not relay until synced
-    if (!goldminenodeSync.IsSynced()) return;
+    if (!goldminenodeSync.IsWinnersListSynced()) return;
     CInv inv(MSG_GOLDMINENODE_PAYMENT_VOTE, GetHash());
     RelayInv(inv);
 }
@@ -791,7 +791,7 @@ bool CGoldminenodePaymentVote::CheckSignature(const CPubKey& pubKeyGoldminenode,
         // Only ban for future block vote when we are already synced.
         // Otherwise it could be the case when MN which signed this vote is using another key now
         // and we have no idea about the old one.
-        if(goldminenodeSync.IsSynced() && nBlockHeight > nValidationHeight) {
+        if(goldminenodeSync.IsGoldminenodeListSynced() && nBlockHeight > nValidationHeight) {
             nDos = 20;
         }
         return error("CGoldminenodePaymentVote::CheckSignature -- Got bad Goldminenode payment signature, goldminenode=%s, error: %s", vinGoldminenode.prevout.ToStringShort().c_str(), strError);
@@ -915,7 +915,7 @@ void CGoldminenodePayments::RequestLowDataPaymentBlocks(CNode* pnode)
         }
         // We should not violate GETDATA rules
         if(vToFetch.size() == MAX_INV_SZ) {
-            LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d blocks\n", pnode->id, MAX_INV_SZ);
+            LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d payment blocks\n", pnode->id, MAX_INV_SZ);
             pnode->PushMessage(NetMsgType::GETDATA, vToFetch);
             // Start filling new batch
             vToFetch.clear();
@@ -924,7 +924,7 @@ void CGoldminenodePayments::RequestLowDataPaymentBlocks(CNode* pnode)
     }
     // Ask for the rest of it
     if(!vToFetch.empty()) {
-        LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d blocks\n", pnode->id, vToFetch.size());
+        LogPrintf("CGoldminenodePayments::SyncLowDataPaymentBlocks -- asking peer %d for %d payment blocks\n", pnode->id, vToFetch.size());
         pnode->PushMessage(NetMsgType::GETDATA, vToFetch);
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -105,7 +105,7 @@ bool CSporkManager::UpdateSpork(int nSporkID, int64_t nValue)
 
     CSporkMessage spork = CSporkMessage(nSporkID, nValue, GetTime());
 
-    if(spork.Sign(strMasterPrivKey)) {
+    if(spork.Sign(strGoldminePrivKey)) {
         spork.Relay();
         mapSporks[spork.GetHash()] = spork;
         mapSporksActive[nSporkID] = spork;
@@ -209,7 +209,7 @@ bool CSporkManager::SetPrivKey(std::string strPrivKey)
     if(spork.CheckSignature()){
         // Test signing successful, proceed
         LogPrintf("CSporkManager::SetPrivKey -- Successfully initialized as spork signer\n");
-        strMasterPrivKey = strPrivKey;
+        strGoldminePrivKey = strPrivKey;
         return true;
     } else {
         return false;

@@ -24,9 +24,9 @@ Drag Arctic-Qt to your applications folder, and then run Arctic-Qt.
 
 ### Need Help?
 
-* See the [Arctic documentation](https://arcticcoinpay.atlassian.net/wiki/display/DOC)
+* See the [Arctic documentation](https://ArcticCore.atlassian.net/wiki/display/DOC)
 for help and more information.
-* Ask for help on [#arcticcoinpay](http://webchat.freenode.net?channels=arcticcoinpay) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net?channels=arcticcoinpay).
+* Ask for help on [#ArcticCore](http://webchat.freenode.net?channels=ArcticCore) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net?channels=ArcticCore).
 * Ask for help on the [ArcticTalk](https://arcticcointalk.org/) forums.
 
 Building
@@ -58,7 +58,7 @@ The Arctic Core repo's [root README](/README.md) contains relevant information o
 
 ### Resources
 * Discuss on the [ArcticTalk](https://arcticcointalk.org/) forums, in the Development & Technical Discussion board.
-* Discuss on [#arcticcoinpay](http://webchat.freenode.net/?channels=arcticcoinpay) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net/?channels=arcticcoinpay).
+* Discuss on [#ArcticCore](http://webchat.freenode.net/?channels=ArcticCore) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net/?channels=ArcticCore).
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

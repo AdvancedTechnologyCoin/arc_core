@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -75,8 +75,8 @@ int ClientModel::getNumConnections(unsigned int flags) const
 
 QString ClientModel::getGoldminenodeCountString() const
 {
-    // return tr("Total: %1 (PS compatible: %2 / Enabled: %3) (IPv4: %4, IPv6: %5, TOR: %6)").arg(QString::number((int)mnodeman.size()))
-    return tr("Total: %1 (PS compatible: %2 / Enabled: %3)")
+    // return tr("Total: %1 (SS compatible: %2 / Enabled: %3) (IPv4: %4, IPv6: %5, TOR: %6)").arg(QString::number((int)mnodeman.size()))
+    return tr("Total: %1 (SS compatible: %2 / Enabled: %3)")
             .arg(QString::number((int)mnodeman.size()))
             .arg(QString::number((int)mnodeman.CountEnabled(MIN_PRIVATESEND_PEER_PROTO_VERSION)))
             .arg(QString::number((int)mnodeman.CountEnabled()));

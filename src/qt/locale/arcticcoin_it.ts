@@ -714,8 +714,8 @@ Indirizzo: %4
         <translation>Copia resto</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Selezionati input non anonimizzati.&lt;b&gt;Spysend sará disabilitato.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Se vuoi ancora usare Spysend, per favore per prima cosa togli la selezione a tutti gli inputs non anonimizzati e dopo controlla il Spysend checkbox di nuovo.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Selezionati input non anonimizzati.&lt;b&gt;SpySend sará disabilitato.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Se vuoi ancora usare SpySend, per favore per prima cosa togli la selezione a tutti gli inputs non anonimizzati e dopo controlla il SpySend checkbox di nuovo.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -811,10 +811,10 @@ Indirizzo: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Configura Spysend</translation>
+        <source>Configure SpySend</source>
+        <translation>Configura SpySend</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -846,35 +846,35 @@ Indirizzo: %4
     </message>
     <message>
         <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
-        <translation>Questa opzione è la più veloce e ti costerà ~0.025ARC circa per anonimizzare 1000ARC</translation>
+        <translation>Questa opzione è la più veloce e ti costerà ~0.025DRK circa per anonimizzare 1000DRK</translation>
     </message>
     <message>
         <source>This option is moderately fast and will cost about 0.05 ARC to anonymize 1000 ARC</source>
-        <translation>Questa opzione è moderatamente veloce e costerà 0.05ARC circa per anonimizzare 1000ARC</translation>
+        <translation>Questa opzione è moderatamente veloce e costerà 0.05DRK circa per anonimizzare 1000DRK</translation>
     </message>
     <message>
         <source>0.1 ARC per 1000 ARC you anonymize.</source>
-        <translation>0.1ARC ogni 1000ARC anonimizzati.</translation>
+        <translation>0.1DRK ogni 1000DRK anonimizzati.</translation>
     </message>
     <message>
         <source>This is the slowest and most secure option. Using maximum anonymity will cost</source>
         <translation>Questa è la più lenta ma più sicura opzione. Usare il massimo grado di anonimizzazione costerà</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Configurazione Spysend</translation>
+        <source>SpySend Configuration</source>
+        <translation>Configurazione SpySend</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
         <translation>Dark send è statto correttamente impostato su base (%1 e 2 round). Puoi cambiare questa impostazione in qualsiasi momento tu lo voglia dalla finestra di configurazione.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend è stata impostata correttamente a elevato (%1 e 8 turni). È possibile modificare in qualsiasi momento aprendo schermata di configurazione di Arctic.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend è stata impostata correttamente a elevato (%1 e 8 turni). È possibile modificare in qualsiasi momento aprendo schermata di configurazione di Arctic.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend è stato correttamente settato al massimo (%1 e 16 rounds). Puoi cambiarlo quando vuoi aprendo la finestra di configurazione di Arctic</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend è stato correttamente settato al massimo (%1 e 16 rounds). Puoi cambiarlo quando vuoi aprendo la finestra di configurazione di Arctic</translation>
     </message>
 </context>
 <context>
@@ -1111,12 +1111,12 @@ Indirizzo: %4
         <translation>(0 = automatico, &lt;0 = lascia questo numero di core liberi)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
+        <source>SpySend rounds to use</source>
         <translation>Round spysend da utilizzare</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Tale importo si comporta come una soglia per spegnere Spysend una volta che è raggiunto.</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
+        <translation>Tale importo si comporta come una soglia per spegnere SpySend una volta che è raggiunto.</translation>
     </message>
     <message>
         <source>Amount of Arctic to keep anonymized</source>
@@ -1377,8 +1377,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Completamento:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Bilancio Spysend:</translation>
+        <source>SpySend Balance:</source>
+        <translation>Bilancio SpySend:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
@@ -1397,8 +1397,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>n/a</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -1410,23 +1410,23 @@ Più URL vengono separati da una barra verticale |.</translation>
     </message>
     <message>
         <source>The denominations you submitted to the Goldminenode.&lt;br&gt;To mix, other users must submit the exact same denominations.</source>
-        <translation>Il valore che hai richiesto al Mastermode. &lt;br&gt; Per mixare, gli altri utenti devono richiedere esattamente gli stessi valori.</translation>
+        <translation>Il valore che hai richiesto al Goldminemode. &lt;br&gt; Per mixare, gli altri utenti devono richiedere esattamente gli stessi valori.</translation>
     </message>
     <message>
         <source>(Last Message)</source>
         <translation>(Ultimo messaggio)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Prova ad inserire una richiesta Spysend manualmente.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Prova ad inserire una richiesta SpySend manualmente.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Prova il Mix</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Resetta lo stato corrente del Spysend (può interrompere il Spysend se è nel processo di mixaggio, costandoti una perdita economica!)</translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Resetta lo stato corrente del SpySend (può interrompere il SpySend se è nel processo di mixaggio, costandoti una perdita economica!)</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1441,12 +1441,12 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Disabilita</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
-        <translation>Avvia Spysend mix</translation>
+        <source>Start SpySend Mixing</source>
+        <translation>Avvia SpySend mix</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
-        <translation>Ferma Spysend mix</translation>
+        <source>Stop SpySend Mixing</source>
+        <translation>Ferma SpySend mix</translation>
     </message>
     <message>
         <source>No inputs detected</source>
@@ -1465,9 +1465,9 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Abilitato</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Ultimo messaggio Spysend
+        <translation>Ultimo messaggio SpySend
 </translation>
     </message>
     <message>
@@ -1475,16 +1475,16 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>N/D</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend è stato resettato con successo</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend è stato resettato con successo</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Spysend ha bisogno almeno dell' %1 per essere usato.</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>SpySend ha bisogno almeno dell' %1 per essere usato.</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Portafoglio è bloccato e l'utente ha rifiutato di sbloccare. Disattivazione Spysend.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Portafoglio è bloccato e l'utente ha rifiutato di sbloccare. Disattivazione SpySend.</translation>
     </message>
 </context>
 <context>
@@ -2218,8 +2218,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>&amp;Aggiungi beneficiario</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -2862,8 +2862,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Ricevuto da</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>Ricevuto via Spysend</translation>
+        <source>Received via SpySend</source>
+        <translation>Ricevuto via SpySend</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -2878,20 +2878,20 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Ottenuto dal mining</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Denominazione</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Denominazione</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Collaterale Pagamento</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Collaterale Pagamento</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Fa Ingressi Collaterali</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Fa Ingressi Collaterali</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Crea Denominazioni</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Crea Denominazioni</translation>
     </message>
     <message>
         <source>Darksent</source>
@@ -2977,20 +2977,20 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Darksent</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Fa Ingressi Collaterali</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Fa Ingressi Collaterali</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Crea Denominazioni</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Crea Denominazioni</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Denominazione</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Denominazione</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Collaterale Pagamento</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Collaterale Pagamento</translation>
     </message>
     <message>
         <source>To yourself</source>
@@ -3168,8 +3168,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Impossibile ottenere un blocco sulla data directory %s. Arctic Core è probabilmente già in esecuzione.</translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend utilizza esatto denominato importo a inviare fondi, si potrebbe semplicemente bisogno di anonimizzare alcuni più monete.</translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>SpySend utilizza esatto denominato importo a inviare fondi, si potrebbe semplicemente bisogno di anonimizzare alcuni più monete.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3224,12 +3224,12 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Incapace di legare al %s su questo computer. Arctic Core è probabilmente già funzionato.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Impossibile trovare fondi sufficienti Spysend denominati per questa transazione.</translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Impossibile trovare fondi sufficienti SpySend denominati per questa transazione.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Impossibile trovare un numero sufficiente di non denominati fondi Spysend per questa operazione che non sono uguali a 1000 ARC.</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Impossibile trovare un numero sufficiente di non denominati fondi SpySend per questa operazione che non sono uguali a 1000 ARC.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3328,8 +3328,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Rilevato database blocchi corrotto</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Opzioni Spysend:</translation>
+        <source>SpySend options:</source>
+        <translation>Opzioni SpySend:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -3400,8 +3400,8 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Errore: portafoglio bloccato, impossibile creare la transazione!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Errore: è già voci in sospeso in piscina Spysend</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Errore: è già voci in sospeso in piscina SpySend</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3452,16 +3452,16 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Uscite denominate non confermati trovati, saranno aspettare che confermano per continua.</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
+        <source>SpySend is idle.</source>
         <translation>Nessun Goldminenode trovato.</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
-        <translation>Richiesta di Spysend completa:</translation>
+        <source>SpySend request complete:</source>
+        <translation>Richiesta di SpySend completa:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
-        <translation>Richiesta di Spysend incompleta:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>Richiesta di SpySend incompleta:</translation>
     </message>
     <message>
         <source>Error connecting to Goldminenode.</source>
@@ -3588,7 +3588,7 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Mantenere al massimo &lt;n&gt; le operazioni in collegabile in memoria (predefinito: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
+        <source>Last SpySend was too recent.</source>
         <translation>L'ultima spysend è troppo recente</translation>
     </message>
     <message>
@@ -3797,8 +3797,8 @@ Più URL vengono separati da una barra verticale |.</translation>
 </translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Più valore di Spysend piscina massima permette.</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Più valore di SpySend piscina massima permette.</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>

@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -52,7 +52,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getchaintips", 0 },
     { "getchaintips", 1 },
     { "getblockhash", 0 },
-    { "getsuperblockevolution", 0 },
+    { "getsuperblockbudget", 0 },
     { "move", 2 },
     { "move", 3 },
     { "sendfrom", 2 },
@@ -91,6 +91,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "signrawtransaction", 1 },
     { "signrawtransaction", 2 },
     { "sendrawtransaction", 1 },
+	{ "sendrawtransaction", 2 },
     { "fundrawtransaction", 1 },
     { "gettxout", 1 },
     { "gettxout", 2 },

@@ -740,8 +740,8 @@ Adresse: %4</translation>
         <translation>Wechselgeld kopieren</translation>
     </message>
     <message>
-        <source>Non-anonymized input selected. &lt;b&gt;Spysend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use Spysend, please deselect all non-nonymized inputs first and then check Spysend checkbox again.</source>
-        <translation>Nicht-anonymisierter Input ausgewählt. &lt;b&gt;Spysend wird deaktiviert.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sollten Sie trotzdem Spysend verwenden wollen, müssen Sie zuerst alle nicht-anonymisierten Inputs entmarkieren und  das Ankreuzfeld "Spysend" erneut auswählen.</translation>
+        <source>Non-anonymized input selected. &lt;b&gt;SpySend will be disabled.&lt;/b&gt;&lt;br&gt;&lt;br&gt;If you still want to use SpySend, please deselect all non-nonymized inputs first and then check SpySend checkbox again.</source>
+        <translation>Nicht-anonymisierter Input ausgewählt. &lt;b&gt;SpySend wird deaktiviert.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sollten Sie trotzdem SpySend verwenden wollen, müssen Sie zuerst alle nicht-anonymisierten Inputs entmarkieren und  das Ankreuzfeld "SpySend" erneut auswählen.</translation>
     </message>
     <message>
         <source>highest</source>
@@ -841,10 +841,10 @@ Adresse: %4</translation>
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>SpySendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Spysend konfigurieren</translation>
+        <source>Configure SpySend</source>
+        <translation>SpySend konfigurieren</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -891,20 +891,20 @@ Adresse: %4</translation>
         <translation>Dies ist die langsamste und sicherste Option. Maximale Anonymität kostet</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Spysend-Konfiguration</translation>
+        <source>SpySend Configuration</source>
+        <translation>SpySend-Konfiguration</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend wurde erfolgreich auf einfachen Datenschutz (%1 und 2 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
+        <source>SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend wurde erfolgreich auf einfachen Datenschutz (%1 und 2 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend wurde erfolgreich auf hohen Datenschutz (%1 und 8 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
+        <source>SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend wurde erfolgreich auf hohen Datenschutz (%1 und 8 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
-        <translation>Spysend wurde erfolgreich auf maximalen Datenschutz (%1 und 16 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
+        <source>SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen.</source>
+        <translation>SpySend wurde erfolgreich auf maximalen Datenschutz (%1 und 16 Runden) gesetzt. Sie können dies jederzeit im Konfigurationsfenster von Arctic ändern.</translation>
     </message>
 </context>
 <context>
@@ -1145,12 +1145,12 @@ Adresse: %4</translation>
         <translation>(0 = automatisch, &lt;0 = so viele Kerne frei lassen)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
-        <translation>Spysend Runden</translation>
+        <source>SpySend rounds to use</source>
+        <translation>SpySend Runden</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Beim Erreichen dieses Betrages wird Spysend ausgeschaltet.</translation>
+        <source>This amount acts as a threshold to turn off SpySend once it's reached.</source>
+        <translation>Beim Erreichen dieses Betrages wird SpySend ausgeschaltet.</translation>
     </message>
     <message>
         <source>Amount of Arctic to keep anonymized</source>
@@ -1422,8 +1422,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Vollendet:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Spysend Kontostand:</translation>
+        <source>SpySend Balance:</source>
+        <translation>SpySend Kontostand:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
@@ -1442,8 +1442,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>k.A.</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>Recent transactions</source>
@@ -1462,16 +1462,16 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>(Letzte Nachricht)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Versuche eine Spysendanfrage manuell abzusetzen.</translation>
+        <source>Try to manually submit a SpySend request.</source>
+        <translation>Versuche eine SpySendanfrage manuell abzusetzen.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Versuche zu Mixen</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Aktuellen Spysend Status zurücksetzen (wenn der Prozess des Mixens bereits begonnen hat kann es passieren, dass Spysend unterbrochen wird. Bereits gezahlte Gebühren werden einbehalten!) </translation>
+        <source>Reset the current status of SpySend (can interrupt SpySend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Aktuellen SpySend Status zurücksetzen (wenn der Prozess des Mixens bereits begonnen hat kann es passieren, dass SpySend unterbrochen wird. Bereits gezahlte Gebühren werden einbehalten!) </translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1486,12 +1486,12 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Deaktiviert</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
-        <translation>Starte Spysend Mixen</translation>
+        <source>Start SpySend Mixing</source>
+        <translation>Starte SpySend Mixen</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
-        <translation>Stoppe Spysend Mixen</translation>
+        <source>Stop SpySend Mixing</source>
+        <translation>Stoppe SpySend Mixen</translation>
     </message>
     <message>
         <source>No inputs detected</source>
@@ -1534,9 +1534,9 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Aktiviert</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last SpySend message:
 </source>
-        <translation>Letzter Spysend Status:
+        <translation>Letzter SpySend Status:
 </translation>
     </message>
     <message>
@@ -1544,20 +1544,20 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>k.A.</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend wurde erfolgreich zurückgesetzt.</translation>
+        <source>SpySend was successfully reset.</source>
+        <translation>SpySend wurde erfolgreich zurückgesetzt.</translation>
     </message>
     <message>
-        <source>If you don't want to see internal Spysend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
-        <translation>Wenn Sie keine internen Spysend-Gebühren oder -Transaktionen sehen wollen wählen Sie "Gängigste" als Typ auf der "Transaktionen" Karteikarte.</translation>
+        <source>If you don't want to see internal SpySend fees/transactions select "Most Common" as Type on the "Transactions" tab.</source>
+        <translation>Wenn Sie keine internen SpySend-Gebühren oder -Transaktionen sehen wollen wählen Sie "Gängigste" als Typ auf der "Transaktionen" Karteikarte.</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Zur Benutzung von Spysend benötigt man mindestens %1</translation>
+        <source>SpySend requires at least %1 to use.</source>
+        <translation>Zur Benutzung von SpySend benötigt man mindestens %1</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Das Wallet ist gesperrt und der Benutzer hat abgelehnt, es zu entsperren. Spysend wird deaktiviert.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling SpySend.</source>
+        <translation>Das Wallet ist gesperrt und der Benutzer hat abgelehnt, es zu entsperren. SpySend wird deaktiviert.</translation>
     </message>
 </context>
 <context>
@@ -2363,8 +2363,8 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
         <translation>Empfänger &amp;hinzufügen</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>SpySend</source>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -2416,7 +2416,7 @@ https://www.transifex.com/projects/p/arcticcoin/</translation>
     </message>
     <message>
         <source>(spysend requires this amount to be rounded up to the nearest %1).</source>
-        <translation>(Spysend verlangt, dass dieser Betrag auf den nächsten %1 aufgerundet wird)</translation>
+        <translation>(SpySend verlangt, dass dieser Betrag auf den nächsten %1 aufgerundet wird)</translation>
     </message>
     <message>
         <source>any available funds (not recommended)</source>
@@ -3020,8 +3020,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Empfangen von</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>über/durch Spysend empfangen</translation>
+        <source>Received via SpySend</source>
+        <translation>über/durch SpySend empfangen</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -3036,24 +3036,24 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Erarbeitet</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Stückelung</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Stückelung</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Sicherheits-Zahlung</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Sicherheits-Zahlung</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Sicherheits-Eingänge machen</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Sicherheits-Eingänge machen</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Stückelungs-Gebühr</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Stückelungs-Gebühr</translation>
     </message>
     <message>
         <source>Darksent</source>
-        <translation>Spysend</translation>
+        <translation>SpySend</translation>
     </message>
     <message>
         <source>watch-only</source>
@@ -3132,23 +3132,23 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
     </message>
     <message>
         <source>Darksent</source>
-        <translation>Spysend</translation>
+        <translation>SpySend</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend Sicherheits-Eingänge machen</translation>
+        <source>SpySend Make Collateral Inputs</source>
+        <translation>SpySend Sicherheits-Eingänge machen</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend Stückelungs-Gebühr</translation>
+        <source>SpySend Create Denominations</source>
+        <translation>SpySend Stückelungs-Gebühr</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend Stückelung</translation>
+        <source>SpySend Denominate</source>
+        <translation>SpySend Stückelung</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
-        <translation>Spysend Sicherheits-Zahlung</translation>
+        <source>SpySend Collateral Payment</source>
+        <translation>SpySend Sicherheits-Zahlung</translation>
     </message>
     <message>
         <source>To yourself</source>
@@ -3330,8 +3330,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Das Programm kann das Daten-Verzeichnis %s nicht als "in Verwendung" markieren. Wahrscheinlich läuft das Programm bereits.</translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend benutzt exakt gestückelte Beträge zum Versenden, Sie müssen dafür möglicherweise noch mehr Arctic anonymisieren.</translation>
+        <source>SpySend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>SpySend benutzt exakt gestückelte Beträge zum Versenden, Sie müssen dafür möglicherweise noch mehr Arctic anonymisieren.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -3386,12 +3386,12 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Arctic Core den Prozess %s auf dem Computer nicht an sich binden. Wahrscheinlich läuft das Programm bereits.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Für diese Transaktion konnten nicht genug mit Spysend gestückelte Beträge gefunden werden.</translation>
+        <source>Unable to locate enough SpySend denominated funds for this transaction.</source>
+        <translation>Für diese Transaktion konnten nicht genug mit SpySend gestückelte Beträge gefunden werden.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
-        <translation>Für diese Transaktion konnten nicht genug nicht mit Spysend gestückelte Beträge gefunden werden, die ungleich 1000 ARC sind.</translation>
+        <source>Unable to locate enough SpySend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Für diese Transaktion konnten nicht genug nicht mit SpySend gestückelte Beträge gefunden werden, die ungleich 1000 ARC sind.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -3490,8 +3490,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Beschädigte Blockdatenbank erkannt</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Spysend Optionen:</translation>
+        <source>SpySend options:</source>
+        <translation>SpySend Optionen:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -3562,8 +3562,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Fehler: Wallet gesperrt, Transaktion kann nicht erstellt werden!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Fehler: Es sind bereits anstehende Einträge im Spysend-Pool</translation>
+        <source>Error: You already have pending entries in the SpySend pool</source>
+        <translation>Fehler: Es sind bereits anstehende Einträge im SpySend-Pool</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3598,8 +3598,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Für JSON-RPC Verbindugen an die angegebene Adresse binden. Für IPv6 "[Host]:Port"-Schreibweise verwenden. Diese Option kann mehrmals eingetragen werden. (Standard: an alle verbinden)</translation>
     </message>
     <message>
-        <source>Change automatic finalized evolution voting behavior. mode=auto: Vote for only exact finalized evolution match to my generated evolution. (string, default: auto)</source>
-        <translation>Wahlverhalten für Abschlussevolution ändern. mode=auto: nur wählen, wenn Abschlussevolution genau meinem generierten Evolution entspricht. (Standard: auto)</translation>
+        <source>Change automatic finalized budget voting behavior. mode=auto: Vote for only exact finalized budget match to my generated budget. (string, default: auto)</source>
+        <translation>Wahlverhalten für Abschlussbudget ändern. mode=auto: nur wählen, wenn Abschlussbudget genau meinem generierten Evolution entspricht. (Standard: auto)</translation>
     </message>
     <message>
         <source>Continuously rate-limit free transactions to &lt;n&gt;*1000 bytes per minute (default:%u)</source>
@@ -3614,8 +3614,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Lösche alle Wallet-Transaktionen stelle nur diese mittels -rescan beim nächsten Start des Wallets wieder her.</translation>
     </message>
     <message>
-        <source>Disable all Arctic specific functionality (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, default: %u)</source>
-        <translation>Deaktiviere all Arctic-spezifischen Funktionen (Goldminenodes, Spysend, InstantX, Evolutioning) (0-1, Standard: %u)</translation>
+        <source>Disable all Arctic specific functionality (Goldminenodes, SpySend, InstantX, Evolution) (0-1, default: %u)</source>
+        <translation>Deaktiviere all Arctic-spezifischen Funktionen (Goldminenodes, SpySend, InstantX, Evolution) (0-1, Standard: %u)</translation>
     </message>
     <message>
         <source>Distributed under the MIT software license, see the accompanying file COPYING or &lt;http://www.opensource.org/licenses/mit-license.php&gt;.</source>
@@ -3627,7 +3627,7 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
     </message>
     <message>
         <source>Enable use of automated spysend for funds stored in this wallet (0-1, default: %u)</source>
-        <translation>Aktiviere Spysend automatisch (0-1, Standard: %u)</translation>
+        <translation>Aktiviere SpySend automatisch (0-1, Standard: %u)</translation>
     </message>
     <message>
         <source>Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported.</source>
@@ -3647,7 +3647,7 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
     </message>
     <message>
         <source>Found unconfirmed denominated outputs, will wait till they confirm to continue.</source>
-        <translation>Unbestätigte für Spysend vorbereitete Ausgabebeträge gefunden, warte bis sie bestätigt sind bevor weitergemacht wird.</translation>
+        <translation>Unbestätigte für SpySend vorbereitete Ausgabebeträge gefunden, warte bis sie bestätigt sind bevor weitergemacht wird.</translation>
     </message>
     <message>
         <source>How thorough the block verification of -checkblocks is (0-4, default: %u)</source>
@@ -3686,8 +3686,8 @@ Dies kann passieren, wenn einige Arctic aus ihrer Wallet bereits ausgegeben wurd
         <translation>Debugging-Informationen ausgeben (Standard: %u, &lt;category&gt; anzugeben ist optional)</translation>
     </message>
     <message>
-        <source>Provide liquidity to Spysend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
-        <translation>Durch diese Einstellung können Sie dem Spysend-Netzwerk zusätzliche Liquidität zur Verfügung stellen in dem Sie von Zeit zu Zeit bereits anonymisierte Arctic wieder dem Mixing-Prozess zuführen. (0-100, 0=aus, 1=sehr oft, 100=sehr selten (wenig Gebühren). Standard: %u)</translation>
+        <source>Provide liquidity to SpySend by infrequently mixing coins on a continual basis (0-100, default: %u, 1=very frequent, high fees, 100=very infrequent, low fees)</source>
+        <translation>Durch diese Einstellung können Sie dem SpySend-Netzwerk zusätzliche Liquidität zur Verfügung stellen in dem Sie von Zeit zu Zeit bereits anonymisierte Arctic wieder dem Mixing-Prozess zuführen. (0-100, 0=aus, 1=sehr oft, 100=sehr selten (wenig Gebühren). Standard: %u)</translation>
     </message>
     <message>
         <source>Require high priority for relaying free or low-fee transactions (default:%u)</source>
@@ -3807,16 +3807,16 @@ zum Beispiel: alertnotify=echo %%s | mail -s \"Arctic Alert\" admin@foo.com</tra
         <translation>-rpcbind Wert %s konnte nicht als Netzwerkadresse erkannt werden</translation>
     </message>
     <message>
-        <source>Spysend is idle.</source>
-        <translation>Spysend ist untätig.</translation>
+        <source>SpySend is idle.</source>
+        <translation>SpySend ist untätig.</translation>
     </message>
     <message>
-        <source>Spysend request complete:</source>
-        <translation>Spysend-Anfrage vollständig:</translation>
+        <source>SpySend request complete:</source>
+        <translation>SpySend-Anfrage vollständig:</translation>
     </message>
     <message>
-        <source>Spysend request incomplete:</source>
-        <translation>Spysend-Anfrage unvollständig:</translation>
+        <source>SpySend request incomplete:</source>
+        <translation>SpySend-Anfrage unvollständig:</translation>
     </message>
     <message>
         <source>Disable safemode, override a real safe mode event (default: %u)</source>
@@ -3948,8 +3948,8 @@ Arctic Core wird heruntergefahren.</translation>
         <translation>Ungültiger Betrag für -paytxfee=&lt;amount&gt;: '%s'</translation>
     </message>
     <message>
-        <source>Last successful Spysend action was too recent.</source>
-        <translation>Die letzte erfolgreiche Spysend-Transaktion ist noch zu neu.</translation>
+        <source>Last successful SpySend action was too recent.</source>
+        <translation>Die letzte erfolgreiche SpySend-Transaktion ist noch zu neu.</translation>
     </message>
     <message>
         <source>Limit size of signature cache to &lt;n&gt; entries (default: %u)</source>
@@ -3964,7 +3964,7 @@ Arctic Core wird heruntergefahren.</translation>
         <translation>&lt;port&gt; nach Verbindungen abhören (Standard: %u oder Testnetz: %u)</translation>
     </message>
     <message>
-        <source>Loading evolution cache...</source>
+        <source>Loading budget cache...</source>
         <translation>Lade Evolution-Cache...</translation>
     </message>
     <message>
@@ -4120,7 +4120,7 @@ Arctic Core wird heruntergefahren.</translation>
         <translation>Synchronisation beendet</translation>
     </message>
     <message>
-        <source>Synchronizing evolutions...</source>
+        <source>Synchronizing budgets...</source>
         <translation>Synchronisiere Evolutions...</translation>
     </message>
     <message>
@@ -4224,8 +4224,8 @@ Arctic Core wird heruntergefahren.</translation>
         <translation>Maximal &lt;n&gt; (noch) nicht einsortierte Zahlungen zwischenspeichern (Voreinstellung: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
-        <translation>Letzte Spysend-Transaktion ist noch zu neu.</translation>
+        <source>Last SpySend was too recent.</source>
+        <translation>Letzte SpySend-Transaktion ist noch zu neu.</translation>
     </message>
     <message>
         <source>Line: %d</source>
@@ -4476,8 +4476,8 @@ Arctic Core wird heruntergefahren.</translation>
         <translation>Benutzername für JSON-RPC-Verbindungen</translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Wert größer als der vom Spysend Pool maximal erlaubte.</translation>
+        <source>Value more than SpySend pool maximum allows.</source>
+        <translation>Wert größer als der vom SpySend Pool maximal erlaubte.</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>

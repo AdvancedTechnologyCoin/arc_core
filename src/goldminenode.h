@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -112,6 +112,7 @@ struct goldminenode_info_t
           nTimeLastChecked(0),
           nTimeLastPaid(0),
           nTimeLastWatchdogVote(0),
+          nTimeLastPing(0),
           nActiveState(0),
           nProtocolVersion(0),
           fInfoValid(false)
@@ -126,13 +127,14 @@ struct goldminenode_info_t
     int64_t nTimeLastChecked;
     int64_t nTimeLastPaid;
     int64_t nTimeLastWatchdogVote;
+    int64_t nTimeLastPing;
     int nActiveState;
     int nProtocolVersion;
     bool fInfoValid;
 };
 
 //
-// The Goldminenode Class. For managing the Spysend process. It contains the input of the 1000ARC, signature to prove
+// The Goldminenode Class. For managing the SpySend process. It contains the input of the 1000DRK, signature to prove
 // it's the one who own that ip address and code for calculating the payment election.
 //
 class CGoldminenode

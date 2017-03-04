@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -274,7 +274,7 @@ void CGoldminenodeSync::ProcessTick()
     {
         if(IsSynced()) {
             /*
-                Resync if we lose all goldminenodes from sleep/wake or failure to sync originally
+                Resync if we lost all goldminenodes from sleep/wake or failed to sync originally
             */
             if(nMnCount == 0) {
                 LogPrintf("CGoldminenodeSync::ProcessTick -- WARNING: not enough data, restarting sync\n");
@@ -334,6 +334,12 @@ void CGoldminenodeSync::ProcessTick()
 
     BOOST_FOREACH(CNode* pnode, vNodesCopy)
     {
+        // Don't try to sync any data from outbound "goldminenode" connections -
+        // they are temporary and should be considered unreliable for a sync process.
+        // Inbound connection this early is most likely a "goldminenode" connection
+        // initialted from another node, so skip it too.
+        if(pnode->fGoldminenode || (fGoldmineNode && pnode->fInbound)) continue;
+
         // QUICK MODE (REGTEST ONLY!)
         if(Params().NetworkIDString() == CBaseChainParams::REGTEST)
         {
@@ -356,15 +362,12 @@ void CGoldminenodeSync::ProcessTick()
         // NORMAL NETWORK MODE - TESTNET/MAINNET
         {
             if(netfulfilledman.HasFulfilledRequest(pnode->addr, "full-sync")) {
-                // we already fully synced from this node recently,
-                // disconnect to free this connection slot for a new node
+                // We already fully synced from this node recently,
+                // disconnect to free this connection slot for another peer.
                 pnode->fDisconnect = true;
                 LogPrintf("CGoldminenodeSync::ProcessTick -- disconnecting from recently synced peer %d\n", pnode->id);
                 continue;
             }
-
-            // Make sure this peer is presumably at the same height
-            if(!CheckNodeHeight(pnode, true)) continue;
 
             // SPORK : ALWAYS ASK FOR SPORKS AS WE SYNC (we skip this mode now)
 
@@ -459,7 +462,7 @@ void CGoldminenodeSync::ProcessTick()
             // GOVOBJ : SYNC GOVERNANCE ITEMS FROM OUR PEERS
 
             if(nRequestedGoldminenodeAssets == GOLDMINENODE_SYNC_GOVERNANCE) {
-                LogPrint("mnpayments", "CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d nTimeLastPaymentVote %lld GetTime() %lld diff %lld\n", nTick, nRequestedGoldminenodeAssets, nTimeLastPaymentVote, GetTime(), GetTime() - nTimeLastPaymentVote);
+                LogPrint("gobject", "CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d nTimeLastGovernanceItem %lld GetTime() %lld diff %lld\n", nTick, nRequestedGoldminenodeAssets, nTimeLastGovernanceItem, GetTime(), GetTime() - nTimeLastGovernanceItem);
 
                 // check for timeout first
                 if(GetTime() - nTimeLastGovernanceItem > GOLDMINENODE_SYNC_TIMEOUT_SECONDS) {
@@ -473,22 +476,37 @@ void CGoldminenodeSync::ProcessTick()
                     return;
                 }
 
-                // check for data
-                // if(nCountEvolutionItemProp > 0 && nCountEvolutionItemFin)
-                // {
-                //     if(governance.CountProposalInventoryItems() >= (nSumEvolutionItemProp / nCountEvolutionItemProp)*0.9)
-                //     {
-                //         if(governance.CountFinalizedInventoryItems() >= (nSumEvolutionItemFin / nCountEvolutionItemFin)*0.9)
-                //         {
-                //             SwitchToNextAsset();
-                //             return;
-                //         }
-                //     }
-                // }
-
                 // only request obj sync once from each peer, then request votes on per-obj basis
                 if(netfulfilledman.HasFulfilledRequest(pnode->addr, "governance-sync")) {
-                    governance.RequestGovernanceObjectVotes(pnode);
+                    int nObjsLeftToAsk = governance.RequestGovernanceObjectVotes(pnode);
+                    static int64_t nTimeNoObjectsLeft = 0;
+                    // check for data
+                    if(nObjsLeftToAsk == 0) {
+                        static int nLastTick = 0;
+                        static int nLastVotes = 0;
+                        if(nTimeNoObjectsLeft == 0) {
+                            // asked all objects for votes for the first time
+                            nTimeNoObjectsLeft = GetTime();
+                        }
+                        // make sure the condition below is checked only once per tick
+                        if(nLastTick == nTick) continue;
+                        if(GetTime() - nTimeNoObjectsLeft > GOLDMINENODE_SYNC_TIMEOUT_SECONDS &&
+                            governance.GetVoteCount() - nLastVotes < std::max(int(0.0001 * nLastVotes), GOLDMINENODE_SYNC_TICK_SECONDS)
+                        ) {
+                            // We already asked for all objects, waited for GOLDMINENODE_SYNC_TIMEOUT_SECONDS
+                            // after that and less then 0.01% or GOLDMINENODE_SYNC_TICK_SECONDS
+                            // (i.e. 1 per second) votes were recieved during the last tick.
+                            // We can be pretty sure that we are done syncing.
+                            LogPrintf("CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d -- asked for all objects, nothing to do\n", nTick, nRequestedGoldminenodeAssets);
+                            // reset nTimeNoObjectsLeft to be able to use the same condition on resync
+                            nTimeNoObjectsLeft = 0;
+                            SwitchToNextAsset();
+                            ReleaseNodes(vNodesCopy);
+                            return;
+                        }
+                        nLastTick = nTick;
+                        nLastVotes = governance.GetVoteCount();
+                    }
                     continue;
                 }
                 netfulfilledman.AddFulfilledRequest(pnode->addr, "governance-sync");

@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -125,7 +125,7 @@ bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb)
         mnodeman.mapSeenGoldminenodePing.insert(std::make_pair(lastPing.GetHash(), lastPing));
     }
     // if it matches our Goldminenode privkey...
-    if(fMasterNode && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
+    if(fGoldmineNode && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
         nPoSeBanScore = -GOLDMINENODE_POSE_BAN_MAX_SCORE;
         if(nProtocolVersion == PROTOCOL_VERSION) {
             // ... and PROTOCOL_VERSION, then we've been remotely activated ...
@@ -208,7 +208,7 @@ void CGoldminenode::Check(bool fForce)
     }
 
     int nActiveStatePrev = nActiveState;
-    bool fOurGoldminenode = fMasterNode && activeGoldminenode.pubKeyGoldminenode == pubKeyGoldminenode;
+    bool fOurGoldminenode = fGoldmineNode && activeGoldminenode.pubKeyGoldminenode == pubKeyGoldminenode;
 
                    // goldminenode doesn't meet payment protocol requirements ...
     bool fRequireUpdate = nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto() ||
@@ -323,6 +323,7 @@ goldminenode_info_t CGoldminenode::GetInfo()
     info.nTimeLastChecked = nTimeLastChecked;
     info.nTimeLastPaid = nTimeLastPaid;
     info.nTimeLastWatchdogVote = nTimeLastWatchdogVote;
+    info.nTimeLastPing = lastPing.sigTime;
     info.nActiveState = nActiveState;
     info.nProtocolVersion = nProtocolVersion;
     info.fInfoValid = true;
@@ -597,7 +598,7 @@ bool CGoldminenodeBroadcast::Update(CGoldminenode* pmn, int& nDos)
     }
 
     // if ther was no goldminenode broadcast recently or if it matches our Goldminenode privkey...
-    if(!pmn->IsBroadcastedWithin(GOLDMINENODE_MIN_MNB_SECONDS) || (fMasterNode && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode)) {
+    if(!pmn->IsBroadcastedWithin(GOLDMINENODE_MIN_MNB_SECONDS) || (fGoldmineNode && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode)) {
         // take the newest entry
         LogPrintf("CGoldminenodeBroadcast::Update -- Got UPDATED Goldminenode entry: addr=%s\n", addr.ToString());
         if(pmn->UpdateFromNewBroadcast((*this))) {
@@ -614,7 +615,7 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
 {
     // we are a goldminenode with the same vin (i.e. already activated) and this mnb is ours (matches our Goldminenode privkey)
     // so nothing to do here for us
-    if(fMasterNode && vin.prevout == activeGoldminenode.vin.prevout && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
+    if(fGoldmineNode && vin.prevout == activeGoldminenode.vin.prevout && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
         return false;
     }
 
@@ -792,7 +793,7 @@ CGoldminenodePing::CGoldminenodePing(CTxIn& vinNew)
 bool CGoldminenodePing::Sign(CKey& keyGoldminenode, CPubKey& pubKeyGoldminenode)
 {
     std::string strError;
-    std::string strMasterNodeSignMessage;
+    std::string strGoldmineNodeSignMessage;
 
     sigTime = GetAdjustedTime();
     std::string strMessage = vin.ToString() + blockHash.ToString() + boost::lexical_cast<std::string>(sigTime);

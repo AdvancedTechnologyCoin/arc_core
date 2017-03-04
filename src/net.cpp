@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -24,6 +24,7 @@
 
 #include "spysend.h"
 #include "instantx.h"
+#include "goldminenode-sync.h"
 #include "goldminenodeman.h"
 
 #ifdef WIN32
@@ -1020,6 +1021,13 @@ static void AcceptConnection(const ListenSocket& hListenSocket) {
             CloseSocket(hSocket);
             return;
         }
+    }
+
+    // don't accept incoming connections until fully synced
+    if(fGoldmineNode && !goldminenodeSync.IsSynced()) {
+        LogPrintf("AcceptConnection -- goldminenode is not synced yet, skipping inbound connection attempt\n");
+        CloseSocket(hSocket);
+        return;
     }
 
     CNode* pnode = new CNode(hSocket, addr, "", true);
@@ -2132,8 +2140,8 @@ void RelayTransaction(const CTransaction& tx)
     ss.reserve(10000);
     uint256 hash = tx.GetHash();
     CTxLockRequest txLockRequest;
-    if(mapSpysendBroadcastTxes.count(hash)) { // MSG_DSTX
-        ss << mapSpysendBroadcastTxes[hash];
+    if(mapSpySendBroadcastTxes.count(hash)) { // MSG_DSTX
+        ss << mapSpySendBroadcastTxes[hash];
     } else if(instantsend.GetTxLockRequest(hash, txLockRequest)) { // MSG_TXLOCK_REQUEST
         ss << txLockRequest;
     } else { // MSG_TX
@@ -2145,7 +2153,7 @@ void RelayTransaction(const CTransaction& tx)
 void RelayTransaction(const CTransaction& tx, const CDataStream& ss)
 {
     uint256 hash = tx.GetHash();
-    int nInv = mapSpysendBroadcastTxes.count(hash) ? MSG_DSTX :
+    int nInv = mapSpySendBroadcastTxes.count(hash) ? MSG_DSTX :
                 (instantsend.HasTxLockRequest(hash) ? MSG_TXLOCK_REQUEST : MSG_TX);
     CInv inv(nInv, hash);
     {

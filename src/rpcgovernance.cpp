@@ -1,8 +1,8 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//#define ENABLE_ARC_DEBUG
+//#define ENABLE_ARCTIC_DEBUG
 
 #include "activegoldminenode.h"
 #include "spysend.h"
@@ -255,8 +255,8 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
         UniValue resultsObj(UniValue::VOBJ);
 
-        std::vector<unsigned char> vchMasterNodeSignature;
-        std::string strMasterNodeSignMessage;
+        std::vector<unsigned char> vchGoldmineNodeSignature;
+        std::string strGoldmineNodeSignMessage;
 
         UniValue statusObj(UniValue::VOBJ);
         UniValue returnObj(UniValue::VOBJ);
@@ -339,8 +339,8 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
         BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
             std::string strError;
-            std::vector<unsigned char> vchMasterNodeSignature;
-            std::string strMasterNodeSignMessage;
+            std::vector<unsigned char> vchGoldmineNodeSignature;
+            std::string strGoldmineNodeSignMessage;
 
             CPubKey pubKeyCollateralAddress;
             CKey keyCollateralAddress;
@@ -456,8 +456,8 @@ UniValue gobject(const UniValue& params, bool fHelp)
 
             // INIT OUR NEEDED VARIABLES TO EXECUTE THE VOTE
             std::string strError;
-            std::vector<unsigned char> vchMasterNodeSignature;
-            std::string strMasterNodeSignMessage;
+            std::vector<unsigned char> vchGoldmineNodeSignature;
+            std::string strGoldmineNodeSignMessage;
 
             CPubKey pubKeyCollateralAddress;
             CKey keyCollateralAddress;
@@ -544,7 +544,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
         // GET MAIN PARAMETER FOR THIS MODE, VALID OR ALL?
 
         std::string strShow = "valid";
-        if (params.size() == 2) strShow = params[1].get_str();
+        if (params.size() >= 2) strShow = params[1].get_str();
         if (strShow != "valid" && strShow != "all")
             return "Invalid mode, should be 'valid' or 'all'";
 
@@ -584,6 +584,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
             bObj.push_back(Pair("DataString",  pGovObj->GetDataAsString()));
             bObj.push_back(Pair("Hash",  pGovObj->GetHash().ToString()));
             bObj.push_back(Pair("CollateralHash",  pGovObj->GetCollateralHash().ToString()));
+            bObj.push_back(Pair("ObjectType", pGovObj->GetObjectType()));
             bObj.push_back(Pair("CreationTime", pGovObj->GetCreationTime()));
             const CTxIn& goldminenodeVin = pGovObj->GetGoldminenodeVin();
             if(goldminenodeVin != CTxIn()) {
@@ -635,6 +636,7 @@ UniValue gobject(const UniValue& params, bool fHelp)
         objResult.push_back(Pair("DataString",  pGovObj->GetDataAsString()));
         objResult.push_back(Pair("Hash",  pGovObj->GetHash().ToString()));
         objResult.push_back(Pair("CollateralHash",  pGovObj->GetCollateralHash().ToString()));
+        objResult.push_back(Pair("ObjectType", pGovObj->GetObjectType()));
         objResult.push_back(Pair("CreationTime", pGovObj->GetCreationTime()));
         const CTxIn& goldminenodeVin = pGovObj->GetGoldminenodeVin();
         if(goldminenodeVin != CTxIn()) {
@@ -888,19 +890,19 @@ UniValue getgovernanceinfo(const UniValue& params, bool fHelp)
     return obj;
 }
 
-UniValue getsuperblockevolution(const UniValue& params, bool fHelp)
+UniValue getsuperblockbudget(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1) {
         throw std::runtime_error(
-            "getsuperblockevolution index\n"
+            "getsuperblockbudget index\n"
             "\nReturns the absolute maximum sum of superblock payments allowed.\n"
             "\nArguments:\n"
             "1. index         (numeric, required) The block index\n"
             "\nResult:\n"
             "n                (numeric) The absolute maximum sum of superblock payments allowed, in " + CURRENCY_UNIT + "\n"
             "\nExamples:\n"
-            + HelpExampleCli("getsuperblockevolution", "1000")
-            + HelpExampleRpc("getsuperblockevolution", "1000")
+            + HelpExampleCli("getsuperblockbudget", "1000")
+            + HelpExampleRpc("getsuperblockbudget", "1000")
         );
     }
 

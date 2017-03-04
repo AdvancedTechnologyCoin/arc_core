@@ -202,9 +202,8 @@ BOOST_AUTO_TEST_CASE(PartitionAlert)
     CChainParams& params = Params(CBaseChainParams::MAIN);
     int64_t nPowTargetSpacing = params.GetConsensus().nPowTargetSpacing;
 
-    // Generate fake blockchain timestamps relative to
-    // an arbitrary time:
-    int64_t now = 1427379054;
+    // Generate fake blockchain timestamps relative to  an arbitrary time:
+    int64_t now = 1470579248;
     SetMockTime(now);
     for (int i = 0; i < 100; i++)
     {

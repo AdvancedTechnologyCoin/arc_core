@@ -1,8 +1,8 @@
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//#define ENABLE_ARC_DEBUG
+//#define ENABLE_ARCTIC_DEBUG
 
 #include "core_io.h"
 #include "governance-classes.h"
@@ -417,7 +417,7 @@ void CSuperblockManager::CreateSuperblock(CMutableTransaction& txNewRet, int nBl
     // TODO: How many payments can we add before things blow up?
     //       Consider at least following limits:
     //          - max coinbase tx size
-    //          - max "evolution" available
+    //          - max "budget" available
     for(int i = 0; i < pSuperblock->CountPayments(); i++) {
         CGovernancePayment payment;
         DBG( cout << "CSuperblockManager::CreateSuperblock i = " << i << endl; );

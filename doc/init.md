@@ -104,7 +104,7 @@ use old versions of Upstart and do not supply the start-stop-daemon utility.
 Copy arcticcoind.init to /etc/init.d/arcticcoind. Test by running `service arcticcoind start`.
 
 Using this script, you can adjust the path and flags to the arcticcoind program by
-setting the ARCD and FLAGS environment variables in the file
+setting the ARCTICCOIND and FLAGS environment variables in the file
 /etc/sysconfig/arcticcoind. You can also use the DAEMONOPTS environment variable here.
 
 4e) Mac OS X

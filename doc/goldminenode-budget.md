@@ -4,16 +4,16 @@ NOTE : 12.1 -- REWRITE
 Goldminenode Evolution API
 =======================
 
-Arctic now supports full decentralized evolutions that are paid directly from the blockchain via superblocks once per month.
+Arctic now supports full decentralized budgets that are paid directly from the blockchain via superblocks once per month.
 
 Evolutions go through a series of stages before being paid:
  * prepare - create a special transaction that destroys coins in order to make a proposal
  * submit - propagate transaction to peers on network
  * voting - lobby for votes on your proposal
- * get enough votes - make it into the evolution
- * finalization - at the end of each payment period, proposals are sorted then compiled into a finalized evolution
- * finalized evolution voting - goldminenodes that agree with the finalization will vote on that evolution
- * payment - the winning finalized evolution is paid
+ * get enough votes - make it into the budget
+ * finalization - at the end of each payment period, proposals are sorted then compiled into a finalized budget
+ * finalized budget voting - goldminenodes that agree with the finalization will vote on that budget
+ * payment - the winning finalized budget is paid
 
 
 1. Prepare collateral transaction
@@ -81,10 +81,10 @@ Format: ```mngovernance vote proposal-hash [yes|no]```
 
 Example: ```mngovernance vote a2b29778ae82e45a973a94309ffa6aa2e2388b8f95b39ab3739f0078835f0491 yes```
 
-4.  Make it into the evolution
+4.  Make it into the budget
 --
 
-After you get enough votes, execute ```mngovernance projection``` to see if you made it into the evolution. If you the evolution was finalized at this moment which proposals would be in it. Note: Proposals must be active at least 1 day on the network and receive 10% of the goldminenode network in yes votes in order to qualify (E.g. if there is 3500 goldminenodes, you will need 350 yes votes.)
+After you get enough votes, execute ```mngovernance projection``` to see if you made it into the budget. If you the budget was finalized at this moment which proposals would be in it. Note: Proposals must be active at least 1 day on the network and receive 10% of the goldminenode network in yes votes in order to qualify (E.g. if there is 3500 goldminenodes, you will need 350 yes votes.)
 
 ```mngovernance projection```:￼
 ```
@@ -110,7 +110,7 @@ After you get enough votes, execute ```mngovernance projection``` to see if you 
 }
 ```
 
-5. Finalized evolution
+5. Finalized budget
 --
 
 ```
@@ -143,17 +143,17 @@ The following RPC commands are supported:
   - getproposal        - Show proposal
   - getvotes           - Show detailed votes list for proposal
   - list               - List all proposals
-  - nextblock          - Get info about next superblock for evolution system
+  - nextblock          - Get info about next superblock for budget system
   - nextsuperblocksize - Get superblock size for a given blockheight
   - projection         - Show the projection of which proposals will be paid the next cycle
   - vote               - Vote on a proposal by single goldminenode (using arcticcoin.conf setup)
   - vote-many          - Vote on a proposal by all goldminenodes (using goldminenode.conf setup)
   - vote-alias         - Vote on a proposal by alias
- - mnfinalevolution "command"... ( "passphrase" )
-  - vote-many   - Vote on a finalized evolution
-  - vote        - Vote on a finalized evolution
-  - show        - Show existing finalized evolutions
-  - getvotes    - Get vote information for each finalized evolution
-  - prepare     - Manually prepare a finalized evolution
-  - submit      - Manually submit a finalized evolution
+ - mnfinalbudget "command"... ( "passphrase" )
+  - vote-many   - Vote on a finalized budget
+  - vote        - Vote on a finalized budget
+  - show        - Show existing finalized budgets
+  - getvotes    - Get vote information for each finalized budget
+  - prepare     - Manually prepare a finalized budget
+  - submit      - Manually submit a finalized budget
 

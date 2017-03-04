@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core Developers
+// Copyright (c) 2015-2017 The Arctic Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -223,9 +223,9 @@ void PrepareShutdown()
     StopNode();
 
     // STORE DATA CACHES INTO SERIALIZED DAT FILES
-    CFlatDB<CGoldminenodeMan> flatdb1("gmcache.dat", "magicGoldmineCache");
+    CFlatDB<CGoldminenodeMan> flatdb1("gmcache.dat", "magicGoldminenodeCache");
     flatdb1.Dump(mnodeman);
-    CFlatDB<CGoldminenodePayments> flatdb2("gmpayments.dat", "magicGoldminePaymentsCache");
+    CFlatDB<CGoldminenodePayments> flatdb2("gmpayments.dat", "magicGoldminenodePaymentsCache");
     flatdb2.Dump(mnpayments);
     CFlatDB<CGovernanceManager> flatdb3("governance.dat", "magicGovernanceCache");
     flatdb3.Dump(governance);
@@ -426,7 +426,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-forcednsseed", strprintf(_("Always query for peer addresses via DNS lookup (default: %u)"), DEFAULT_FORCEDNSSEED));
     strUsage += HelpMessageOpt("-listen", _("Accept connections from outside (default: 1 if no -proxy or -connect)"));
     strUsage += HelpMessageOpt("-listenonion", strprintf(_("Automatically create Tor hidden service (default: %d)"), DEFAULT_LISTEN_ONION));
-    strUsage += HelpMessageOpt("-maxconnections=<n>", strprintf(_("Maintain at most <n> connections to peers (default: %u)"), DEFAULT_MAX_PEER_CONNECTIONS));
+    strUsage += HelpMessageOpt("-maxconnections=<n>", strprintf(_("Maintain at most <n> connections to peers (temporary service connections excluded) (default: %u)"), DEFAULT_MAX_PEER_CONNECTIONS));
     strUsage += HelpMessageOpt("-maxreceivebuffer=<n>", strprintf(_("Maximum per-connection receive buffer, <n>*1000 bytes (default: %u)"), DEFAULT_MAXRECEIVEBUFFER));
     strUsage += HelpMessageOpt("-maxsendbuffer=<n>", strprintf(_("Maximum per-connection send buffer, <n>*1000 bytes (default: %u)"), DEFAULT_MAXSENDBUFFER));
     strUsage += HelpMessageOpt("-onion=<ip:port>", strprintf(_("Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: %s)"), "-proxy"));
@@ -1787,14 +1787,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     // ********************************************************* Step 11a: setup SpySend
-    fMasterNode = GetBoolArg("-goldminenode", false);
+    fGoldmineNode = GetBoolArg("-goldminenode", false);
 
-    if((fMasterNode || goldminenodeConfig.getCount() > -1) && fTxIndex == false) {
+    if((fGoldmineNode || goldminenodeConfig.getCount() > -1) && fTxIndex == false) {
         return InitError("Enabling Goldminenode support requires turning on transaction indexing."
                   "Please add txindex=1 to your configuration and start with -reindex");
     }
 
-    if(fMasterNode) {
+    if(fGoldmineNode) {
         LogPrintf("GOLDMINENODE:\n");
 
         if(!GetArg("-goldminenodeaddr", "").empty()) {
@@ -1803,9 +1803,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             return InitError(_("goldminenodeaddr option is deprecated. Please use goldminenode.conf to manage your remote goldminenodes."));
         }
 
-        std::string strMasterNodePrivKey = GetArg("-goldminenodeprivkey", "");
-        if(!strMasterNodePrivKey.empty()) {
-            if(!darkSendSigner.GetKeysFromSecret(strMasterNodePrivKey, activeGoldminenode.keyGoldminenode, activeGoldminenode.pubKeyGoldminenode))
+        std::string strGoldmineNodePrivKey = GetArg("-goldminenodeprivkey", "");
+        if(!strGoldmineNodePrivKey.empty()) {
+            if(!darkSendSigner.GetKeysFromSecret(strGoldmineNodePrivKey, activeGoldminenode.keyGoldminenode, activeGoldminenode.pubKeyGoldminenode))
                 return InitError(_("Invalid goldminenodeprivkey. Please see documenation."));
 
             LogPrintf("  pubKeyGoldminenode: %s\n", CBitcoinAddress(activeGoldminenode.pubKeyGoldminenode.GetID()).ToString());
@@ -1851,9 +1851,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     nInstantSendDepth = GetArg("-instantsenddepth", DEFAULT_INSTANTSEND_DEPTH);
     nInstantSendDepth = std::min(std::max(nInstantSendDepth, 0), 60);
 
-    //lite mode disables all Goldminenode and Spysend related functionality
+    //lite mode disables all Goldminenode and SpySend related functionality
     fLiteMode = GetBoolArg("-litemode", false);
-    if(fMasterNode && fLiteMode){
+    if(fGoldmineNode && fLiteMode){
         return InitError("You can not start a goldminenode in litemode");
     }
 
@@ -1869,14 +1869,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     // LOAD SERIALIZED DAT FILES INTO DATA CACHES FOR INTERNAL USE
 
     uiInterface.InitMessage(_("Loading goldminenode cache..."));
-    CFlatDB<CGoldminenodeMan> flatdb1("gmcache.dat", "magicGoldmineCache");
+    CFlatDB<CGoldminenodeMan> flatdb1("gmcache.dat", "magicGoldminenodeCache");
     if(!flatdb1.Load(mnodeman)) {
         return InitError("Failed to load goldminenode cache from gmcache.dat");
     }
 
     if(mnodeman.size()) {
         uiInterface.InitMessage(_("Loading goldminenode payment cache..."));
-        CFlatDB<CGoldminenodePayments> flatdb2("gmpayments.dat", "magicGoldminePaymentsCache");
+        CFlatDB<CGoldminenodePayments> flatdb2("gmpayments.dat", "magicGoldminenodePaymentsCache");
         if(!flatdb2.Load(mnpayments)) {
             return InitError("Failed to load goldminenode payments cache from gmpayments.dat");
         }
@@ -1899,7 +1899,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 11c: update block tip in Arctic modules
 
-    // force UpdatedBlockTip to initialize pCurrentBlockIndex for DS, MN payments and evolutions
+    // force UpdatedBlockTip to initialize pCurrentBlockIndex for DS, MN payments and budgets
     // but don't call it directly to prevent triggering of other listeners like zmq etc.
     // GetMainSignals().UpdatedBlockTip(chainActive.Tip());
     mnodeman.UpdatedBlockTip(chainActive.Tip());
