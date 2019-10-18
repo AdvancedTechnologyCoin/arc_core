@@ -115,7 +115,8 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0xfc6237933e11360eedbb4d3993575cf7a65e257b7c265b115cad37c8d183dc3d"));
 
 
-       		vSeeds.push_back(CDNSSeedData("5.9.41.6", "5.9.41.6"));
+       		vSeeds.push_back(CDNSSeedData("advtech.group", "dnsseed.advtech.group"));
+   		vSeeds.push_back(CDNSSeedData("5.9.41.6", "5.9.41.6"));
 		vSeeds.push_back(CDNSSeedData("5.9.176.36", "5.9.176.36"));
 		vSeeds.push_back(CDNSSeedData("88.99.173.16", "88.99.173.16"));
 		vSeeds.push_back(CDNSSeedData("85.10.206.182", "85.10.206.182"));
@@ -227,7 +228,8 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-		vSeeds.push_back(CDNSSeedData("5.9.41.6", "5.9.41.6"));
+		vSeeds.push_back(CDNSSeedData("advtech.group", "dnsseed.advtech.group"));
+    		vSeeds.push_back(CDNSSeedData("5.9.41.6", "5.9.41.6"));
 		vSeeds.push_back(CDNSSeedData("5.9.176.36", "5.9.176.36"));
 		vSeeds.push_back(CDNSSeedData("88.99.173.16", "88.99.173.16"));
 		vSeeds.push_back(CDNSSeedData("85.10.206.182", "85.10.206.182"));
