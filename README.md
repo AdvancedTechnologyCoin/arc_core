@@ -1,4 +1,4 @@
-ARC staging tree 0.13.0
+ARC staging tree 0.12.8.1
 ===============================
 
 https://advtech.group/
@@ -14,7 +14,7 @@ are carried out collectively by the network. ARC is the name of the open
 source software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the ARC software, see https://advtech.group//get-arc/.
+the ARC software, see https://advtech.group/#wallets.
 
 
 License
@@ -27,7 +27,7 @@ Development Process
 -------------------
 
 The `goldmine` branch is meant to be stable. Development is normally done in separate branches.
-[Tags](https://github.com/ArcticCore/arc/tags) are created to indicate new official,
+[Tags](https://github.com/AdvancedTechnologyCoin/arc_core/arc/tags) are created to indicate new official,
 stable release versions of ARC.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -72,4 +72,4 @@ Translations are periodically pulled from Transifex and merged into the git repo
 **Important**: We do not accept translation changes as GitHub pull requests because the next
 pull from Transifex would automatically overwrite them again.
 
-Translators should also follow the [forum](https://advtech.group/forum/topic/arc-worldwide-collaboration.88/).
+Translators should also follow the [forum](https://bitcointalk.org/index.php?topic=4548770).
