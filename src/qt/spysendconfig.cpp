@@ -2,9 +2,9 @@
 #include "ui_spysendconfig.h"
 
 #include "bitcoinunits.h"
-#include "spysend.h"
 #include "guiconstants.h"
 #include "optionsmodel.h"
+#include "privatesend-client.h"
 #include "walletmodel.h"
 
 #include <QMessageBox>
@@ -12,9 +12,9 @@
 #include <QKeyEvent>
 #include <QSettings>
 
-SpySendConfig::SpySendConfig(QWidget *parent) :
+SpysendConfig::SpysendConfig(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::SpySendConfig),
+    ui(new Ui::SpysendConfig),
     model(0)
 {
     ui->setupUi(this);
@@ -24,68 +24,68 @@ SpySendConfig::SpySendConfig(QWidget *parent) :
     connect(ui->buttonMax, SIGNAL(clicked()), this, SLOT(clickMax()));
 }
 
-SpySendConfig::~SpySendConfig()
+SpysendConfig::~SpysendConfig()
 {
     delete ui;
 }
 
-void SpySendConfig::setModel(WalletModel *model)
+void SpysendConfig::setModel(WalletModel *model)
 {
     this->model = model;
 }
 
-void SpySendConfig::clickBasic()
+void SpysendConfig::clickBasic()
 {
     configure(true, 1000, 2);
 
     QString strAmount(BitcoinUnits::formatWithUnit(
         model->getOptionsModel()->getDisplayUnit(), 1000 * COIN));
-    QMessageBox::information(this, tr("SpySend Configuration"),
+    QMessageBox::information(this, tr("PrivateSend Configuration"),
         tr(
-            "SpySend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arctic's configuration screen."
+            "PrivateSend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arc's configuration screen."
         ).arg(strAmount)
     );
 
     close();
 }
 
-void SpySendConfig::clickHigh()
+void SpysendConfig::clickHigh()
 {
     configure(true, 1000, 8);
 
     QString strAmount(BitcoinUnits::formatWithUnit(
         model->getOptionsModel()->getDisplayUnit(), 1000 * COIN));
-    QMessageBox::information(this, tr("SpySend Configuration"),
+    QMessageBox::information(this, tr("PrivateSend Configuration"),
         tr(
-            "SpySend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arctic's configuration screen."
+            "PrivateSend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arc's configuration screen."
         ).arg(strAmount)
     );
 
     close();
 }
 
-void SpySendConfig::clickMax()
+void SpysendConfig::clickMax()
 {
     configure(true, 1000, 16);
 
     QString strAmount(BitcoinUnits::formatWithUnit(
         model->getOptionsModel()->getDisplayUnit(), 1000 * COIN));
-    QMessageBox::information(this, tr("SpySend Configuration"),
+    QMessageBox::information(this, tr("PrivateSend Configuration"),
         tr(
-            "SpySend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arctic's configuration screen."
+            "PrivateSend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arc's configuration screen."
         ).arg(strAmount)
     );
 
     close();
 }
 
-void SpySendConfig::configure(bool enabled, int coins, int rounds) {
+void SpysendConfig::configure(bool enabled, int coins, int rounds) {
 
     QSettings settings;
 
-    settings.setValue("nSpySendRounds", rounds);
-    settings.setValue("nSpySendAmount", coins);
+    settings.setValue("nPrivateSendRounds", rounds);
+    settings.setValue("nPrivateSendAmount", coins);
 
-    nSpySendRounds = rounds;
-    nSpySendAmount = coins;
+    privateSendClient.nPrivateSendRounds = rounds;
+    privateSendClient.nPrivateSendAmount = coins;
 }

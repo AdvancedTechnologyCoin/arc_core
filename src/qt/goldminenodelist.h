@@ -1,7 +1,7 @@
 #ifndef GOLDMINENODELIST_H
 #define GOLDMINENODELIST_H
 
-#include "goldminenode.h"
+#include "primitives/transaction.h"
 #include "platformstyle.h"
 #include "sync.h"
 #include "util.h"
@@ -45,7 +45,7 @@ private:
     bool fFilterUpdated;
 
 public Q_SLOTS:
-    void updateMyGoldminenodeInfo(QString strAlias, QString strAddr, goldminenode_info_t& infoMn);
+    void updateMyGoldminenodeInfo(QString strAlias, QString strAddr, const COutPoint& outpoint);
     void updateMyNodeList(bool fForce = false);
     void updateNodeList();
 

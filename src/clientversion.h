@@ -6,17 +6,17 @@
 #define BITCOIN_CLIENTVERSION_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/arcticcoin-config.h"
+#include "config/arc-config.h"
 #else
 
 /**
  * client versioning and copyright year
  */
 
-//! These need to be macros, as clientversion.cpp's and arcticcoin*-res.rc's voodoo requires it
+//! These need to be macros, as clientversion.cpp's and arc*-res.rc's voodoo requires it
 #define CLIENT_VERSION_MAJOR 0
 #define CLIENT_VERSION_MINOR 12
-#define CLIENT_VERSION_REVISION 1
+#define CLIENT_VERSION_REVISION 8
 #define CLIENT_VERSION_BUILD 1
 
 //! Set to true for release, false for prerelease or test build
@@ -38,10 +38,10 @@
 #define DO_STRINGIZE(X) #X
 
 //! Copyright string used in Windows .rc files
-#define COPYRIGHT_STR "2009-" STRINGIZE(COPYRIGHT_YEAR) " The Bitcoin Core Developers, 2015-" STRINGIZE(COPYRIGHT_YEAR) " The Arctic Core Developers"
+#define COPYRIGHT_STR "2009-" STRINGIZE(COPYRIGHT_YEAR) " The Bitcoin Core Developers, 2015-" STRINGIZE(COPYRIGHT_YEAR) " The ARC developers"
 
 /**
- * arcticcoind-res.rc includes this file, but it cannot cope with real c++ code.
+ * arcd-res.rc includes this file, but it cannot cope with real c++ code.
  * WINDRES_PREPROC is defined to indicate that its pre-processor is running.
  * Anything other than a define should be guarded below.
  */

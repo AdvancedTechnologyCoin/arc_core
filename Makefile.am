@@ -6,12 +6,12 @@ GZIP_ENV="-9n"
 
 if BUILD_BITCOIN_LIBS
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libbitcoinconsensus.pc
+pkgconfig_DATA = libarcconsensus.pc
 endif
 
-BITCOIND_BIN=$(top_builddir)/src/arcticcoind$(EXEEXT)
-BITCOIN_QT_BIN=$(top_builddir)/src/qt/arcticcoin-qt$(EXEEXT)
-BITCOIN_CLI_BIN=$(top_builddir)/src/arcticcoin-cli$(EXEEXT)
+BITCOIND_BIN=$(top_builddir)/src/arcd$(EXEEXT)
+BITCOIN_QT_BIN=$(top_builddir)/src/qt/arc-qt$(EXEEXT)
+BITCOIN_CLI_BIN=$(top_builddir)/src/arc-cli$(EXEEXT)
 BITCOIN_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
 OSX_APP=Arctic-Qt.app
@@ -41,9 +41,9 @@ OSX_PACKAGING = $(OSX_DEPLOY_SCRIPT) $(OSX_FANCY_PLIST) $(OSX_INSTALLER_ICONS) $
   $(top_srcdir)/contrib/macdeploy/detached-sig-create.sh
 
 COVERAGE_INFO = baseline_filtered_combined.info baseline.info block_test.info \
-  leveldb_baseline.info test_arcticcoin_filtered.info total_coverage.info \
+  leveldb_baseline.info test_arc_filtered.info total_coverage.info \
   baseline_filtered.info block_test_filtered.info rpc_test.info rpc_test_filtered.info \
-  leveldb_baseline_filtered.info test_arcticcoin_coverage.info test_arcticcoin.info
+  leveldb_baseline_filtered.info test_arc_coverage.info test_arc.info
 
 dist-hook:
 	-$(MAKE) -C $(top_distdir)/src/leveldb clean
@@ -162,16 +162,16 @@ leveldb_baseline_filtered.info: leveldb_baseline.info
 baseline_filtered_combined.info: leveldb_baseline_filtered.info baseline_filtered.info
 	$(LCOV) -a leveldb_baseline_filtered.info -a baseline_filtered.info -o $@
 
-test_arcticcoin.info: baseline_filtered_combined.info
+test_arc.info: baseline_filtered_combined.info
 	$(MAKE) -C src/ check
-	$(LCOV) -c -d $(abs_builddir)/src -t test_arcticcoin -o $@
+	$(LCOV) -c -d $(abs_builddir)/src -t test_arc -o $@
 	$(LCOV) -z -d $(abs_builddir)/src
 	$(LCOV) -z -d $(abs_builddir)/src/leveldb
 
-test_arcticcoin_filtered.info: test_arcticcoin.info
+test_arc_filtered.info: test_arc.info
 	$(LCOV) -r $< "/usr/include/*" -o $@
 
-block_test.info: test_arcticcoin_filtered.info
+block_test.info: test_arc_filtered.info
 	$(MKDIR_P) qa/tmp
 	-@TIMEOUT=15 qa/pull-tester/run-bitcoind-for-test.sh $(JAVA) -jar $(JAVA_COMPARISON_TOOL) qa/tmp/compTool $(COMPARISON_TOOL_REORG_TESTS)
 	$(LCOV) -c -d $(abs_builddir)/src --t BitcoinJBlockTest -o $@
@@ -181,7 +181,7 @@ block_test.info: test_arcticcoin_filtered.info
 block_test_filtered.info: block_test.info
 	$(LCOV) -r $< "/usr/include/*" -o $@
 
-rpc_test.info: test_arcticcoin_filtered.info
+rpc_test.info: test_arc_filtered.info
 	-@TIMEOUT=15 python qa/pull-tester/rpc-tests.py $(EXTENDED_RPC_TESTS)
 	$(LCOV) -c -d $(abs_builddir)/src --t rpc-tests -o $@
 	$(LCOV) -z -d $(abs_builddir)/src
@@ -190,13 +190,13 @@ rpc_test.info: test_arcticcoin_filtered.info
 rpc_test_filtered.info: rpc_test.info
 	$(LCOV) -r $< "/usr/include/*" -o $@
 
-test_arcticcoin_coverage.info: baseline_filtered_combined.info test_arcticcoin_filtered.info
-	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_arcticcoin_filtered.info -o $@
+test_arc_coverage.info: baseline_filtered_combined.info test_arc_filtered.info
+	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_arc_filtered.info -o $@
 
-total_coverage.info: baseline_filtered_combined.info test_arcticcoin_filtered.info block_test_filtered.info rpc_test_filtered.info
-	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_arcticcoin_filtered.info -a block_test_filtered.info -a rpc_test_filtered.info -o $@ | $(GREP) "\%" | $(AWK) '{ print substr($$3,2,50) "/" $$5 }' > coverage_percent.txt
+total_coverage.info: baseline_filtered_combined.info test_arc_filtered.info block_test_filtered.info rpc_test_filtered.info
+	$(LCOV) -a baseline_filtered.info -a leveldb_baseline_filtered.info -a test_arc_filtered.info -a block_test_filtered.info -a rpc_test_filtered.info -o $@ | $(GREP) "\%" | $(AWK) '{ print substr($$3,2,50) "/" $$5 }' > coverage_percent.txt
 
-test_arcticcoin.coverage/.dirstamp:  test_arcticcoin_coverage.info
+test_arc.coverage/.dirstamp:  test_arc_coverage.info
 	$(GENHTML) -s $< -o $(@D)
 	@touch $@
 
@@ -204,7 +204,7 @@ total.coverage/.dirstamp: total_coverage.info
 	$(GENHTML) -s $< -o $(@D)
 	@touch $@
 
-cov: test_arcticcoin.coverage/.dirstamp total.coverage/.dirstamp
+cov: test_arc.coverage/.dirstamp total.coverage/.dirstamp
 
 endif
 
@@ -225,4 +225,4 @@ CLEANFILES = $(OSX_DMG) $(BITCOIN_WIN_INSTALLER)
 .INTERMEDIATE: $(COVERAGE_INFO)
 
 clean-local:
-	rm -rf coverage_percent.txt test_arcticcoin.coverage/ total.coverage/ qa/tmp/ cache/ $(OSX_APP)
+	rm -rf coverage_percent.txt test_arc.coverage/ total.coverage/ qa/tmp/ cache/ $(OSX_APP)

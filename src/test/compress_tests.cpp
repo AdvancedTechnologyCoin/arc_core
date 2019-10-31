@@ -4,7 +4,7 @@
 
 #include "compressor.h"
 #include "util.h"
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <stdint.h>
 

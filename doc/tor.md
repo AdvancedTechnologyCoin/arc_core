@@ -1,7 +1,7 @@
 TOR SUPPORT IN ARCTIC CORE
 =======================
 
-It is possible to run Arctic Core as a Tor hidden service, and connect to such services.
+It is possible to run ARC as a Tor hidden service, and connect to such services.
 
 The following directions assume you have a Tor proxy running on port 9050. Many
 distributions default to having a SOCKS proxy listening on port 9050, but others
@@ -10,10 +10,10 @@ port. See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.htm
 for how to properly configure Tor.
 
 
-1. Run Arctic Core behind a Tor proxy
+1. Run ARC behind a Tor proxy
 ----------------------------------
 
-The first step is running Arctic Core behind a Tor proxy. This will already make all
+The first step is running ARC behind a Tor proxy. This will already make all
 outgoing connections be anonymized, but more is possible.
 
 	-proxy=ip:port  Set the proxy server. If SOCKS5 is selected (default), this proxy
@@ -37,14 +37,14 @@ outgoing connections be anonymized, but more is possible.
 An example how to start the client if the Tor proxy is running on local host on
 port 9050 and only allows .onion nodes to connect:
 
-	./arcticcoind -onion=127.0.0.1:9050 -onlynet=tor -listen=0 -addnode=ssapp53tmftyjmjb.onion
+	./arcd -onion=127.0.0.1:9050 -onlynet=tor -listen=0 -addnode=ssapp53tmftyjmjb.onion
 
 In a typical situation, this suffices to run behind a Tor proxy:
 
-	./arcticcoind -proxy=127.0.0.1:9050
+	./arcd -proxy=127.0.0.1:9050
 
 
-2. Run a Arctic Core hidden server
+2. Run a ARC hidden server
 -------------------------------
 
 If you configure your Tor system accordingly, it is possible to make your node also
@@ -56,9 +56,9 @@ config file):
 	HiddenServicePort 17209 127.0.0.1:17209
 
 The directory can be different of course, but (both) port numbers should be equal to
-your arcticcoind's P2P listen port (7209 by default).
+your arcd's P2P listen port (7209 by default).
 
-	-externalip=X   You can tell Arctic Core about its publicly reachable address using
+	-externalip=X   You can tell ARC about its publicly reachable address using
 	                this option, and this can be a .onion address. Given the above
 	                configuration, you can find your onion address in
 	                /var/lib/tor/arcticcore-service/hostname. Onion addresses are given
@@ -78,25 +78,25 @@ your arcticcoind's P2P listen port (7209 by default).
 
 In a typical situation, where you're only reachable via Tor, this should suffice:
 
-	./arcticcoind -proxy=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -listen
+	./arcd -proxy=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -listen
 
 (obviously, replace the Onion address with your own). It should be noted that you still
 listen on all devices and another node could establish a clearnet connection, when knowing
 your address. To mitigate this, additionally bind the address of your Tor proxy:
 
-	./arcticcoind ... -bind=127.0.0.1
+	./arcd ... -bind=127.0.0.1
 
 If you don't care too much about hiding your node, and want to be reachable on IPv4
 as well, use `discover` instead:
 
-	./arcticcoind ... -discover
+	./arcd ... -discover
 
 and open port 7209 on your firewall (or use -upnp).
 
 If you only want to use Tor to reach onion addresses, but not use it as a proxy
 for normal IPv4/IPv6 communication, use:
 
-	./arcticcoind -onion=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -discover
+	./arcd -onion=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -discover
 
 
 3. Automatically listen on Tor
@@ -104,14 +104,14 @@ for normal IPv4/IPv6 communication, use:
 
 Starting with Tor version 0.2.7.1 it is possible, through Tor's control socket
 API, to create and destroy 'ephemeral' hidden services programmatically.
-Arctic Core has been updated to make use of this.
+ARC has been updated to make use of this.
 
 This means that if Tor is running (and proper authorization is available),
-Arctic Core automatically creates a hidden service to listen on, without
+ARC automatically creates a hidden service to listen on, without
 manual configuration. This will positively affect the number of available
 .onion nodes.
 
-This new feature is enabled by default if Arctic Core is listening, and
+This new feature is enabled by default if ARC is listening, and
 a connection to Tor can be made. It can be configured with the `-listenonion`,
 `-torcontrol` and `-torpassword` settings. To show verbose debugging
 information, pass `-debug=tor`.

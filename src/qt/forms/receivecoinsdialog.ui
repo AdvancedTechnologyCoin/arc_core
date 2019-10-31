@@ -326,7 +326,7 @@
   <tabstop>removeRequestButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../arcticcoin.qrc"/>
+  <include location="../arc.qrc"/>
  </resources>
  <connections/>
 </ui>

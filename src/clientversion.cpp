@@ -10,10 +10,10 @@
 
 /**
  * Name of client reported in the 'version' message. Report the same name
- * for both arcticcoind and arcticcoin-qt, to make it harder for attackers to
+ * for both arcd and arc-qt, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("Arctic Core");
+const std::string CLIENT_NAME("ARC");
 
 /**
  * Client version number

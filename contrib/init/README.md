@@ -1,11 +1,11 @@
 Sample configuration files for:
 
-SystemD: arcticcoind.service
-Upstart: arcticcoind.conf
-OpenRC:  arcticcoind.openrc
-         arcticcoind.openrcconf
-CentOS:  arcticcoind.init
-OS X:    org.arcticcoin.arcticcoind.plist
+SystemD: arcd.service
+Upstart: arcd.conf
+OpenRC:  arcd.openrc
+         arcd.openrcconf
+CentOS:  arcd.init
+OS X:    org.arc.arcd.plist
 
 have been made available to assist packagers in creating node packages here.
 

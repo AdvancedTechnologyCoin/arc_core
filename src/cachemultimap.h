@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -144,6 +144,13 @@ public:
             vecValues.push_back(item.value);
         }
         return true;
+    }
+
+    void GetKeys(std::vector<K>& vecKeys)
+    {
+        for(map_cit it = mapIndex.begin(); it != mapIndex.end(); ++it) {
+            vecKeys.push_back(it->first);
+        }
     }
 
     void Erase(const K& key)

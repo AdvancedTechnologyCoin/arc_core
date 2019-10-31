@@ -1,7 +1,7 @@
-Contributing to Arctic Core
+Contributing to ARC
 ============================
 
-The Arctic Core project operates an open contributor model where anyone is welcome to contribute towards development in the form of peer review, testing and patches. This document explains the practical process and guidelines for contributing.
+The ARC project operates an open contributor model where anyone is welcome to contribute towards development in the form of peer review, testing and patches. This document explains the practical process and guidelines for contributing.
 
 Firstly in terms of structure, there is no particular concept of “Core developers” in the sense of privileged people. Open source often naturally revolves around meritocracy where longer term contributors gain more trust from the developer community. However, some hierarchy is necessary for practical purposes. As such there are repository “maintainers” who are responsible for merging pull requests as well as a “lead maintainer” who is responsible for the release cycle, overall merging, moderation and appointment of maintainers.
 
@@ -67,9 +67,9 @@ Project maintainers aim for a quick turnaround on refactoring pull requests, so 
 "Decision Making" Process
 -------------------------
 
-The following applies to code changes to the Arctic Core project (and related projects such as libsecp256k1), and is not to be confused with overall Arctic Network Protocol consensus changes.
+The following applies to code changes to the ARC project (and related projects such as libsecp256k1), and is not to be confused with overall Arctic Network Protocol consensus changes.
 
-Whether a pull request is merged into Arctic Core rests with the project merge maintainers and ultimately the project lead.
+Whether a pull request is merged into ARC rests with the project merge maintainers and ultimately the project lead.
 
 Maintainers will take into consideration if a patch is in line with the general principles of the project; meets the minimum standards for inclusion; and will judge the general consensus of contributors.
 
@@ -107,4 +107,4 @@ Where a patch set proposes to change the Arctic consensus, it must have been dis
 Release Policy
 --------------
 
-The project leader is the release manager for each Arctic Core release.
+The project leader is the release manager for each ARC release.

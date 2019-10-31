@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Arc
+Comment=Arctic P2P Cryptocurrency
+Comment[fr]=Arc, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Arc, eşten eşe kriptografik sanal para birimi
+Exec=arc-qt %u
+Terminal=false
+Type=Application
+Icon=arc128
+MimeType=x-scheme-handler/arc;
+Categories=Office;Finance;

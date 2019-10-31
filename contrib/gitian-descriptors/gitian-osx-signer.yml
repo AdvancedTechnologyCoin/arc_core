@@ -1,5 +1,5 @@
 ---
-name: "arcticcoin-dmg-signer"
+name: "arc-dmg-signer"
 suites:
 - "trusty"
 architectures:
@@ -8,10 +8,10 @@ packages:
 - "faketime"
 reference_datetime: "2017-01-01 00:00:00"
 remotes:
-- "url": "https://github.com/ArcticCore/arcticcoin-detached-sigs.git"
+- "url": "https://github.com/ArcticCore/arc-detached-sigs.git"
   "dir": "signature"
 files:
-- "arcticcoin-osx-unsigned.tar.gz"
+- "arc-osx-unsigned.tar.gz"
 script: |
   WRAP_DIR=$HOME/wrapped
   mkdir -p ${WRAP_DIR}
@@ -28,8 +28,8 @@ script: |
     chmod +x ${WRAP_DIR}/${prog}
   done
 
-  UNSIGNED=arcticcoin-osx-unsigned.tar.gz
-  SIGNED=arcticcoin-osx-signed.dmg
+  UNSIGNED=arc-osx-unsigned.tar.gz
+  SIGNED=arc-osx-signed.dmg
 
   tar -xf ${UNSIGNED}
   ./detached-sig-apply.sh ${UNSIGNED} signature/osx

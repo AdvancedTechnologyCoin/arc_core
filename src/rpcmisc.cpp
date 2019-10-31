@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -55,8 +55,8 @@ UniValue getinfo(const UniValue& params, bool fHelp)
             "  \"version\": xxxxx,           (numeric) the server version\n"
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,         (numeric) the total arcticcoin balance of the wallet\n"
-            "  \"spysend_balance\": xxxxxx, (numeric) the anonymized arcticcoin balance of the wallet\n"
+            "  \"balance\": xxxxxxx,         (numeric) the total arc balance of the wallet\n"
+            "  \"spysend_balance\": xxxxxx, (numeric) the anonymized arc balance of the wallet\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -92,7 +92,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
         obj.push_back(Pair("walletversion", pwalletMain->GetVersion()));
         obj.push_back(Pair("balance",       ValueFromAmount(pwalletMain->GetBalance())));
         if(!fLiteMode)
-            obj.push_back(Pair("spysend_balance",       ValueFromAmount(pwalletMain->GetAnonymizedBalance())));
+            obj.push_back(Pair("privatesend_balance",       ValueFromAmount(pwalletMain->GetAnonymizedBalance())));
     }
 #endif
     obj.push_back(Pair("blocks",        (int)chainActive.Height()));
@@ -121,11 +121,11 @@ UniValue debug(const UniValue& params, bool fHelp)
         throw runtime_error(
             "debug ( 0|1|addrman|alert|bench|coindb|db|lock|rand|rpc|selectcoins|mempool"
             "|mempoolrej|net|proxy|prune|http|libevent|tor|zmq|"
-            "arcticcoin|privatesend|instantsend|goldminenode|spork|keepass|mnpayments|gobject )\n"
+            "arc|privatesend|instantsend|goldminenode|spork|keepass|mnpayments|gobject )\n"
             "Change debug category on the fly. Specify single category or use comma to specify many.\n"
             "\nExamples:\n"
-            + HelpExampleCli("debug", "arcticcoin")
-            + HelpExampleRpc("debug", "arcticcoin,net")
+            + HelpExampleCli("debug", "arc")
+            + HelpExampleRpc("debug", "arc,net")
         );
 
     std::string strMode = params[0].get_str();
@@ -244,15 +244,42 @@ UniValue spork(const UniValue& params, bool fHelp)
         // SPORK VALUE
         int64_t nValue = params[1].get_int64();
 
+		if(  (nSporkID == SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) || (nSporkID == SPORK_11_GOLDMINENODE_ENABLED) )
+		{
+			if( ( nValue - (int64_t)chainActive.Height()) < 2 )
+				return "Invalid config, bad value";
+		}
+		
         //broadcast new spork
-        if(sporkManager.UpdateSpork(nSporkID, nValue)){
+        if(sporkManager.UpdateSpork(nSporkID, nValue, "")){
             sporkManager.ExecuteSpork(nSporkID, nValue);
             return "success";
         } else {
             return "failure";
-        }
-
+        }		
     }
+	else if (params.size() == 3){
+		int nSporkID = sporkManager.GetSporkIDByName(params[0].get_str());
+		//--.
+		if(  (nSporkID == -1) || (nSporkID != SPORK_18_EVOLUTION_PAYMENTS)  ){
+			return "Invalid spork name";
+		}
+
+		// SPORK VALUE
+		int64_t nValue		= params[1].get_int64();
+		string sEvolution	= params[2].get_str();
+		//--.
+		if( !evolutionManager.checkEvolutionString( sEvolution ) ){	
+			return "Invalid spork evolution param name";
+		}	
+		//broadcast new spork
+		if(  sporkManager.UpdateSpork( nSporkID, nValue, sEvolution )  ){
+			sporkManager.ExecuteSpork( nSporkID, nValue );
+			return "success";
+		} else {
+			return "failure";
+		}
+	}	
 
     throw runtime_error(
         "spork <name> [<value>]\n"
@@ -265,14 +292,14 @@ UniValue validateaddress(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "validateaddress \"arcticcoinaddress\"\n"
-            "\nReturn information about the given arcticcoin address.\n"
+            "validateaddress \"arcaddress\"\n"
+            "\nReturn information about the given arc address.\n"
             "\nArguments:\n"
-            "1. \"arcticcoinaddress\"     (string, required) The arcticcoin address to validate\n"
+            "1. \"arcaddress\"     (string, required) The arc address to validate\n"
             "\nResult:\n"
             "{\n"
             "  \"isvalid\" : true|false,       (boolean) If the address is valid or not. If not, this is the only property returned.\n"
-            "  \"address\" : \"arcticcoinaddress\", (string) The arcticcoin address validated\n"
+            "  \"address\" : \"arcaddress\", (string) The arc address validated\n"
             "  \"scriptPubKey\" : \"hex\",       (string) The hex encoded scriptPubKey generated by the address\n"
             "  \"ismine\" : true|false,        (boolean) If the address is yours or not\n"
             "  \"iswatchonly\" : true|false,   (boolean) If the address is watchonly\n"
@@ -393,9 +420,9 @@ UniValue createmultisig(const UniValue& params, bool fHelp)
 
             "\nArguments:\n"
             "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-            "2. \"keys\"       (string, required) A json array of keys which are arcticcoin addresses or hex-encoded public keys\n"
+            "2. \"keys\"       (string, required) A json array of keys which are arc addresses or hex-encoded public keys\n"
             "     [\n"
-            "       \"key\"    (string) arcticcoin address or hex-encoded public key\n"
+            "       \"key\"    (string) arc address or hex-encoded public key\n"
             "       ,...\n"
             "     ]\n"
 
@@ -430,10 +457,10 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)
         throw runtime_error(
-            "verifymessage \"arcticcoinaddress\" \"signature\" \"message\"\n"
+            "verifymessage \"arcaddress\" \"signature\" \"message\"\n"
             "\nVerify a signed message\n"
             "\nArguments:\n"
-            "1. \"arcticcoinaddress\"  (string, required) The arcticcoin address to use for the signature.\n"
+            "1. \"arcaddress\"  (string, required) The arc address to use for the signature.\n"
             "2. \"signature\"       (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
             "3. \"message\"         (string, required) The message that was signed.\n"
             "\nResult:\n"

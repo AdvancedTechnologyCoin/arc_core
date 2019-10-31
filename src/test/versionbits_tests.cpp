@@ -5,9 +5,9 @@
 #include "chain.h"
 #include "random.h"
 #include "versionbits.h"
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 #include "chainparams.h"
-#include "main.h"
+#include "validation.h"
 #include "consensus/params.h"
 
 #include <boost/test/unit_test.hpp>
@@ -136,6 +136,8 @@ BOOST_FIXTURE_TEST_SUITE(versionbits_tests, TestingSetup)
 BOOST_AUTO_TEST_CASE(versionbits_test)
 {
     for (int i = 0; i < 64; i++) {
+        BOOST_TEST_MESSAGE("versionbits_test " << i);
+
         // DEFINED -> FAILED
         VersionBitsTester().TestDefined()
                            .Mine(1, TestTime(1), 0x100).TestDefined()

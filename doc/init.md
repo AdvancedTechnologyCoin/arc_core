@@ -1,36 +1,36 @@
-Sample init scripts and service configuration for arcticcoind
+Sample init scripts and service configuration for arcd
 ==========================================================
 
 Sample scripts and configuration files for systemd, Upstart and OpenRC
 can be found in the contrib/init folder.
 
-    contrib/init/arcticcoind.service:    systemd service unit configuration
-    contrib/init/arcticcoind.openrc:     OpenRC compatible SysV style init script
-    contrib/init/arcticcoind.openrcconf: OpenRC conf.d file
-    contrib/init/arcticcoind.conf:       Upstart service configuration file
-    contrib/init/arcticcoind.init:       CentOS compatible SysV style init script
+    contrib/init/arcd.service:    systemd service unit configuration
+    contrib/init/arcd.openrc:     OpenRC compatible SysV style init script
+    contrib/init/arcd.openrcconf: OpenRC conf.d file
+    contrib/init/arcd.conf:       Upstart service configuration file
+    contrib/init/arcd.init:       CentOS compatible SysV style init script
 
 1. Service User
 ---------------------------------
 
 All three Linux startup configurations assume the existence of a "arcticcore" user
 and group.  They must be created before attempting to use these scripts.
-The OS X configuration assumes arcticcoind will be set up for the current user.
+The OS X configuration assumes arcd will be set up for the current user.
 
 2. Configuration
 ---------------------------------
 
-At a bare minimum, arcticcoind requires that the rpcpassword setting be set
+At a bare minimum, arcd requires that the rpcpassword setting be set
 when running as a daemon.  If the configuration file does not exist or this
-setting is not set, arcticcoind will shutdown promptly after startup.
+setting is not set, arcd will shutdown promptly after startup.
 
 This password does not have to be remembered or typed as it is mostly used
-as a fixed token that arcticcoind and client programs read from the configuration
+as a fixed token that arcd and client programs read from the configuration
 file, however it is recommended that a strong and secure password be used
 as this password is security critical to securing the wallet should the
 wallet be enabled.
 
-If arcticcoind is run with the "-server" flag (set by default), and no rpcpassword is set,
+If arcd is run with the "-server" flag (set by default), and no rpcpassword is set,
 it will use a special cookie file for authentication. The cookie is generated with random
 content when the daemon starts, and deleted when it exits. Read access to this file
 controls who can access it through RPC.
@@ -38,13 +38,13 @@ controls who can access it through RPC.
 By default the cookie is stored in the data directory, but it's location can be overridden
 with the option '-rpccookiefile'.
 
-This allows for running arcticcoind without having to do any manual configuration.
+This allows for running arcd without having to do any manual configuration.
 
 `conf`, `pid`, and `wallet` accept relative paths which are interpreted as
 relative to the data directory. `wallet` *only* supports relative paths.
 
 For an example configuration file that describes the configuration settings,
-see `contrib/debian/examples/arcticcoin.conf`.
+see `contrib/debian/examples/arc.conf`.
 
 3. Paths
 ---------------------------------
@@ -53,22 +53,22 @@ see `contrib/debian/examples/arcticcoin.conf`.
 
 All three configurations assume several paths that might need to be adjusted.
 
-Binary:              `/usr/bin/arcticcoind`  
-Configuration file:  `/etc/arcticcore/arcticcoin.conf`  
-Data directory:      `/var/lib/arcticcoind`  
-PID file:            `/var/run/arcticcoind/arcticcoind.pid` (OpenRC and Upstart) or `/var/lib/arcticcoind/arcticcoind.pid` (systemd)  
-Lock file:           `/var/lock/subsys/arcticcoind` (CentOS)  
+Binary:              `/usr/bin/arcd`  
+Configuration file:  `/etc/arcticcore/arc.conf`  
+Data directory:      `/var/lib/arcd`  
+PID file:            `/var/run/arcd/arcd.pid` (OpenRC and Upstart) or `/var/lib/arcd/arcd.pid` (systemd)  
+Lock file:           `/var/lock/subsys/arcd` (CentOS)  
 
 The configuration file, PID directory (if applicable) and data directory
 should all be owned by the arcticcore user and group.  It is advised for security
 reasons to make the configuration file and data directory only readable by the
-arcticcore user and group.  Access to arcticcoin-cli and other arcticcoind rpc clients
+arcticcore user and group.  Access to arc-cli and other arcd rpc clients
 can then be controlled by group membership.
 
 3b) Mac OS X
 
-Binary:              `/usr/local/bin/arcticcoind`  
-Configuration file:  `~/Library/Application Support/ArcticCore/arcticcoin.conf`  
+Binary:              `/usr/local/bin/arcd`  
+Configuration file:  `~/Library/Application Support/ArcticCore/arc.conf`  
 Data directory:      `~/Library/Application Support/ArcticCore`
 Lock file:           `~/Library/Application Support/ArcticCore/.lock`
 
@@ -81,19 +81,19 @@ Installing this .service file consists of just copying it to
 /usr/lib/systemd/system directory, followed by the command
 `systemctl daemon-reload` in order to update running systemd configuration.
 
-To test, run `systemctl start arcticcoind` and to enable for system startup run
-`systemctl enable arcticcoind`
+To test, run `systemctl start arcd` and to enable for system startup run
+`systemctl enable arcd`
 
 4b) OpenRC
 
-Rename arcticcoind.openrc to arcticcoind and drop it in /etc/init.d.  Double
+Rename arcd.openrc to arcd and drop it in /etc/init.d.  Double
 check ownership and permissions and make it executable.  Test it with
-`/etc/init.d/arcticcoind start` and configure it to run on startup with
-`rc-update add arcticcoind`
+`/etc/init.d/arcd start` and configure it to run on startup with
+`rc-update add arcd`
 
 4c) Upstart (for Debian/Ubuntu based distributions)
 
-Drop arcticcoind.conf in /etc/init.  Test by running `service arcticcoind start`
+Drop arcd.conf in /etc/init.  Test by running `service arcd start`
 it will automatically start on reboot.
 
 NOTE: This script is incompatible with CentOS 5 and Amazon Linux 2014 as they
@@ -101,21 +101,21 @@ use old versions of Upstart and do not supply the start-stop-daemon utility.
 
 4d) CentOS
 
-Copy arcticcoind.init to /etc/init.d/arcticcoind. Test by running `service arcticcoind start`.
+Copy arcd.init to /etc/init.d/arcd. Test by running `service arcd start`.
 
-Using this script, you can adjust the path and flags to the arcticcoind program by
+Using this script, you can adjust the path and flags to the arcd program by
 setting the ARCTICCOIND and FLAGS environment variables in the file
-/etc/sysconfig/arcticcoind. You can also use the DAEMONOPTS environment variable here.
+/etc/sysconfig/arcd. You can also use the DAEMONOPTS environment variable here.
 
 4e) Mac OS X
 
-Copy org.arcticcoin.arcticcoind.plist into ~/Library/LaunchAgents. Load the launch agent by
-running `launchctl load ~/Library/LaunchAgents/org.arcticcoin.arcticcoind.plist`.
+Copy org.arc.arcd.plist into ~/Library/LaunchAgents. Load the launch agent by
+running `launchctl load ~/Library/LaunchAgents/org.arc.arcd.plist`.
 
-This Launch Agent will cause arcticcoind to start whenever the user logs in.
+This Launch Agent will cause arcd to start whenever the user logs in.
 
-NOTE: This approach is intended for those wanting to run arcticcoind as the current user.
-You will need to modify org.arcticcoin.arcticcoind.plist if you intend to use it as a
+NOTE: This approach is intended for those wanting to run arcd as the current user.
+You will need to modify org.arc.arcd.plist if you intend to use it as a
 Launch Daemon with a dedicated arcticcore user.
 
 5. Auto-respawn

@@ -1,0 +1,6 @@
+usr/local/bin/arc-qt usr/bin
+share/pixmaps/arc32.xpm usr/share/pixmaps
+share/pixmaps/arc16.xpm usr/share/pixmaps
+share/pixmaps/arc128.png usr/share/pixmaps
+debian/arc-qt.desktop usr/share/applications
+debian/arc-qt.protocol usr/share/kde4/services/

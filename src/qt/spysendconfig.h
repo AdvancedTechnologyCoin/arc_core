@@ -1,29 +1,29 @@
-#ifndef DARKSENDCONFIG_H
-#define DARKSENDCONFIG_H
+#ifndef SPYSENDCONFIG_H
+#define SPYSENDCONFIG_H
 
 #include <QDialog>
 
 namespace Ui {
-    class SpySendConfig;
+    class SpysendConfig;
 }
 class WalletModel;
 
 /** Multifunctional dialog to ask for passphrases. Used for encryption, unlocking, and changing the passphrase.
  */
-class SpySendConfig : public QDialog
+class SpysendConfig : public QDialog
 {
     Q_OBJECT
 
 public:
 
-    SpySendConfig(QWidget *parent = 0);
-    ~SpySendConfig();
+    SpysendConfig(QWidget *parent = 0);
+    ~SpysendConfig();
 
     void setModel(WalletModel *model);
 
 
 private:
-    Ui::SpySendConfig *ui;
+    Ui::SpysendConfig *ui;
     WalletModel *model;
     void configure(bool enabled, int coins, int rounds);
 
@@ -34,4 +34,4 @@ private Q_SLOTS:
     void clickMax();
 };
 
-#endif // DARKSENDCONFIG_H
+#endif // SPYSENDCONFIG_H

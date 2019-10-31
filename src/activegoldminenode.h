@@ -1,13 +1,14 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef ACTIVEGOLDMINENODE_H
 #define ACTIVEGOLDMINENODE_H
 
-#include "net.h"
+#include "chainparams.h"
 #include "key.h"
-#include "wallet/wallet.h"
+#include "net.h"
+#include "primitives/transaction.h"
 
 class CActiveGoldminenode;
 
@@ -25,8 +26,7 @@ class CActiveGoldminenode
 public:
     enum goldminenode_type_enum_t {
         GOLDMINENODE_UNKNOWN = 0,
-        GOLDMINENODE_REMOTE  = 1,
-        GOLDMINENODE_LOCAL   = 2
+        GOLDMINENODE_REMOTE  = 1
     };
 
 private:
@@ -38,7 +38,11 @@ private:
     bool fPingerEnabled;
 
     /// Ping Goldminenode
-    bool SendGoldminenodePing();
+    bool SendGoldminenodePing(CConnman& connman);
+
+    //  sentinel ping data
+    int64_t nSentinelPingTime;
+    uint32_t nSentinelVersion;
 
 public:
     // Keys for the active Goldminenode
@@ -46,33 +50,35 @@ public:
     CKey keyGoldminenode;
 
     // Initialized while registering Goldminenode
-    CTxIn vin;
+    COutPoint outpoint;
     CService service;
 
     int nState; // should be one of ACTIVE_GOLDMINENODE_XXXX
     std::string strNotCapableReason;
+
 
     CActiveGoldminenode()
         : eType(GOLDMINENODE_UNKNOWN),
           fPingerEnabled(false),
           pubKeyGoldminenode(),
           keyGoldminenode(),
-          vin(),
+          outpoint(),
           service(),
           nState(ACTIVE_GOLDMINENODE_INITIAL)
     {}
 
     /// Manage state of active Goldminenode
-    void ManageState();
+    void ManageState(CConnman& connman);
 
     std::string GetStateString() const;
     std::string GetStatus() const;
     std::string GetTypeString() const;
 
+    bool UpdateSentinelPing(int version);
+
 private:
-    void ManageStateInitial();
+    void ManageStateInitial(CConnman& connman);
     void ManageStateRemote();
-    void ManageStateLocal();
 };
 
 #endif

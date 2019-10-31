@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,12 +8,10 @@
 #include "goldminenodeman.h"
 #include "protocol.h"
 
-extern CWallet* pwalletMain;
-
 // Keep track of the active Goldminenode
 CActiveGoldminenode activeGoldminenode;
 
-void CActiveGoldminenode::ManageState()
+void CActiveGoldminenode::ManageState(CConnman& connman)
 {
     LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- Start\n");
     if(!fGoldmineNode) {
@@ -34,19 +32,14 @@ void CActiveGoldminenode::ManageState()
     LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- status = %s, type = %s, pinger enabled = %d\n", GetStatus(), GetTypeString(), fPingerEnabled);
 
     if(eType == GOLDMINENODE_UNKNOWN) {
-        ManageStateInitial();
+        ManageStateInitial(connman);
     }
 
     if(eType == GOLDMINENODE_REMOTE) {
         ManageStateRemote();
-    } else if(eType == GOLDMINENODE_LOCAL) {
-        // Try Remote Start first so the started local goldminenode can be restarted without recreate goldminenode broadcast.
-        ManageStateRemote();
-        if(nState != ACTIVE_GOLDMINENODE_STARTED)
-            ManageStateLocal();
     }
 
-    SendGoldminenodePing();
+    SendGoldminenodePing(connman);
 }
 
 std::string CActiveGoldminenode::GetStateString() const
@@ -77,14 +70,8 @@ std::string CActiveGoldminenode::GetTypeString() const
 {
     std::string strType;
     switch(eType) {
-    case GOLDMINENODE_UNKNOWN:
-        strType = "UNKNOWN";
-        break;
     case GOLDMINENODE_REMOTE:
         strType = "REMOTE";
-        break;
-    case GOLDMINENODE_LOCAL:
-        strType = "LOCAL";
         break;
     default:
         strType = "UNKNOWN";
@@ -93,41 +80,52 @@ std::string CActiveGoldminenode::GetTypeString() const
     return strType;
 }
 
-bool CActiveGoldminenode::SendGoldminenodePing()
+bool CActiveGoldminenode::SendGoldminenodePing(CConnman& connman)
 {
     if(!fPingerEnabled) {
         LogPrint("goldminenode", "CActiveGoldminenode::SendGoldminenodePing -- %s: goldminenode ping service is disabled, skipping...\n", GetStateString());
         return false;
     }
 
-    if(!mnodeman.Has(vin)) {
+    if(!mnodeman.Has(outpoint)) {
         strNotCapableReason = "Goldminenode not in goldminenode list";
         nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
         LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- %s: %s\n", GetStateString(), strNotCapableReason);
         return false;
     }
 
-    CGoldminenodePing mnp(vin);
+    CGoldminenodePing mnp(outpoint);
+    mnp.nSentinelVersion = nSentinelVersion;
+    mnp.fSentinelIsCurrent =
+            (abs(GetAdjustedTime() - nSentinelPingTime) < GOLDMINENODE_WATCHDOG_MAX_SECONDS);
     if(!mnp.Sign(keyGoldminenode, pubKeyGoldminenode)) {
         LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- ERROR: Couldn't sign Goldminenode Ping\n");
         return false;
     }
 
     // Update lastPing for our goldminenode in Goldminenode list
-    if(mnodeman.IsGoldminenodePingedWithin(vin, GOLDMINENODE_MIN_MNP_SECONDS, mnp.sigTime)) {
+    if(mnodeman.IsGoldminenodePingedWithin(outpoint, GOLDMINENODE_MIN_MNP_SECONDS, mnp.sigTime)) {
         LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- Too early to send Goldminenode Ping\n");
         return false;
     }
 
-    mnodeman.SetGoldminenodeLastPing(vin, mnp);
+    mnodeman.SetGoldminenodeLastPing(outpoint, mnp);
 
-    LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- Relaying ping, collateral=%s\n", vin.ToString());
-    mnp.Relay();
+    LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- Relaying ping, collateral=%s\n", outpoint.ToStringShort());
+    mnp.Relay(connman);
 
     return true;
 }
 
-void CActiveGoldminenode::ManageStateInitial()
+bool CActiveGoldminenode::UpdateSentinelPing(int version)
+{
+    nSentinelVersion = version;
+    nSentinelPingTime = GetAdjustedTime();
+
+    return true;
+}
+
+void CActiveGoldminenode::ManageStateInitial(CConnman& connman)
 {
     LogPrint("goldminenode", "CActiveGoldminenode::ManageStateInitial -- status = %s, type = %s, pinger enabled = %d\n", GetStatus(), GetTypeString(), fPingerEnabled);
 
@@ -140,27 +138,23 @@ void CActiveGoldminenode::ManageStateInitial()
         return;
     }
 
-    bool fFoundLocal = false;
-    {
-        LOCK(cs_vNodes);
-
-        // First try to find whatever local address is specified by externalip option
-        fFoundLocal = GetLocal(service) && CGoldminenode::IsValidNetAddr(service);
-        if(!fFoundLocal) {
-            // nothing and no live connections, can't do anything for now
-            if (vNodes.empty()) {
-                nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
-                strNotCapableReason = "Can't detect valid external address. Will retry when there are some connections available.";
-                LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
-                return;
-            }
-            // We have some peers, let's try to find our local address from one of them
-            BOOST_FOREACH(CNode* pnode, vNodes) {
-                if (pnode->fSuccessfullyConnected && pnode->addr.IsIPv4()) {
-                    fFoundLocal = GetLocal(service, &pnode->addr) && CGoldminenode::IsValidNetAddr(service);
-                    if(fFoundLocal) break;
-                }
-            }
+    // First try to find whatever local address is specified by externalip option
+    bool fFoundLocal = GetLocal(service) && CGoldminenode::IsValidNetAddr(service);
+    if(!fFoundLocal) {
+        bool empty = true;
+        // If we have some peers, let's try to find our local address from one of them
+        connman.ForEachNodeContinueIf(CConnman::AllNodes, [&fFoundLocal, &empty, this](CNode* pnode) {
+            empty = false;
+            if (pnode->addr.IsIPv4())
+                fFoundLocal = GetLocal(service, &pnode->addr) && CGoldminenode::IsValidNetAddr(service);
+            return !fFoundLocal;
+        });
+        // nothing and no live connections, can't do anything for now
+        if (empty) {
+            nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
+            strNotCapableReason = "Can't detect valid external address. Will retry when there are some connections available.";
+            LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
+            return;
         }
     }
 
@@ -188,7 +182,7 @@ void CActiveGoldminenode::ManageStateInitial()
 
     LogPrintf("CActiveGoldminenode::ManageStateInitial -- Checking inbound connection to '%s'\n", service.ToString());
 
-    if(!ConnectNode((CAddress)service, NULL, true)) {
+    if(!connman.ConnectNode(CAddress(service, NODE_NETWORK), NULL, true)) {
         nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
         strNotCapableReason = "Could not connect to " + service.ToString();
         LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
@@ -198,42 +192,17 @@ void CActiveGoldminenode::ManageStateInitial()
     // Default to REMOTE
     eType = GOLDMINENODE_REMOTE;
 
-    // Check if wallet funds are available
-    if(!pwalletMain) {
-        LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: Wallet not available\n", GetStateString());
-        return;
-    }
-
-    if(pwalletMain->IsLocked()) {
-        LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: Wallet is locked\n", GetStateString());
-        return;
-    }
-
-    if(pwalletMain->GetBalance() < 1000*COIN) {
-        LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: Wallet balance is < 1000 ARC\n", GetStateString());
-        return;
-    }
-
-    // Choose coins to use
-    CPubKey pubKeyCollateral;
-    CKey keyCollateral;
-
-    // If collateral is found switch to LOCAL mode
-    if(pwalletMain->GetGoldminenodeVinAndKeys(vin, pubKeyCollateral, keyCollateral)) {
-        eType = GOLDMINENODE_LOCAL;
-    }
-
     LogPrint("goldminenode", "CActiveGoldminenode::ManageStateInitial -- End status = %s, type = %s, pinger enabled = %d\n", GetStatus(), GetTypeString(), fPingerEnabled);
 }
 
 void CActiveGoldminenode::ManageStateRemote()
 {
     LogPrint("goldminenode", "CActiveGoldminenode::ManageStateRemote -- Start status = %s, type = %s, pinger enabled = %d, pubKeyGoldminenode.GetID() = %s\n", 
-             GetStatus(), fPingerEnabled, GetTypeString(), pubKeyGoldminenode.GetID().ToString());
+             GetStatus(), GetTypeString(), fPingerEnabled, pubKeyGoldminenode.GetID().ToString());
 
-    mnodeman.CheckGoldminenode(pubKeyGoldminenode);
-    goldminenode_info_t infoMn = mnodeman.GetGoldminenodeInfo(pubKeyGoldminenode);
-    if(infoMn.fInfoValid) {
+    mnodeman.CheckGoldminenode(pubKeyGoldminenode, true);
+    goldminenode_info_t infoMn;
+    if(mnodeman.GetGoldminenodeInfo(pubKeyGoldminenode, infoMn)) {
         if(infoMn.nProtocolVersion != PROTOCOL_VERSION) {
             nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
             strNotCapableReason = "Invalid protocol version";
@@ -254,7 +223,7 @@ void CActiveGoldminenode::ManageStateRemote()
         }
         if(nState != ACTIVE_GOLDMINENODE_STARTED) {
             LogPrintf("CActiveGoldminenode::ManageStateRemote -- STARTED!\n");
-            vin = infoMn.vin;
+            outpoint = infoMn.vin.prevout;
             service = infoMn.addr;
             fPingerEnabled = true;
             nState = ACTIVE_GOLDMINENODE_STARTED;
@@ -264,53 +233,5 @@ void CActiveGoldminenode::ManageStateRemote()
         nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
         strNotCapableReason = "Goldminenode not in goldminenode list";
         LogPrintf("CActiveGoldminenode::ManageStateRemote -- %s: %s\n", GetStateString(), strNotCapableReason);
-    }
-}
-
-void CActiveGoldminenode::ManageStateLocal()
-{
-    LogPrint("goldminenode", "CActiveGoldminenode::ManageStateLocal -- status = %s, type = %s, pinger enabled = %d\n", GetStatus(), GetTypeString(), fPingerEnabled);
-    if(nState == ACTIVE_GOLDMINENODE_STARTED) {
-        return;
-    }
-
-    // Choose coins to use
-    CPubKey pubKeyCollateral;
-    CKey keyCollateral;
-
-    if(pwalletMain->GetGoldminenodeVinAndKeys(vin, pubKeyCollateral, keyCollateral)) {
-        int nInputAge = GetInputAge(vin);
-        if(nInputAge < Params().GetConsensus().nGoldminenodeMinimumConfirmations){
-            nState = ACTIVE_GOLDMINENODE_INPUT_TOO_NEW;
-            strNotCapableReason = strprintf(_("%s - %d confirmations"), GetStatus(), nInputAge);
-            LogPrintf("CActiveGoldminenode::ManageStateLocal -- %s: %s\n", GetStateString(), strNotCapableReason);
-            return;
-        }
-
-        {
-            LOCK(pwalletMain->cs_wallet);
-            pwalletMain->LockCoin(vin.prevout);
-        }
-
-        CGoldminenodeBroadcast mnb;
-        std::string strError;
-        if(!CGoldminenodeBroadcast::Create(vin, service, keyCollateral, pubKeyCollateral, keyGoldminenode, pubKeyGoldminenode, strError, mnb)) {
-            nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
-            strNotCapableReason = "Error creating mastenode broadcast: " + strError;
-            LogPrintf("CActiveGoldminenode::ManageStateLocal -- %s: %s\n", GetStateString(), strNotCapableReason);
-            return;
-        }
-
-        fPingerEnabled = true;
-        nState = ACTIVE_GOLDMINENODE_STARTED;
-
-        //update to goldminenode list
-        LogPrintf("CActiveGoldminenode::ManageStateLocal -- Update Goldminenode List\n");
-        mnodeman.UpdateGoldminenodeList(mnb);
-        mnodeman.NotifyGoldminenodeUpdates();
-
-        //send to all peers
-        LogPrintf("CActiveGoldminenode::ManageStateLocal -- Relay broadcast, vin=%s\n", vin.ToString());
-        mnb.Relay();
     }
 }

@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
- * CBaseChainParams defines the base parameters (shared between arcticcoin-cli and arcticcoind)
+ * CBaseChainParams defines the base parameters (shared between arc-cli and arcd)
  * of a given instance of the Arctic system.
  */
 class CBaseChainParams

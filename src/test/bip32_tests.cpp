@@ -9,7 +9,7 @@
 #include "uint256.h"
 #include "util.h"
 #include "utilstrencodings.h"
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <string>
 #include <vector>
@@ -21,10 +21,10 @@ struct TestDerivation {
 };
 
 struct TestVector {
-    std::string strHexGoldmine;
+    std::string strHexMaster;
     std::vector<TestDerivation> vDerive;
 
-    TestVector(std::string strHexGoldmineIn) : strHexGoldmine(strHexGoldmineIn) {}
+    TestVector(std::string strHexMasterIn) : strHexMaster(strHexMasterIn) {}
 
     TestVector& operator()(std::string pub, std::string prv, unsigned int nChild) {
         vDerive.push_back(TestDerivation());
@@ -79,10 +79,10 @@ TestVector test2 =
      0);
 
 void RunTest(const TestVector &test) {
-    std::vector<unsigned char> seed = ParseHex(test.strHexGoldmine);
+    std::vector<unsigned char> seed = ParseHex(test.strHexMaster);
     CExtKey key;
     CExtPubKey pubkey;
-    key.SetGoldmine(&seed[0], seed.size());
+    key.SetMaster(&seed[0], seed.size());
     pubkey = key.Neuter();
     BOOST_FOREACH(const TestDerivation &derive, test.vDerive) {
         unsigned char data[74];
@@ -117,6 +117,22 @@ void RunTest(const TestVector &test) {
         }
         key = keyNew;
         pubkey = pubkeyNew;
+
+        CDataStream ssPub(SER_DISK, CLIENT_VERSION);
+        ssPub << pubkeyNew;
+        BOOST_CHECK(ssPub.size() == 74+1);
+
+        CDataStream ssPriv(SER_DISK, CLIENT_VERSION);
+        ssPriv << keyNew;
+        BOOST_CHECK(ssPriv.size() == 74+1);
+
+        CExtPubKey pubCheck;
+        CExtKey privCheck;
+        ssPub >> pubCheck;
+        ssPriv >> privCheck;
+
+        BOOST_CHECK(pubCheck == pubkeyNew);
+        BOOST_CHECK(privCheck == keyNew);
     }
 }
 

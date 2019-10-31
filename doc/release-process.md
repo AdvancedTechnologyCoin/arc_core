@@ -1,7 +1,7 @@
 Release Process
 ====================
 
-* Update translations, see [translation_process.md](https://github.com/ArcticCore/arcticcoin/blob/goldmine/doc/translation_process.md#syncing-with-transifex)
+* Update translations, see [translation_process.md](https://github.com/ArcticCore/arc/blob/goldmine/doc/translation_process.md#syncing-with-transifex)
 * Update hardcoded [seeds](/contrib/seeds)
 
 * * *
@@ -11,13 +11,13 @@ Check out the source code in the following directory hierarchy.
 
 	cd /path/to/your/toplevel/build
 	git clone https://github.com/ArcticCore/gitian.sigs.git
-	git clone https://github.com/ArcticCore/arcticcoin-detached-sigs.git
+	git clone https://github.com/ArcticCore/arc-detached-sigs.git
 	git clone https://github.com/devrandom/gitian-builder.git
-	git clone https://github.com/ArcticCore/arcticcoin.git
+	git clone https://github.com/ArcticCore/arc.git
 
-###Arctic Core maintainers/release engineers, update (commit) version in sources
+###ARC maintainers/release engineers, update (commit) version in sources
 
-	pushd ./arcticcoin
+	pushd ./arc
 	contrib/verifysfbinaries/verify.sh
 	configure.ac
 	doc/README*
@@ -40,7 +40,7 @@ Check out the source code in the following directory hierarchy.
 
  Setup Gitian descriptors:
 
-	pushd ./arcticcoin
+	pushd ./arc
 	export SIGNER=(your Gitian key, ie bluematt, sipa, etc)
 	export VERSION=(new version, e.g. 0.8.0)
 	git fetch
@@ -76,52 +76,52 @@ Check out the source code in the following directory hierarchy.
 
 By default, Gitian will fetch source files as needed. To cache them ahead of time:
 
-	make -C ../arcticcoin/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ../arc/depends download SOURCES_PATH=`pwd`/cache/common
 
 Only missing files will be fetched, so this is safe to re-run for each build.
 
 NOTE: Offline builds must use the --url flag to ensure Gitian fetches only from local URLs. For example:
 ```
-./bin/gbuild --url arcticcoin=/path/to/arcticcoin,signature=/path/to/sigs {rest of arguments}
+./bin/gbuild --url arc=/path/to/arc,signature=/path/to/sigs {rest of arguments}
 ```
 The gbuild invocations below <b>DO NOT DO THIS</b> by default.
 
-###Build and sign Arctic Core for Linux, Windows, and OS X:
+###Build and sign ARC for Linux, Windows, and OS X:
 
-	./bin/gbuild --commit arcticcoin=v${VERSION} ../arcticcoin/contrib/gitian-descriptors/gitian-linux.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../arcticcoin/contrib/gitian-descriptors/gitian-linux.yml
-	mv build/out/arcticcoin-*.tar.gz build/out/src/arcticcoin-*.tar.gz ../
+	./bin/gbuild --commit arc=v${VERSION} ../arc/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../arc/contrib/gitian-descriptors/gitian-linux.yml
+	mv build/out/arc-*.tar.gz build/out/src/arc-*.tar.gz ../
 
-	./bin/gbuild --commit arcticcoin=v${VERSION} ../arcticcoin/contrib/gitian-descriptors/gitian-win.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../arcticcoin/contrib/gitian-descriptors/gitian-win.yml
-	mv build/out/arcticcoin-*-win-unsigned.tar.gz inputs/arcticcoin-win-unsigned.tar.gz
-	mv build/out/arcticcoin-*.zip build/out/arcticcoin-*.exe ../
+	./bin/gbuild --commit arc=v${VERSION} ../arc/contrib/gitian-descriptors/gitian-win.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../arc/contrib/gitian-descriptors/gitian-win.yml
+	mv build/out/arc-*-win-unsigned.tar.gz inputs/arc-win-unsigned.tar.gz
+	mv build/out/arc-*.zip build/out/arc-*.exe ../
 
-	./bin/gbuild --commit arcticcoin=v${VERSION} ../arcticcoin/contrib/gitian-descriptors/gitian-osx.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../arcticcoin/contrib/gitian-descriptors/gitian-osx.yml
-	mv build/out/arcticcoin-*-osx-unsigned.tar.gz inputs/arcticcoin-osx-unsigned.tar.gz
-	mv build/out/arcticcoin-*.tar.gz build/out/arcticcoin-*.dmg ../
+	./bin/gbuild --commit arc=v${VERSION} ../arc/contrib/gitian-descriptors/gitian-osx.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../arc/contrib/gitian-descriptors/gitian-osx.yml
+	mv build/out/arc-*-osx-unsigned.tar.gz inputs/arc-osx-unsigned.tar.gz
+	mv build/out/arc-*.tar.gz build/out/arc-*.dmg ../
 	popd
 
   Build output expected:
 
-  1. source tarball (arcticcoin-${VERSION}.tar.gz)
-  2. linux 32-bit and 64-bit dist tarballs (arcticcoin-${VERSION}-linux[32|64].tar.gz)
-  3. windows 32-bit and 64-bit unsigned installers and dist zips (arcticcoin-${VERSION}-win[32|64]-setup-unsigned.exe, arcticcoin-${VERSION}-win[32|64].zip)
-  4. OS X unsigned installer and dist tarball (arcticcoin-${VERSION}-osx-unsigned.dmg, arcticcoin-${VERSION}-osx64.tar.gz)
+  1. source tarball (arc-${VERSION}.tar.gz)
+  2. linux 32-bit and 64-bit dist tarballs (arc-${VERSION}-linux[32|64].tar.gz)
+  3. windows 32-bit and 64-bit unsigned installers and dist zips (arc-${VERSION}-win[32|64]-setup-unsigned.exe, arc-${VERSION}-win[32|64].zip)
+  4. OS X unsigned installer and dist tarball (arc-${VERSION}-osx-unsigned.dmg, arc-${VERSION}-osx64.tar.gz)
   5. Gitian signatures (in gitian.sigs/${VERSION}-<linux|{win,osx}-unsigned>/(your Gitian key)/
 
 ###Verify other gitian builders signatures to your own. (Optional)
 
   Add other gitian builders keys to your gpg keyring
 
-	gpg --import ../arcticcoin/contrib/gitian-downloader/*.pgp
+	gpg --import ../arc/contrib/gitian-downloader/*.pgp
 
   Verify the signatures
 
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../arcticcoin/contrib/gitian-descriptors/gitian-linux.yml
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../arcticcoin/contrib/gitian-descriptors/gitian-win.yml
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../arcticcoin/contrib/gitian-descriptors/gitian-osx.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../arc/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../arc/contrib/gitian-descriptors/gitian-win.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../arc/contrib/gitian-descriptors/gitian-osx.yml
 
 	popd
 
@@ -139,25 +139,25 @@ Commit your signature to gitian.sigs:
 
   Wait for Windows/OS X detached signatures:
 	Once the Windows/OS X builds each have 3 matching signatures, they will be signed with their respective release keys.
-	Detached signatures will then be committed to the [arcticcoin-detached-sigs](https://github.com/ArcticCore/arcticcoin-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
+	Detached signatures will then be committed to the [arc-detached-sigs](https://github.com/ArcticCore/arc-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
 
   Create (and optionally verify) the signed OS X binary:
 
 	pushd ./gitian-builder
-	./bin/gbuild -i --commit signature=v${VERSION} ../arcticcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../arcticcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../arcticcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	mv build/out/arcticcoin-osx-signed.dmg ../arcticcoin-${VERSION}-osx.dmg
+	./bin/gbuild -i --commit signature=v${VERSION} ../arc/contrib/gitian-descriptors/gitian-osx-signer.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../arc/contrib/gitian-descriptors/gitian-osx-signer.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../arc/contrib/gitian-descriptors/gitian-osx-signer.yml
+	mv build/out/arc-osx-signed.dmg ../arc-${VERSION}-osx.dmg
 	popd
 
   Create (and optionally verify) the signed Windows binaries:
 
 	pushd ./gitian-builder
-	./bin/gbuild -i --commit signature=v${VERSION} ../arcticcoin/contrib/gitian-descriptors/gitian-win-signer.yml
-	./bin/gsign --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../arcticcoin/contrib/gitian-descriptors/gitian-win-signer.yml
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-signed ../arcticcoin/contrib/gitian-descriptors/gitian-win-signer.yml
-	mv build/out/arcticcoin-*win64-setup.exe ../arcticcoin-${VERSION}-win64-setup.exe
-	mv build/out/arcticcoin-*win32-setup.exe ../arcticcoin-${VERSION}-win32-setup.exe
+	./bin/gbuild -i --commit signature=v${VERSION} ../arc/contrib/gitian-descriptors/gitian-win-signer.yml
+	./bin/gsign --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../arc/contrib/gitian-descriptors/gitian-win-signer.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-signed ../arc/contrib/gitian-descriptors/gitian-win-signer.yml
+	mv build/out/arc-*win64-setup.exe ../arc-${VERSION}-win64-setup.exe
+	mv build/out/arc-*win32-setup.exe ../arc-${VERSION}-win32-setup.exe
 	popd
 
 Commit your signature for the signed OS X/Windows binaries:
@@ -182,13 +182,13 @@ rm SHA256SUMS
 (the digest algorithm is forced to sha256 to avoid confusion of the `Hash:` header that GPG adds with the SHA256 used for the files)
 Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spurious/nonsensical entry.
 
-- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the arcticcoin.org server
+- Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the arc.org server
 
-- Update arcticcoin.org
+- Update arc.org
 
 - Announce the release:
 
-  - Release on Arctic forum: https://www.arcticcoin.org/forum/topic/official-announcements.54/
+  - Release on Arctic forum: https://www.arc.org/forum/topic/official-announcements.54/
 
   - Arctic-development mailing list
 
@@ -196,7 +196,7 @@ Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spur
 
   - Optionally reddit /r/ArcticCore, ... but this will usually sort out itself
 
-- Notify flare so that he can start building [the PPAs](https://launchpad.net/~arcticcoin.org/+archive/ubuntu/arcticcoin)
+- Notify flare so that he can start building [the PPAs](https://launchpad.net/~arc.org/+archive/ubuntu/arc)
 
 - Add release notes for the new version to the directory `doc/release-notes` in git goldmine
 

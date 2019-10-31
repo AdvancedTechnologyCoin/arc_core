@@ -1,7 +1,7 @@
-Arctic Core staging tree 0.12.1
+ARC staging tree 0.13.0
 ===============================
 
-https://www.arcticcoin.org
+https://advtech.group/
 
 
 What is Arctic?
@@ -10,25 +10,25 @@ What is Arctic?
 Arctic is an experimental new digital currency that enables anonymous, instant
 payments to anyone, anywhere in the world. Arctic uses peer-to-peer technology
 to operate with no central authority: managing transactions and issuing money
-are carried out collectively by the network. Arctic Core is the name of the open
+are carried out collectively by the network. ARC is the name of the open
 source software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the Arctic Core software, see https://www.arcticcoin.org/get-arcticcoin/.
+the ARC software, see https://advtech.group//get-arc/.
 
 
 License
 -------
 
-Arctic Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
+ARC is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
 -------------------
 
 The `goldmine` branch is meant to be stable. Development is normally done in separate branches.
-[Tags](https://github.com/ArcticCore/arcticcoin/tags) are created to indicate new official,
-stable release versions of Arctic Core.
+[Tags](https://github.com/ArcticCore/arc/tags) are created to indicate new official,
+stable release versions of ARC.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -64,7 +64,7 @@ Translations
 ------------
 
 Changes to translations as well as new translations can be submitted to
-[Arctic Core's Transifex page](https://www.transifex.com/projects/p/arcticcoin/).
+[ARC's Transifex page](https://www.transifex.com/projects/p/arc/).
 
 Translations are periodically pulled from Transifex and merged into the git repository. See the
 [translation process](doc/translation_process.md) for details on how this works.
@@ -72,4 +72,4 @@ Translations are periodically pulled from Transifex and merged into the git repo
 **Important**: We do not accept translation changes as GitHub pull requests because the next
 pull from Transifex would automatically overwrite them again.
 
-Translators should also follow the [forum](https://www.arcticcoin.org/forum/topic/arcticcoin-worldwide-collaboration.88/).
+Translators should also follow the [forum](https://advtech.group/forum/topic/arc-worldwide-collaboration.88/).
