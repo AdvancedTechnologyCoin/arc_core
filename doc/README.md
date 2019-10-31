@@ -1,7 +1,7 @@
 ARC 0.12.8
 =====================
 
-This is the official reference wallet for Arctic digital currency and comprises the backbone of the Arctic peer-to-peer network. You can [download ARC](https://www.arc.org/downloads/) or [build it yourself](#building) using the guides below.
+This is the official reference wallet for ARC digital currency and comprises the backbone of the ARC peer-to-peer network. You can [download ARC](https://advtech.group/#wallets) or [build it yourself](#building) using the guides below.
 
 Running
 ---------------------
@@ -24,10 +24,10 @@ Drag Arctic-Qt to your applications folder, and then run Arctic-Qt.
 
 ### Need Help?
 
-* See the [Arctic documentation](https://ArcticCore.atlassian.net/wiki/display/DOC)
+* See the [ARC documentation](readme.md)
 for help and more information.
-* Ask for help on [#ArcticCore](http://webchat.freenode.net?channels=ArcticCore) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net?channels=ArcticCore).
-* Ask for help on the [ArcticTalk](https://arctalk.org/) forums.
+* Ask for help on [#ARCCore](https://discordapp.com/channels/336432726309863426/336432726309863426) on Freenode. If you don't have an IRC client use [webchat here](https://discordapp.com/channels/336432726309863426/336432726309863426).
+* Ask for help on the [ARC_Talk](https://bitcointalk.org/index.php?topic=4548770) forums.
 
 Building
 ---------------------
@@ -57,8 +57,8 @@ The ARC repo's [root README](/README.md) contains relevant information on the de
 - [Dnsseed Policy](dnsseed-policy.md)
 
 ### Resources
-* Discuss on the [ArcticTalk](https://arctalk.org/) forums, in the Development & Technical Discussion board.
-* Discuss on [#ArcticCore](http://webchat.freenode.net/?channels=ArcticCore) on Freenode. If you don't have an IRC client use [webchat here](http://webchat.freenode.net/?channels=ArcticCore).
+* Discuss on the [ARC_Talk](https://bitcointalk.org/index.php?topic=4548770) forums, in the Development & Technical Discussion board.
+* Discuss on [#ARCCore](https://discordapp.com/channels/336432726309863426/336432726309863426) on Freenode. If you don't have an IRC client use [webchat here](https://discordapp.com/channels/336432726309863426/336432726309863426).
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)
