@@ -16,14 +16,14 @@ BEGIN
     BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
-            VALUE "CompanyName",        "Beenode"
-            VALUE "FileDescription",    "beenoded (Beenode node with a JSON-RPC server)"
+            VALUE "CompanyName",        "AdvancedTechnology"
+            VALUE "FileDescription",    "arcd (Arc node with a JSON-RPC server)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "beenoded"
+            VALUE "InternalName",       "arcd"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "beenoded.exe"
-            VALUE "ProductName",        "beenoded"
+            VALUE "OriginalFilename",   "arcd.exe"
+            VALUE "ProductName",        "arcd"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END
