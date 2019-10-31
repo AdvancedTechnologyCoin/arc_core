@@ -1,6 +1,0 @@
-usr/local/bin/arcticcoin-qt usr/bin
-share/pixmaps/arcticcoin32.xpm usr/share/pixmaps
-share/pixmaps/arcticcoin16.xpm usr/share/pixmaps
-share/pixmaps/arcticcoin128.png usr/share/pixmaps
-debian/arcticcoin-qt.desktop usr/share/applications
-debian/arcticcoin-qt.protocol usr/share/kde4/services/

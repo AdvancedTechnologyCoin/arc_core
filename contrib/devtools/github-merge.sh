@@ -4,7 +4,7 @@
 # github repository, inspect it, sign it and optionally push it.
 
 # The following temporary branches are created/overwritten and deleted:
-# * pull/$PULL/base (the current goldmine we're merging onto)
+# * pull/$PULL/base (the current master we're merging onto)
 # * pull/$PULL/head (the current state of the remote pull request)
 # * pull/$PULL/merge (github's merge)
 # * pull/$PULL/local-merge (our merge)
@@ -18,7 +18,7 @@ if [[ "d$REPO" == "d" ]]; then
   echo "git config githubmerge.repository <owner>/<repo>" >&2
   echo "In addition, you can set the following variables:" >&2
   echo "- githubmerge.host (default git@github.com)" >&2
-  echo "- githubmerge.branch (default goldmine)" >&2
+  echo "- githubmerge.branch (default master)" >&2
   echo "- githubmerge.testcmd (default none)" >&2
   exit 1
 fi
@@ -30,7 +30,7 @@ fi
 
 BRANCH="$(git config --get githubmerge.branch)"
 if [[ "d$BRANCH" == "d" ]]; then
-  BRANCH="goldmine"
+  BRANCH="master"
 fi
 
 TESTCMD="$(git config --get githubmerge.testcmd)"

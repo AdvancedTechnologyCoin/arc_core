@@ -1,7 +1,7 @@
 # /etc/conf.d/arcd: config file for /etc/init.d/arcd
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/arc/arc.conf"
+#BITCOIND_CONFIGFILE="/etc/arccore/arc.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/arcd"
@@ -13,8 +13,8 @@
 #BITCOIND_DATADIR="/var/lib/arcd"
 
 # User and group to own arcd process
-#BITCOIND_USER="arc"
-#BITCOIND_GROUP="arc"
+#BITCOIND_USER="arccore"
+#BITCOIND_GROUP="arccore"
 
 # Path to arcd executable
 #BITCOIND_BIN="/usr/bin/arcd"

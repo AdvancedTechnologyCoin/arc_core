@@ -7,7 +7,7 @@
 #  spendfrom.py  # Lists available funds
 #  spendfrom.py --from=ADDRESS --to=ADDRESS --amount=11.00
 #
-# Assumes it will talk to a arcd or Arctic-Qt running
+# Assumes it will talk to a arcd or Arc-Qt running
 # on localhost.
 #
 # Depends on jsonrpc
@@ -33,12 +33,12 @@ def check_json_precision():
         raise RuntimeError("JSON encode/decode loses precision")
 
 def determine_db_dir():
-    """Return the default location of the ARC data directory"""
+    """Return the default location of the Arc Core data directory"""
     if platform.system() == "Darwin":
-        return os.path.expanduser("~/Library/Application Support/ArcticCore/")
+        return os.path.expanduser("~/Library/Application Support/ArcCore/")
     elif platform.system() == "Windows":
-        return os.path.join(os.environ['APPDATA'], "ArcticCore")
-    return os.path.expanduser("~/.arc")
+        return os.path.join(os.environ['APPDATA'], "ArcCore")
+    return os.path.expanduser("~/.arccore")
 
 def read_bitcoin_config(dbdir):
     """Read the arc.conf file from dbdir, returns dictionary of settings"""
@@ -63,11 +63,11 @@ def read_bitcoin_config(dbdir):
     return dict(config_parser.items("all"))
 
 def connect_JSON(config):
-    """Connect to a ARC JSON-RPC server"""
+    """Connect to a Arc Core JSON-RPC server"""
     testnet = config.get('testnet', '0')
     testnet = (int(testnet) > 0)  # 0/1 in config file, convert to True/False
     if not 'rpcport' in config:
-        config['rpcport'] = 17208 if testnet else 7208
+        config['rpcport'] = 14243 if testnet else 4243
     connect = "http://%s:%s@127.0.0.1:%s"%(config['rpcuser'], config['rpcpassword'], config['rpcport'])
     try:
         result = ServiceProxy(connect)

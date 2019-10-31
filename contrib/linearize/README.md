@@ -3,7 +3,7 @@ Construct a linear, no-fork, best version of the blockchain.
 
 ## Step 0: Install arc_hash
 
-https://github.com/ArcticCore/arc_hash
+https://github.com/bee-group/arc
 
 ## Step 1: Download hash list
 

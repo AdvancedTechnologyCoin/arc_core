@@ -2,7 +2,7 @@
 
 # Helpful little script that spits out a comma-separated list of
 # language codes for Qt icons that should be included
-# in binary ARC distributions
+# in binary Arc Core distributions
 
 import glob
 import os
