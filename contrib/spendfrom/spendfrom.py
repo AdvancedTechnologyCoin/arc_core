@@ -38,7 +38,7 @@ def determine_db_dir():
         return os.path.expanduser("~/Library/Application Support/ArcticCore/")
     elif platform.system() == "Windows":
         return os.path.join(os.environ['APPDATA'], "ArcticCore")
-    return os.path.expanduser("~/.arcticcore")
+    return os.path.expanduser("~/.arc")
 
 def read_bitcoin_config(dbdir):
     """Read the arc.conf file from dbdir, returns dictionary of settings"""

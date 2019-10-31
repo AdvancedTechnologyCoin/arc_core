@@ -13,7 +13,7 @@ can be found in the contrib/init folder.
 1. Service User
 ---------------------------------
 
-All three Linux startup configurations assume the existence of a "arcticcore" user
+All three Linux startup configurations assume the existence of a "arc" user
 and group.  They must be created before attempting to use these scripts.
 The OS X configuration assumes arcd will be set up for the current user.
 
@@ -54,15 +54,15 @@ see `contrib/debian/examples/arc.conf`.
 All three configurations assume several paths that might need to be adjusted.
 
 Binary:              `/usr/bin/arcd`  
-Configuration file:  `/etc/arcticcore/arc.conf`  
+Configuration file:  `/etc/arc/arc.conf`  
 Data directory:      `/var/lib/arcd`  
 PID file:            `/var/run/arcd/arcd.pid` (OpenRC and Upstart) or `/var/lib/arcd/arcd.pid` (systemd)  
 Lock file:           `/var/lock/subsys/arcd` (CentOS)  
 
 The configuration file, PID directory (if applicable) and data directory
-should all be owned by the arcticcore user and group.  It is advised for security
+should all be owned by the arc user and group.  It is advised for security
 reasons to make the configuration file and data directory only readable by the
-arcticcore user and group.  Access to arc-cli and other arcd rpc clients
+arc user and group.  Access to arc-cli and other arcd rpc clients
 can then be controlled by group membership.
 
 3b) Mac OS X
@@ -116,7 +116,7 @@ This Launch Agent will cause arcd to start whenever the user logs in.
 
 NOTE: This approach is intended for those wanting to run arcd as the current user.
 You will need to modify org.arc.arcd.plist if you intend to use it as a
-Launch Daemon with a dedicated arcticcore user.
+Launch Daemon with a dedicated arc user.
 
 5. Auto-respawn
 -----------------------------------

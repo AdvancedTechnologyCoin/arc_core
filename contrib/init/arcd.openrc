@@ -2,18 +2,18 @@
 
 # backward compatibility for existing gentoo layout 
 #
-if [ -d "/var/lib/arcticcore/.arcticcore" ]; then
-	BITCOIND_DEFAULT_DATADIR="/var/lib/arcticcore/.arcticcore"
+if [ -d "/var/lib/arc/.arc" ]; then
+	BITCOIND_DEFAULT_DATADIR="/var/lib/arc/.arc"
 else
 	BITCOIND_DEFAULT_DATADIR="/var/lib/arcd"
 fi
 
-BITCOIND_CONFIGFILE=${BITCOIND_CONFIGFILE:-/etc/arcticcore/arc.conf}
+BITCOIND_CONFIGFILE=${BITCOIND_CONFIGFILE:-/etc/arc/arc.conf}
 BITCOIND_PIDDIR=${BITCOIND_PIDDIR:-/var/run/arcd}
 BITCOIND_PIDFILE=${BITCOIND_PIDFILE:-${BITCOIND_PIDDIR}/arcd.pid}
 BITCOIND_DATADIR=${BITCOIND_DATADIR:-${BITCOIND_DEFAULT_DATADIR}}
-BITCOIND_USER=${BITCOIND_USER:-${BITCOIN_USER:-arcticcore}}
-BITCOIND_GROUP=${BITCOIND_GROUP:-arcticcore}
+BITCOIND_USER=${BITCOIND_USER:-${BITCOIN_USER:-arc}}
+BITCOIND_GROUP=${BITCOIND_GROUP:-arc}
 BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/arcd}
 BITCOIND_NICE=${BITCOIND_NICE:-${NICELEVEL:-0}}
 BITCOIND_OPTS="${BITCOIND_OPTS:-${BITCOIN_OPTS}}"
