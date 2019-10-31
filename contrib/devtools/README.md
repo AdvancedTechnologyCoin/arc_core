@@ -30,9 +30,9 @@ the commit it claims to have been updated to.
 
 To use, make sure that you have fetched the upstream repository branch in which the subtree is
 maintained:
-* for `src/secp256k1`: https://github.com/bitcoin/secp256k1.git (branch goldmine)
+* for `src/secp256k1`: https://github.com/bitcoin/secp256k1.git (branch master)
 * for `src/leveldb`: https://github.com/bitcoin/leveldb.git (branch bitcoin-fork)
-* for `src/univalue`: https://github.com/bitcoin/univalue.git (branch goldmine)
+* for `src/univalue`: https://github.com/bitcoin/univalue.git (branch master)
 
 Usage: `git-subtree-check.sh DIR COMMIT`
 
@@ -51,7 +51,7 @@ For example:
 bitcoin/bitcoin repository.
 
 What it does:
-* Fetch goldmine and the pull request.
+* Fetch master and the pull request.
 * Locally construct a merge commit.
 * Show the diff that merge results in.
 * Ask you to verify the resulting source tree (so you can do a make

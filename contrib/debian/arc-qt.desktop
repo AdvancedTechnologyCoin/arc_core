@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Arc
-Comment=Arctic P2P Cryptocurrency
+Comment=Arc P2P Cryptocurrency
 Comment[fr]=Arc, monnaie virtuelle cryptographique pair à pair
 Comment[tr]=Arc, eşten eşe kriptografik sanal para birimi
 Exec=arc-qt %u

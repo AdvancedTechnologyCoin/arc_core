@@ -25,17 +25,17 @@ Build-Depends: debhelper,
  python
 Standards-Version: 3.9.2
 Homepage: https://www.arc.org/
-Vcs-Git: git://github.com/ArcticCore/arc.git
-Vcs-Browser: https://github.com/ArcticCore/arc
+Vcs-Git: git://github.com/bee-group/arc.git
+Vcs-Browser: https://github.com/bee-group/arc
 
 Package: arcd
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
- Arctic is an experimental new digital currency that enables anonymous, instant
- payments to anyone, anywhere in the world. Arctic uses peer-to-peer
+ Arc is an experimental new digital currency that enables anonymous, instant
+ payments to anyone, anywhere in the world. Arc uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. ARC
+ and issuing money are carried out collectively by the network. Arc Core
  is the name of the open source software which enables the use of this currency.
  .
  This package provides the daemon, arcd, and the CLI tool
@@ -45,22 +45,22 @@ Package: arc-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
- Arctic is an experimental new digital currency that enables anonymous, instant
- payments to anyone, anywhere in the world. Arctic uses peer-to-peer
+ Arc is an experimental new digital currency that enables anonymous, instant
+ payments to anyone, anywhere in the world. Arc uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. ARC
+ and issuing money are carried out collectively by the network. Arc Core
  is the name of the open source software which enables the use of this currency.
  .
- This package provides Arctic-Qt, a GUI for Arctic based on Qt.
+ This package provides Arc-Qt, a GUI for Arc based on Qt.
 
 Package: arc-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
- Arctic is an experimental new digital currency that enables anonymous, instant
- payments to anyone, anywhere in the world. Arctic uses peer-to-peer
+ Arc is an experimental new digital currency that enables anonymous, instant
+ payments to anyone, anywhere in the world. Arc uses peer-to-peer
  technology to operate with no central authority: managing transactions
- and issuing money are carried out collectively by the network. ARC
+ and issuing money are carried out collectively by the network. Arc Core
  is the name of the open source software which enables the use of this currency.
  .
  This package provides arc-tx, a command-line transaction creation

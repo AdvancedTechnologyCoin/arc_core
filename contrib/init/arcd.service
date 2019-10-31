@@ -1,15 +1,15 @@
 [Unit]
-Description=Arctic's distributed currency daemon
+Description=Arc's distributed currency daemon
 After=network.target
 
 [Service]
-User=arc
-Group=arc
+User=arccore
+Group=arccore
 
 Type=forking
 PIDFile=/var/lib/arcd/arcd.pid
 ExecStart=/usr/bin/arcd -daemon -pid=/var/lib/arcd/arcd.pid \
--conf=/etc/arc/arc.conf -datadir=/var/lib/arcd -disablewallet
+-conf=/etc/arccore/arc.conf -datadir=/var/lib/arcd -disablewallet
 
 Restart=always
 PrivateTmp=true

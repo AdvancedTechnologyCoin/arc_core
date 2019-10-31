@@ -1,11 +1,11 @@
 #!/bin/bash
-if ! [[ "$2" =~ ^(git@)?(www.)?github.com(:|/)ArcticCore/arc(.git)?$ ]]; then
+if ! [[ "$2" =~ ^(git@)?(www.)?github.com(:|/)bee-group/arc(.git)?$ ]]; then
     exit 0
 fi
 
 while read LINE; do
     set -- A $LINE
-    if [ "$4" != "refs/heads/goldmine" ]; then
+    if [ "$4" != "refs/heads/master" ]; then
         continue
     fi
     if ! ./contrib/verify-commits/verify-commits.sh $3 > /dev/null 2>&1; then
