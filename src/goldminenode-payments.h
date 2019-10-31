@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,23 +8,23 @@
 #include "util.h"
 #include "core_io.h"
 #include "key.h"
-#include "main.h"
 #include "goldminenode.h"
+#include "net_processing.h"
 #include "utilstrencodings.h"
 
 class CGoldminenodePayments;
 class CGoldminenodePaymentVote;
 class CGoldminenodeBlockPayees;
 
-static const int MNPAYMENTS_SIGNATURES_REQUIRED         = 6;
+static const int MNPAYMENTS_SIGNATURES_REQUIRED         = 1;
 static const int MNPAYMENTS_SIGNATURES_TOTAL            = 10;
 
 //! minimum peer version that can receive and send goldminenode payment messages,
 //  vote for goldminenode and be elected as a payment winner
 // V1 - Last protocol version before update
 // V2 - Newest protocol version
-static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1 = 70103;
-static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_2 = 70204;
+static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1 = 70206;
+static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_2 = 70208;
 
 extern CCriticalSection cs_vecPayees;
 extern CCriticalSection cs_mapGoldminenodeBlocks;
@@ -35,7 +35,7 @@ extern CGoldminenodePayments mnpayments;
 /// TODO: all 4 functions do not belong here really, they should be refactored/moved somewhere (main.cpp ?)
 bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount blockReward, std::string &strErrorRet);
 bool IsBlockPayeeValid(const CTransaction& txNew, int nBlockHeight, CAmount blockReward);
-void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutGoldminenodeRet, std::vector<CTxOut>& voutSuperblockRet);
+void FillBlockPayments(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CAmount blockEvolution, CTxOut& txoutGoldminenodeRet, std::vector<CTxOut>& voutSuperblockRet);
 std::string GetRequiredPaymentsString(int nBlockHeight);
 
 class CGoldminenodePayee
@@ -98,7 +98,7 @@ public:
 
     void AddPayee(const CGoldminenodePaymentVote& vote);
     bool GetBestPayee(CScript& payeeRet);
-    bool HasPayeeWithVotes(CScript payeeIn, int nVotesReq);
+    bool HasPayeeWithVotes(const CScript& payeeIn, int nVotesReq);
 
     bool IsTransactionValid(const CTransaction& txNew);
 
@@ -122,8 +122,8 @@ public:
         vchSig()
         {}
 
-    CGoldminenodePaymentVote(CTxIn vinGoldminenode, int nBlockHeight, CScript payee) :
-        vinGoldminenode(vinGoldminenode),
+    CGoldminenodePaymentVote(COutPoint outpointGoldminenode, int nBlockHeight, CScript payee) :
+        vinGoldminenode(outpointGoldminenode),
         nBlockHeight(nBlockHeight),
         payee(payee),
         vchSig()
@@ -150,8 +150,8 @@ public:
     bool Sign();
     bool CheckSignature(const CPubKey& pubKeyGoldminenode, int nValidationHeight, int &nDos);
 
-    bool IsValid(CNode* pnode, int nValidationHeight, std::string& strError);
-    void Relay();
+    bool IsValid(CNode* pnode, int nValidationHeight, std::string& strError, CConnman& connman);
+    void Relay(CConnman& connman);
 
     bool IsVerified() { return !vchSig.empty(); }
     void MarkAsNotVerified() { vchSig.clear(); }
@@ -172,13 +172,14 @@ private:
     // ... but at least nMinBlocksToStore (payments blocks)
     const int nMinBlocksToStore;
 
-    // Keep track of current block index
-    const CBlockIndex *pCurrentBlockIndex;
+    // Keep track of current block height
+    int nCachedBlockHeight;
 
 public:
     std::map<uint256, CGoldminenodePaymentVote> mapGoldminenodePaymentVotes;
     std::map<int, CGoldminenodeBlockPayees> mapGoldminenodeBlocks;
     std::map<COutPoint, int> mapGoldminenodesLastVote;
+    std::map<COutPoint, int> mapGoldminenodesDidNotVote;
 
     CGoldminenodePayments() : nStorageCoeff(1.25), nMinBlocksToStore(5000) {}
 
@@ -194,10 +195,11 @@ public:
 
     bool AddPaymentVote(const CGoldminenodePaymentVote& vote);
     bool HasVerifiedPaymentVote(uint256 hashIn);
-    bool ProcessBlock(int nBlockHeight);
+    bool ProcessBlock(int nBlockHeight, CConnman& connman);
+    void CheckPreviousBlockVotes(int nPrevBlockHeight);
 
-    void Sync(CNode* node, int nCountNeeded);
-    void RequestLowDataPaymentBlocks(CNode* pnode);
+    void Sync(CNode* node, CConnman& connman);
+    void RequestLowDataPaymentBlocks(CNode* pnode, CConnman& connman);
     void CheckAndRemove();
 
     bool GetBlockPayee(int nBlockHeight, CScript& payee);
@@ -207,7 +209,7 @@ public:
     bool CanVote(COutPoint outGoldminenode, int nBlockHeight);
 
     int GetMinGoldminenodePaymentsProto();
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, CConnman& connman);
     std::string GetRequiredPaymentsString(int nBlockHeight);
     void FillBlockPayee(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutGoldminenodeRet);
     std::string ToString() const;
@@ -217,8 +219,10 @@ public:
 
     bool IsEnoughData();
     int GetStorageLimit();
-
-    void UpdatedBlockTip(const CBlockIndex *pindex);
+	
+	static void CreateEvolution(CMutableTransaction& txNewRet, int nBlockHeight, CAmount blockEvolution, std::vector<CTxOut>& voutSuperblockRet);	
+	
+    void UpdatedBlockTip(const CBlockIndex *pindex, CConnman& connman);
 };
 
 #endif

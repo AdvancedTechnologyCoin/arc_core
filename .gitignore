@@ -6,13 +6,13 @@ reset-files.bash
 *.tar.gz
 
 *.exe
-src/arcticcoin
-src/arcticcoind
-src/arcticcoin-cli
-src/arcticcoin-tx
-src/test/test_arcticcoin
-src/qt/test/test_arcticcoin-qt
-src/bench/bench_arcticcoin
+src/arc
+src/arcd
+src/arc-cli
+src/arc-tx
+src/test/test_arc
+src/qt/test/test_arc-qt
+src/bench/bench_arc
 
 # autoreconf
 Makefile.in
@@ -35,8 +35,8 @@ config.log
 config.status
 configure
 libtool
-src/config/arcticcoin-config.h
-src/config/arcticcoin-config.h.in
+src/config/arc-config.h
+src/config/arc-config.h.in
 src/config/stamp-h1
 share/setup.nsi
 share/qt/Info.plist
@@ -62,7 +62,7 @@ libconftest.dylib*
 *.o
 *.o-*
 *.patch
-.arcticcoin
+.arc
 *.a
 *.pb.cc
 *.pb.h
@@ -81,12 +81,12 @@ libconftest.dylib*
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-arcticcoin-qt
+arc-qt
 ARCTIC-Qt.app
 
 # Unit-tests
 Makefile.test
-arcticcoin-qt_test
+arc-qt_test
 src/test/buildenv.py
 
 # Resources cpp
@@ -100,7 +100,7 @@ build
 *.gcno
 *.gcda
 /*.info
-test_arcticcoin.coverage/
+test_arc.coverage/
 total.coverage/
 coverage_percent.txt
 
@@ -124,11 +124,11 @@ share/BitcoindComparisonTool.jar
 /doc/doxygen/
 
 libbitcoinconsensus.pc
-src/qt/arcticcoin-qt.bash
+src/qt/arc-qt.bash
 qa/pull-tester/tests-config.sh
 
 #development symlinks
-arcticcoin-cli
-arcticcoind
-arcticcoin-qt
+arc-cli
+arcd
+arc-qt
 make

@@ -1,11 +1,12 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "overviewpage.h"
 #include "ui_overviewpage.h"
-
+#include <QDesktopServices>
+#include <QUrl>
 #include "bitcoinunits.h"
 #include "clientmodel.h"
 #include "guiconstants.h"
@@ -18,10 +19,10 @@
 #include "utilitydialog.h"
 #include "walletmodel.h"
 
-#include "spysend.h"
 #include "instantx.h"
 #include "spysendconfig.h"
 #include "goldminenode-sync.h"
+#include "privatesend-client.h"
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
@@ -37,9 +38,9 @@ class TxViewDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 public:
-    TxViewDelegate(const PlatformStyle *platformStyle):
-        QAbstractItemDelegate(), unit(BitcoinUnits::ARC),
-        platformStyle(platformStyle)
+	TxViewDelegate(const PlatformStyle *_platformStyle, QObject *parent=nullptr):
+        QAbstractItemDelegate(parent), unit(BitcoinUnits::ARC),
+        platformStyle(_platformStyle)
     {
 
     }
@@ -132,8 +133,8 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     currentWatchOnlyBalance(-1),
     currentWatchUnconfBalance(-1),
     currentWatchImmatureBalance(-1),
-    txdelegate(new TxViewDelegate(platformStyle)),
-    filter(0)
+    txdelegate(new TxViewDelegate(platformStyle, this)),
+    timer(nullptr)
 {
     ui->setupUi(this);
     QString theme = GUIUtil::getThemeName();
@@ -148,12 +149,12 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     // init "out of sync" warning labels
     ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");
-    ui->labelSpySendSyncStatus->setText("(" + tr("out of sync") + ")");
+    ui->labelPrivateSendSyncStatus->setText("(" + tr("out of sync") + ")");
     ui->labelTransactionsStatus->setText("(" + tr("out of sync") + ")");
 
-    // hide SS frame (helps to preserve saved size)
+    // hide PS frame (helps to preserve saved size)
     // we'll setup and make it visible in updateAdvancedPSUI() later if we are not in litemode
-    ui->frameSpySend->setVisible(false);
+    ui->framePrivateSend->setVisible(false);
 
     // start with displaying the "out of sync" warnings
     showOutOfSyncWarning(true);
@@ -161,21 +162,21 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     // that's it for litemode
     if(fLiteMode) return;
 
-    // Disable any SS UI for goldminenode or when autobackup is disabled or failed for whatever reason
+    // Disable any PS UI for goldminenode or when autobackup is disabled or failed for whatever reason
     if(fGoldmineNode || nWalletBackups <= 0){
-        DisableSpySendCompletely();
+        DisablePrivateSendCompletely();
         if (nWalletBackups <= 0) {
-            ui->labelSpySendEnabled->setToolTip(tr("Automatic backups are disabled, no mixing available!"));
+            ui->labelPrivateSendEnabled->setToolTip(tr("Automatic backups are disabled, no mixing available!"));
         }
     } else {
-        if(!fEnableSpySend){
-            ui->toggleSpySend->setText(tr("Start Mixing"));
+        if(!privateSendClient.fEnablePrivateSend){
+            ui->togglePrivateSend->setText(tr("Start Mixing"));
         } else {
-            ui->toggleSpySend->setText(tr("Stop Mixing"));
+            ui->togglePrivateSend->setText(tr("Stop Mixing"));
         }
-        // Disable darkSendPool builtin support for automatic backups while we are in GUI,
+        // Disable privateSendClient builtin support for automatic backups while we are in GUI,
         // we'll handle automatic backups and user warnings in privateSendStatus()
-        darkSendPool.fCreateAutoBackups = false;
+        privateSendClient.fCreateAutoBackups = false;
 
         timer = new QTimer(this);
         connect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
@@ -189,9 +190,14 @@ void OverviewPage::handleTransactionClicked(const QModelIndex &index)
         Q_EMIT transactionClicked(filter->mapToSource(index));
 }
 
+void OverviewPage::handleOutOfSyncWarningClicks()
+{
+    Q_EMIT outOfSyncWarningClicked();
+}
+
 OverviewPage::~OverviewPage()
 {
-    if(!fLiteMode && !fGoldmineNode) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
+    if(timer) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
     delete ui;
 }
 
@@ -224,7 +230,7 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
     ui->labelImmatureText->setVisible(showImmature || showWatchOnlyImmature);
     ui->labelWatchImmature->setVisible(showWatchOnlyImmature); // show watch-only immature balance
 
-    updateSpySendProgress();
+    updatePrivateSendProgress();
 
     static int cachedTxLocks = 0;
 
@@ -279,16 +285,16 @@ void OverviewPage::setWalletModel(WalletModel *model)
         connect(model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this, SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
 
         connect(model->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
-        connect(model->getOptionsModel(), SIGNAL(privateSendRoundsChanged()), this, SLOT(updateSpySendProgress()));
-        connect(model->getOptionsModel(), SIGNAL(privateSentAmountChanged()), this, SLOT(updateSpySendProgress()));
+        connect(model->getOptionsModel(), SIGNAL(privateSendRoundsChanged()), this, SLOT(updatePrivateSendProgress()));
+        connect(model->getOptionsModel(), SIGNAL(privateSentAmountChanged()), this, SLOT(updatePrivateSendProgress()));
         connect(model->getOptionsModel(), SIGNAL(advancedPSUIChanged(bool)), this, SLOT(updateAdvancedPSUI(bool)));
-        // explicitly update SS frame and transaction list to reflect actual settings
+        // explicitly update PS frame and transaction list to reflect actual settings
         updateAdvancedPSUI(model->getOptionsModel()->getShowAdvancedPSUI());
 
         connect(ui->privateSendAuto, SIGNAL(clicked()), this, SLOT(privateSendAuto()));
         connect(ui->privateSendReset, SIGNAL(clicked()), this, SLOT(privateSendReset()));
         connect(ui->privateSendInfo, SIGNAL(clicked()), this, SLOT(privateSendInfo()));
-        connect(ui->toggleSpySend, SIGNAL(clicked()), this, SLOT(toggleSpySend()));
+        connect(ui->togglePrivateSend, SIGNAL(clicked()), this, SLOT(togglePrivateSend()));
         updateWatchOnlyLabels(model->haveWatchOnly());
         connect(model, SIGNAL(notifyWatchonlyChanged(bool)), this, SLOT(updateWatchOnlyLabels(bool)));
     }
@@ -319,18 +325,18 @@ void OverviewPage::updateAlerts(const QString &warnings)
 void OverviewPage::showOutOfSyncWarning(bool fShow)
 {
     ui->labelWalletStatus->setVisible(fShow);
-    ui->labelSpySendSyncStatus->setVisible(fShow);
+    ui->labelPrivateSendSyncStatus->setVisible(fShow);
     ui->labelTransactionsStatus->setVisible(fShow);
 }
 
-void OverviewPage::updateSpySendProgress()
+void OverviewPage::updatePrivateSendProgress()
 {
     if(!goldminenodeSync.IsBlockchainSynced() || ShutdownRequested()) return;
 
     if(!pwalletMain) return;
 
     QString strAmountAndRounds;
-    QString strSpySendAmount = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, nSpySendAmount * COIN, false, BitcoinUnits::separatorAlways);
+    QString strPrivateSendAmount = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, privateSendClient.nPrivateSendAmount * COIN, false, BitcoinUnits::separatorAlways);
 
     if(currentBalance == 0)
     {
@@ -338,52 +344,52 @@ void OverviewPage::updateSpySendProgress()
         ui->privateSendProgress->setToolTip(tr("No inputs detected"));
 
         // when balance is zero just show info from settings
-        strSpySendAmount = strSpySendAmount.remove(strSpySendAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
-        strAmountAndRounds = strSpySendAmount + " / " + tr("%n Rounds", "", nSpySendRounds);
+        strPrivateSendAmount = strPrivateSendAmount.remove(strPrivateSendAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
+        strAmountAndRounds = strPrivateSendAmount + " / " + tr("%n Rounds", "", privateSendClient.nPrivateSendRounds);
 
         ui->labelAmountRounds->setToolTip(tr("No inputs detected"));
         ui->labelAmountRounds->setText(strAmountAndRounds);
         return;
     }
 
-    CAmount nDenominatedConfirmedBalance;
-    CAmount nDenominatedUnconfirmedBalance;
-    CAmount nAnonymizableBalance;
-    CAmount nNormalizedAnonymizedBalance;
-    double nAverageAnonymizedRounds;
+    CAmount nAnonymizableBalance = pwalletMain->GetAnonymizableBalance(false, false);
 
-    {
-        nDenominatedConfirmedBalance = pwalletMain->GetDenominatedBalance();
-        nDenominatedUnconfirmedBalance = pwalletMain->GetDenominatedBalance(true);
-        nAnonymizableBalance = pwalletMain->GetAnonymizableBalance();
-        nNormalizedAnonymizedBalance = pwalletMain->GetNormalizedAnonymizedBalance();
-        nAverageAnonymizedRounds = pwalletMain->GetAverageAnonymizedRounds();
-    }
-
-    CAmount nMaxToAnonymize = nAnonymizableBalance + currentAnonymizedBalance + nDenominatedUnconfirmedBalance;
+    CAmount nMaxToAnonymize = nAnonymizableBalance + currentAnonymizedBalance;
 
     // If it's more than the anon threshold, limit to that.
-    if(nMaxToAnonymize > nSpySendAmount*COIN) nMaxToAnonymize = nSpySendAmount*COIN;
+    if(nMaxToAnonymize > privateSendClient.nPrivateSendAmount*COIN) nMaxToAnonymize = privateSendClient.nPrivateSendAmount*COIN;
 
     if(nMaxToAnonymize == 0) return;
 
-    if(nMaxToAnonymize >= nSpySendAmount * COIN) {
+    if(nMaxToAnonymize >= privateSendClient.nPrivateSendAmount * COIN) {
         ui->labelAmountRounds->setToolTip(tr("Found enough compatible inputs to anonymize %1")
-                                          .arg(strSpySendAmount));
-        strSpySendAmount = strSpySendAmount.remove(strSpySendAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
-        strAmountAndRounds = strSpySendAmount + " / " + tr("%n Rounds", "", nSpySendRounds);
+                                          .arg(strPrivateSendAmount));
+        strPrivateSendAmount = strPrivateSendAmount.remove(strPrivateSendAmount.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
+        strAmountAndRounds = strPrivateSendAmount + " / " + tr("%n Rounds", "", privateSendClient.nPrivateSendRounds);
     } else {
         QString strMaxToAnonymize = BitcoinUnits::formatHtmlWithUnit(nDisplayUnit, nMaxToAnonymize, false, BitcoinUnits::separatorAlways);
         ui->labelAmountRounds->setToolTip(tr("Not enough compatible inputs to anonymize <span style='color:red;'>%1</span>,<br>"
                                              "will anonymize <span style='color:red;'>%2</span> instead")
-                                          .arg(strSpySendAmount)
+                                          .arg(strPrivateSendAmount)
                                           .arg(strMaxToAnonymize));
         strMaxToAnonymize = strMaxToAnonymize.remove(strMaxToAnonymize.indexOf("."), BitcoinUnits::decimals(nDisplayUnit) + 1);
         strAmountAndRounds = "<span style='color:red;'>" +
                 QString(BitcoinUnits::factor(nDisplayUnit) == 1 ? "" : "~") + strMaxToAnonymize +
-                " / " + tr("%n Rounds", "", nSpySendRounds) + "</span>";
+                " / " + tr("%n Rounds", "", privateSendClient.nPrivateSendRounds) + "</span>";
     }
     ui->labelAmountRounds->setText(strAmountAndRounds);
+
+    if (!fShowAdvancedPSUI) return;
+
+    CAmount nDenominatedConfirmedBalance;
+    CAmount nDenominatedUnconfirmedBalance;
+    CAmount nNormalizedAnonymizedBalance;
+    float nAverageAnonymizedRounds;
+
+    nDenominatedConfirmedBalance = pwalletMain->GetDenominatedBalance();
+    nDenominatedUnconfirmedBalance = pwalletMain->GetDenominatedBalance(true);
+    nNormalizedAnonymizedBalance = pwalletMain->GetNormalizedAnonymizedBalance();
+    nAverageAnonymizedRounds = pwalletMain->GetAverageAnonymizedRounds();
 
     // calculate parts of the progress, each of them shouldn't be higher than 1
     // progress of denominating
@@ -408,7 +414,7 @@ void OverviewPage::updateSpySendProgress()
 
     // apply some weights to them ...
     float denomWeight = 1;
-    float anonNormWeight = nSpySendRounds;
+    float anonNormWeight = privateSendClient.nPrivateSendRounds;
     float anonFullWeight = 2;
     float fullWeight = denomWeight + anonNormWeight + anonFullWeight;
     // ... and calculate the whole progress
@@ -424,7 +430,7 @@ void OverviewPage::updateSpySendProgress()
                           tr("Denominated") + ": %2%<br/>" +
                           tr("Mixed") + ": %3%<br/>" +
                           tr("Anonymized") + ": %4%<br/>" +
-                          tr("Denominated inputs have %5 of %n rounds on average", "", nSpySendRounds))
+                          tr("Denominated inputs have %5 of %n rounds on average", "", privateSendClient.nPrivateSendRounds))
             .arg(progress).arg(denomPart).arg(anonNormPart).arg(anonFullPart)
             .arg(nAverageAnonymizedRounds);
     ui->privateSendProgress->setToolTip(strToolPip);
@@ -437,7 +443,7 @@ void OverviewPage::updateAdvancedPSUI(bool fShowAdvancedPSUI) {
 
     if (fLiteMode) return;
 
-    ui->frameSpySend->setVisible(true);
+    ui->framePrivateSend->setVisible(true);
     ui->labelCompletitionText->setVisible(fShowAdvancedPSUI);
     ui->privateSendProgress->setVisible(fShowAdvancedPSUI);
     ui->labelSubmittedDenomText->setVisible(fShowAdvancedPSUI);
@@ -445,7 +451,7 @@ void OverviewPage::updateAdvancedPSUI(bool fShowAdvancedPSUI) {
     ui->privateSendAuto->setVisible(fShowAdvancedPSUI);
     ui->privateSendReset->setVisible(fShowAdvancedPSUI);
     ui->privateSendInfo->setVisible(true);
-    ui->labelSpySendLastMessage->setVisible(fShowAdvancedPSUI);
+    ui->labelPrivateSendLastMessage->setVisible(fShowAdvancedPSUI);
 }
 
 void OverviewPage::privateSendStatus()
@@ -456,28 +462,28 @@ void OverviewPage::privateSendStatus()
     int nBestHeight = clientModel->getNumBlocks();
 
     // We are processing more then 1 block per second, we'll just leave
-    if(((nBestHeight - darkSendPool.nCachedNumBlocks) / (GetTimeMillis() - nLastDSProgressBlockTime + 1) > 1)) return;
+    if(((nBestHeight - privateSendClient.nCachedNumBlocks) / (GetTimeMillis() - nLastDSProgressBlockTime + 1) > 1)) return;
     nLastDSProgressBlockTime = GetTimeMillis();
 
     QString strKeysLeftText(tr("keys left: %1").arg(pwalletMain->nKeysLeftSinceAutoBackup));
     if(pwalletMain->nKeysLeftSinceAutoBackup < PRIVATESEND_KEYS_THRESHOLD_WARNING) {
         strKeysLeftText = "<span style='color:red;'>" + strKeysLeftText + "</span>";
     }
-    ui->labelSpySendEnabled->setToolTip(strKeysLeftText);
+    ui->labelPrivateSendEnabled->setToolTip(strKeysLeftText);
 
-    if (!fEnableSpySend) {
-        if (nBestHeight != darkSendPool.nCachedNumBlocks) {
-            darkSendPool.nCachedNumBlocks = nBestHeight;
-            updateSpySendProgress();
+    if (!privateSendClient.fEnablePrivateSend) {
+        if (nBestHeight != privateSendClient.nCachedNumBlocks) {
+            privateSendClient.nCachedNumBlocks = nBestHeight;
+            updatePrivateSendProgress();
         }
 
-        ui->labelSpySendLastMessage->setText("");
-        ui->toggleSpySend->setText(tr("Start Mixing"));
+        ui->labelPrivateSendLastMessage->setText("");
+        ui->togglePrivateSend->setText(tr("Start Mixing"));
 
         QString strEnabled = tr("Disabled");
-        // Show how many keys left in advanced SS UI mode only
+        // Show how many keys left in advanced PS UI mode only
         if (fShowAdvancedPSUI) strEnabled += ", " + strKeysLeftText;
-        ui->labelSpySendEnabled->setText(strEnabled);
+        ui->labelPrivateSendEnabled->setText(strEnabled);
 
         return;
     }
@@ -492,9 +498,9 @@ void OverviewPage::privateSendStatus()
                                    "<span style='color:red;'> you should always make sure you have backups "
                                    "saved in some safe place</span>!") + "<br><br>" +
                                 tr("Note: You turn this message off in options.");
-            ui->labelSpySendEnabled->setToolTip(strWarn);
+            ui->labelPrivateSendEnabled->setToolTip(strWarn);
             LogPrintf("OverviewPage::privateSendStatus -- Very low number of keys left since last automatic backup, warning user and trying to create new backup...\n");
-            QMessageBox::warning(this, tr("SpySend"), strWarn, QMessageBox::Ok, QMessageBox::Ok);
+            QMessageBox::warning(this, tr("PrivateSend"), strWarn, QMessageBox::Ok, QMessageBox::Ok);
         } else {
             LogPrintf("OverviewPage::privateSendStatus -- Very low number of keys left since last automatic backup, skipping warning and trying to create new backup...\n");
         }
@@ -506,7 +512,7 @@ void OverviewPage::privateSendStatus()
                 // It's still more or less safe to continue but warn user anyway
                 LogPrintf("OverviewPage::privateSendStatus -- WARNING! Something went wrong on automatic backup: %s\n", strBackupWarning);
 
-                QMessageBox::warning(this, tr("SpySend"),
+                QMessageBox::warning(this, tr("PrivateSend"),
                     tr("WARNING! Something went wrong on automatic backup") + ":<br><br>" + strBackupWarning.c_str(),
                     QMessageBox::Ok, QMessageBox::Ok);
             }
@@ -514,7 +520,7 @@ void OverviewPage::privateSendStatus()
                 // Things are really broken, warn user and stop mixing immediately
                 LogPrintf("OverviewPage::privateSendStatus -- ERROR! Failed to create automatic backup: %s\n", strBackupError);
 
-                QMessageBox::warning(this, tr("SpySend"),
+                QMessageBox::warning(this, tr("PrivateSend"),
                     tr("ERROR! Failed to create automatic backup") + ":<br><br>" + strBackupError.c_str() + "<br>" +
                     tr("Mixing is disabled, please close your wallet and fix the issue!"),
                     QMessageBox::Ok, QMessageBox::Ok);
@@ -522,61 +528,61 @@ void OverviewPage::privateSendStatus()
         }
     }
 
-    QString strEnabled = fEnableSpySend ? tr("Enabled") : tr("Disabled");
-    // Show how many keys left in advanced SS UI mode only
+    QString strEnabled = privateSendClient.fEnablePrivateSend ? tr("Enabled") : tr("Disabled");
+    // Show how many keys left in advanced PS UI mode only
     if(fShowAdvancedPSUI) strEnabled += ", " + strKeysLeftText;
-    ui->labelSpySendEnabled->setText(strEnabled);
+    ui->labelPrivateSendEnabled->setText(strEnabled);
 
     if(nWalletBackups == -1) {
         // Automatic backup failed, nothing else we can do until user fixes the issue manually
-        DisableSpySendCompletely();
+        DisablePrivateSendCompletely();
 
         QString strError =  tr("ERROR! Failed to create automatic backup") + ", " +
                             tr("see debug.log for details.") + "<br><br>" +
                             tr("Mixing is disabled, please close your wallet and fix the issue!");
-        ui->labelSpySendEnabled->setToolTip(strError);
+        ui->labelPrivateSendEnabled->setToolTip(strError);
 
         return;
     } else if(nWalletBackups == -2) {
         // We were able to create automatic backup but keypool was not replenished because wallet is locked.
         QString strWarning = tr("WARNING! Failed to replenish keypool, please unlock your wallet to do so.");
-        ui->labelSpySendEnabled->setToolTip(strWarning);
+        ui->labelPrivateSendEnabled->setToolTip(strWarning);
     }
 
     // check spysend status and unlock if needed
-    if(nBestHeight != darkSendPool.nCachedNumBlocks) {
+    if(nBestHeight != privateSendClient.nCachedNumBlocks) {
         // Balance and number of transactions might have changed
-        darkSendPool.nCachedNumBlocks = nBestHeight;
-        updateSpySendProgress();
+        privateSendClient.nCachedNumBlocks = nBestHeight;
+        updatePrivateSendProgress();
     }
 
-    QString strStatus = QString(darkSendPool.GetStatus().c_str());
+    QString strStatus = QString(privateSendClient.GetStatus().c_str());
 
-    QString s = tr("Last SpySend message:\n") + strStatus;
+    QString s = tr("Last PrivateSend message:\n") + strStatus;
 
-    if(s != ui->labelSpySendLastMessage->text())
-        LogPrintf("OverviewPage::privateSendStatus -- Last SpySend message: %s\n", strStatus.toStdString());
+    if(s != ui->labelPrivateSendLastMessage->text())
+        LogPrintf("OverviewPage::privateSendStatus -- Last PrivateSend message: %s\n", strStatus.toStdString());
 
-    ui->labelSpySendLastMessage->setText(s);
+    ui->labelPrivateSendLastMessage->setText(s);
 
-    if(darkSendPool.nSessionDenom == 0){
+    if(privateSendClient.nSessionDenom == 0){
         ui->labelSubmittedDenom->setText(tr("N/A"));
     } else {
-        QString strDenom(darkSendPool.GetDenominationsToString(darkSendPool.nSessionDenom).c_str());
+        QString strDenom(CPrivateSend::GetDenominationsToString(privateSendClient.nSessionDenom).c_str());
         ui->labelSubmittedDenom->setText(strDenom);
     }
 
 }
 
 void OverviewPage::privateSendAuto(){
-    darkSendPool.DoAutomaticDenominating();
+    privateSendClient.DoAutomaticDenominating(*g_connman);
 }
 
 void OverviewPage::privateSendReset(){
-    darkSendPool.ResetPool();
+    privateSendClient.ResetPool();
 
-    QMessageBox::warning(this, tr("SpySend"),
-        tr("SpySend was successfully reset."),
+    QMessageBox::warning(this, tr("PrivateSend"),
+        tr("PrivateSend was successfully reset."),
         QMessageBox::Ok, QMessageBox::Ok);
 }
 
@@ -585,22 +591,22 @@ void OverviewPage::privateSendInfo(){
     dlg.exec();
 }
 
-void OverviewPage::toggleSpySend(){
+void OverviewPage::togglePrivateSend(){
     QSettings settings;
     // Popup some information on first mixing
     QString hasMixed = settings.value("hasMixed").toString();
     if(hasMixed.isEmpty()){
-        QMessageBox::information(this, tr("SpySend"),
-                tr("If you don't want to see internal SpySend fees/transactions select \"Most Common\" as Type on the \"Transactions\" tab."),
+        QMessageBox::information(this, tr("PrivateSend"),
+                tr("If you don't want to see internal PrivateSend fees/transactions select \"Most Common\" as Type on the \"Transactions\" tab."),
                 QMessageBox::Ok, QMessageBox::Ok);
         settings.setValue("hasMixed", "hasMixed");
     }
-    if(!fEnableSpySend){
-        CAmount nMinAmount = vecSpySendDenominations.back() + PRIVATESEND_COLLATERAL*4;
+    if(!privateSendClient.fEnablePrivateSend){
+        const CAmount nMinAmount = CPrivateSend::GetSmallestDenomination() + CPrivateSend::GetMaxCollateralAmount();
         if(currentBalance < nMinAmount){
             QString strMinAmount(BitcoinUnits::formatWithUnit(nDisplayUnit, nMinAmount));
-            QMessageBox::warning(this, tr("SpySend"),
-                tr("SpySend requires at least %1 to use.").arg(strMinAmount),
+            QMessageBox::warning(this, tr("PrivateSend"),
+                tr("PrivateSend requires at least %1 to use.").arg(strMinAmount),
                 QMessageBox::Ok, QMessageBox::Ok);
             return;
         }
@@ -612,30 +618,30 @@ void OverviewPage::toggleSpySend(){
             if(!ctx.isValid())
             {
                 //unlock was cancelled
-                darkSendPool.nCachedNumBlocks = std::numeric_limits<int>::max();
-                QMessageBox::warning(this, tr("SpySend"),
-                    tr("Wallet is locked and user declined to unlock. Disabling SpySend."),
+                privateSendClient.nCachedNumBlocks = std::numeric_limits<int>::max();
+                QMessageBox::warning(this, tr("PrivateSend"),
+                    tr("Wallet is locked and user declined to unlock. Disabling PrivateSend."),
                     QMessageBox::Ok, QMessageBox::Ok);
-                LogPrint("privatesend", "OverviewPage::toggleSpySend -- Wallet is locked and user declined to unlock. Disabling SpySend.\n");
+                LogPrint("privatesend", "OverviewPage::togglePrivateSend -- Wallet is locked and user declined to unlock. Disabling PrivateSend.\n");
                 return;
             }
         }
 
     }
 
-    fEnableSpySend = !fEnableSpySend;
-    darkSendPool.nCachedNumBlocks = std::numeric_limits<int>::max();
+    privateSendClient.fEnablePrivateSend = !privateSendClient.fEnablePrivateSend;
+    privateSendClient.nCachedNumBlocks = std::numeric_limits<int>::max();
 
-    if(!fEnableSpySend){
-        ui->toggleSpySend->setText(tr("Start Mixing"));
-        darkSendPool.UnlockCoins();
+    if(!privateSendClient.fEnablePrivateSend){
+        ui->togglePrivateSend->setText(tr("Start Mixing"));
+        privateSendClient.UnlockCoins();
     } else {
-        ui->toggleSpySend->setText(tr("Stop Mixing"));
+        ui->togglePrivateSend->setText(tr("Stop Mixing"));
 
         /* show spysend configuration if client has defaults set */
 
-        if(nSpySendAmount == 0){
-            SpySendConfig dlg(this);
+        if(privateSendClient.nPrivateSendAmount == 0){
+            SpysendConfig dlg(this);
             dlg.setModel(walletModel);
             dlg.exec();
         }
@@ -648,7 +654,7 @@ void OverviewPage::SetupTransactionList(int nNumItems) {
 
     if(walletModel && walletModel->getOptionsModel()) {
         // Set up transaction list
-        filter = new TransactionFilterProxy();
+        filter.reset(new TransactionFilterProxy());
         filter->setSourceModel(walletModel->getTransactionTableModel());
         filter->setLimit(nNumItems);
         filter->setDynamicSortFilter(true);
@@ -656,18 +662,36 @@ void OverviewPage::SetupTransactionList(int nNumItems) {
         filter->setShowInactive(false);
         filter->sort(TransactionTableModel::Status, Qt::DescendingOrder);
 
-        ui->listTransactions->setModel(filter);
+        ui->listTransactions->setModel(filter.get());
         ui->listTransactions->setModelColumn(TransactionTableModel::ToAddress);
     }
 }
 
-void OverviewPage::DisableSpySendCompletely() {
-    ui->toggleSpySend->setText("(" + tr("Disabled") + ")");
+void OverviewPage::DisablePrivateSendCompletely() {
+    ui->togglePrivateSend->setText("(" + tr("Disabled") + ")");
     ui->privateSendAuto->setText("(" + tr("Disabled") + ")");
     ui->privateSendReset->setText("(" + tr("Disabled") + ")");
-    ui->frameSpySend->setEnabled(false);
+    ui->framePrivateSend->setEnabled(false);
     if (nWalletBackups <= 0) {
-        ui->labelSpySendEnabled->setText("<span style='color:red;'>(" + tr("Disabled") + ")</span>");
+        ui->labelPrivateSendEnabled->setText("<span style='color:red;'>(" + tr("Disabled") + ")</span>");
     }
-    fEnableSpySend = false;
+    privateSendClient.fEnablePrivateSend = false;
+}
+
+void OverviewPage::on_pushButton_clicked()
+{
+    QString link="https://advtech.group/";
+       QDesktopServices::openUrl(QUrl(link));
+}
+
+void OverviewPage::on_pushButton_2_clicked()
+{
+    QString link="https://advtech.group/";
+       QDesktopServices::openUrl(QUrl(link));
+}
+
+void OverviewPage::on_pushButton_3_clicked()
+{
+    QString link="http://explorer.advtech.group/";
+       QDesktopServices::openUrl(QUrl(link));
 }

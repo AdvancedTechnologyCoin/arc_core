@@ -7,7 +7,7 @@
 #include <string>
 #include <map>
 #include <univalue.h>
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <boost/test/unit_test.hpp>
 

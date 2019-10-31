@@ -1,21 +1,21 @@
 
 Debian
 ====================
-This directory contains files used to package arcticcoind/arcticcoin-qt
-for Debian-based Linux systems. If you compile arcticcoind/arcticcoin-qt yourself, there are some useful files here.
+This directory contains files used to package arcd/arc-qt
+for Debian-based Linux systems. If you compile arcd/arc-qt yourself, there are some useful files here.
 
-## arcticcoin: URI support ##
+## arc: URI support ##
 
 
-arcticcoin-qt.desktop  (Gnome / Open Desktop)
+arc-qt.desktop  (Gnome / Open Desktop)
 To install:
 
-	sudo desktop-file-install arcticcoin-qt.desktop
+	sudo desktop-file-install arc-qt.desktop
 	sudo update-desktop-database
 
 If you build yourself, you will either need to modify the paths in
-the .desktop file or copy or symlink your arcticcoin-qt binary to `/usr/bin`
-and the `../../share/pixmaps/arcticcoin128.png` to `/usr/share/pixmaps`
+the .desktop file or copy or symlink your arc-qt binary to `/usr/bin`
+and the `../../share/pixmaps/arc128.png` to `/usr/share/pixmaps`
 
-arcticcoin-qt.protocol (KDE)
+arc-qt.protocol (KDE)
 

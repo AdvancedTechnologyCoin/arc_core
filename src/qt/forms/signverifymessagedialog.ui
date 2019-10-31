@@ -352,7 +352,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../arcticcoin.qrc"/>
+  <include location="../arc.qrc"/>
  </resources>
  <connections/>
 </ui>

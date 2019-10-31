@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,14 +6,12 @@
 #define GOLDMINENODE_H
 
 #include "key.h"
-#include "main.h"
-#include "net.h"
+#include "validation.h"
 #include "spork.h"
-#include "timedata.h"
 
 class CGoldminenode;
 class CGoldminenodeBroadcast;
-class CGoldminenodePing;
+class CConnman;
 
 static const int GOLDMINENODE_CHECK_SECONDS               =   5;
 static const int GOLDMINENODE_MIN_MNB_SECONDS             =   5 * 60;
@@ -23,27 +21,28 @@ static const int GOLDMINENODE_WATCHDOG_MAX_SECONDS        = 120 * 60;
 static const int GOLDMINENODE_NEW_START_REQUIRED_SECONDS  = 180 * 60;
 
 static const int GOLDMINENODE_POSE_BAN_MAX_SCORE          = 5;
+
 //
 // The Goldminenode Ping Class : Contains a different serialize method for sending pings from goldminenodes throughout the network
 //
 
+// sentinel version before sentinel ping implementation
+#define DEFAULT_SENTINEL_VERSION 0x010001
+
 class CGoldminenodePing
 {
 public:
-    CTxIn vin;
-    uint256 blockHash;
-    int64_t sigTime; //mnb message times
-    std::vector<unsigned char> vchSig;
-    //removed stop
+    CTxIn vin{};
+    uint256 blockHash{};
+    int64_t sigTime{}; //mnb message times
+    std::vector<unsigned char> vchSig{};
+    bool fSentinelIsCurrent = false; // true if last sentinel ping was actual
+    // MSB is always 0, other 3 bits corresponds to x.x.x version scheme
+    uint32_t nSentinelVersion{DEFAULT_SENTINEL_VERSION};
 
-    CGoldminenodePing() :
-        vin(),
-        blockHash(),
-        sigTime(0),
-        vchSig()
-        {}
+    CGoldminenodePing() = default;
 
-    CGoldminenodePing(CTxIn& vinNew);
+    CGoldminenodePing(const COutPoint& outpoint);
 
     ADD_SERIALIZE_METHODS;
 
@@ -53,19 +52,16 @@ public:
         READWRITE(blockHash);
         READWRITE(sigTime);
         READWRITE(vchSig);
-    }
-
-    void swap(CGoldminenodePing& first, CGoldminenodePing& second) // nothrow
-    {
-        // enable ADL (not necessary in our case, but good practice)
-        using std::swap;
-
-        // by swapping the members of two classes,
-        // the two classes are effectively swapped
-        swap(first.vin, second.vin);
-        swap(first.blockHash, second.blockHash);
-        swap(first.sigTime, second.sigTime);
-        swap(first.vchSig, second.vchSig);
+        /*if(nProtocolVersion = 70208) {
+            if(ser_action.ForRead() && (s.size() == 0))
+            {
+                fSentinelIsCurrent = false;
+                nSentinelVersion = DEFAULT_SENTINEL_VERSION;
+                return;
+            }
+            READWRITE(fSentinelIsCurrent);
+            READWRITE(nSentinelVersion);
+        }*/
     }
 
     uint256 GetHash() const
@@ -76,68 +72,66 @@ public:
         return ss.GetHash();
     }
 
-    bool IsExpired() { return GetTime() - sigTime > GOLDMINENODE_NEW_START_REQUIRED_SECONDS; }
+    bool IsExpired() const { return GetAdjustedTime() - sigTime > GOLDMINENODE_NEW_START_REQUIRED_SECONDS; }
 
-    bool Sign(CKey& keyGoldminenode, CPubKey& pubKeyGoldminenode);
+    bool Sign(const CKey& keyGoldminenode, const CPubKey& pubKeyGoldminenode);
     bool CheckSignature(CPubKey& pubKeyGoldminenode, int &nDos);
     bool SimpleCheck(int& nDos);
-    bool CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcast, int& nDos);
-    void Relay();
-
-    CGoldminenodePing& operator=(CGoldminenodePing from)
-    {
-        swap(*this, from);
-        return *this;
-    }
-    friend bool operator==(const CGoldminenodePing& a, const CGoldminenodePing& b)
-    {
-        return a.vin == b.vin && a.blockHash == b.blockHash;
-    }
-    friend bool operator!=(const CGoldminenodePing& a, const CGoldminenodePing& b)
-    {
-        return !(a == b);
-    }
-
+    bool CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcast, int& nDos, CConnman& connman);
+    void Relay(CConnman& connman);
 };
+
+inline bool operator==(const CGoldminenodePing& a, const CGoldminenodePing& b)
+{
+    return a.vin == b.vin && a.blockHash == b.blockHash;
+}
+inline bool operator!=(const CGoldminenodePing& a, const CGoldminenodePing& b)
+{
+    return !(a == b);
+}
 
 struct goldminenode_info_t
 {
-    goldminenode_info_t()
-        : vin(),
-          addr(),
-          pubKeyCollateralAddress(),
-          pubKeyGoldminenode(),
-          sigTime(0),
-          nLastDsq(0),
-          nTimeLastChecked(0),
-          nTimeLastPaid(0),
-          nTimeLastWatchdogVote(0),
-          nTimeLastPing(0),
-          nActiveState(0),
-          nProtocolVersion(0),
-          fInfoValid(false)
-        {}
+    // Note: all these constructors can be removed once C++14 is enabled.
+    // (in C++11 the member initializers wrongly disqualify this as an aggregate)
+    goldminenode_info_t() = default;
+    goldminenode_info_t(goldminenode_info_t const&) = default;
 
-    CTxIn vin;
-    CService addr;
-    CPubKey pubKeyCollateralAddress;
-    CPubKey pubKeyGoldminenode;
-    int64_t sigTime; //mnb message time
-    int64_t nLastDsq; //the dsq count from the last dsq broadcast of this node
-    int64_t nTimeLastChecked;
-    int64_t nTimeLastPaid;
-    int64_t nTimeLastWatchdogVote;
-    int64_t nTimeLastPing;
-    int nActiveState;
-    int nProtocolVersion;
-    bool fInfoValid;
+    goldminenode_info_t(int activeState, int protoVer, int64_t sTime) :
+        nActiveState{activeState}, nProtocolVersion{protoVer}, sigTime{sTime} {}
+
+    goldminenode_info_t(int activeState, int protoVer, int64_t sTime,
+                      COutPoint const& outpoint, CService const& addr,
+                      CPubKey const& pkCollAddr, CPubKey const& pkMN,
+                      int64_t tWatchdogV = 0) :
+        nActiveState{activeState}, nProtocolVersion{protoVer}, sigTime{sTime},
+        vin{outpoint}, addr{addr},
+        pubKeyCollateralAddress{pkCollAddr}, pubKeyGoldminenode{pkMN},
+        nTimeLastWatchdogVote{tWatchdogV} {}
+
+    int nActiveState = 0;
+    int nProtocolVersion = 0;
+    int64_t sigTime = 0; //mnb message time
+    int64_t enableTime = 0; //mnb message time
+
+    CTxIn vin{};
+    CService addr{};
+    CPubKey pubKeyCollateralAddress{};
+    CPubKey pubKeyGoldminenode{};
+    int64_t nTimeLastWatchdogVote = 0;
+
+    int64_t nLastDsq = 0; //the dsq count from the last dsq broadcast of this node
+    int64_t nTimeLastChecked = 0;
+    int64_t nTimeLastPaid = 0;
+    int64_t nTimeLastPing = 0; //* not in CMN
+    bool fInfoValid = false; //* not in CMN
 };
 
 //
 // The Goldminenode Class. For managing the SpySend process. It contains the input of the 1000DRK, signature to prove
 // it's the one who own that ip address and code for calculating the payment election.
 //
-class CGoldminenode
+class CGoldminenode : public goldminenode_info_t
 {
 private:
     // critical section to protect the inner data structures
@@ -155,25 +149,22 @@ public:
         GOLDMINENODE_POSE_BAN
     };
 
-    CTxIn vin;
-    CService addr;
-    CPubKey pubKeyCollateralAddress;
-    CPubKey pubKeyGoldminenode;
-    CGoldminenodePing lastPing;
-    std::vector<unsigned char> vchSig;
-    int64_t sigTime; //mnb message time
-    int64_t nLastDsq; //the dsq count from the last dsq broadcast of this node
-    int64_t nTimeLastChecked;
-    int64_t nTimeLastPaid;
-    int64_t nTimeLastWatchdogVote;
-    int nActiveState;
-    int nCacheCollateralBlock;
-    int nBlockLastPaid;
-    int nProtocolVersion;
-    int nPoSeBanScore;
-    int nPoSeBanHeight;
-    bool fAllowMixingTx;
-    bool fUnitTest;
+    enum CollateralStatus {
+        COLLATERAL_OK,
+        COLLATERAL_UTXO_NOT_FOUND,
+        COLLATERAL_INVALID_AMOUNT
+    };
+
+
+    CGoldminenodePing lastPing{};
+    std::vector<unsigned char> vchSig{};
+
+    uint256 nCollateralMinConfBlockHash{};
+    int nBlockLastPaid{};
+    int nPoSeBanScore{};
+    int nPoSeBanHeight{};
+    bool fAllowMixingTx{};
+    bool fUnitTest = false;
 
     // KEEP TRACK OF GOVERNANCE ITEMS EACH GOLDMINENODE HAS VOTE UPON FOR RECALCULATION
     std::map<uint256, int> mapGovernanceObjectsVotedOn;
@@ -181,7 +172,7 @@ public:
     CGoldminenode();
     CGoldminenode(const CGoldminenode& other);
     CGoldminenode(const CGoldminenodeBroadcast& mnb);
-    CGoldminenode(CService addrNew, CTxIn vinNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyGoldminenodeNew, int nProtocolVersionIn);
+    CGoldminenode(CService addrNew, COutPoint outpointNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyGoldminenodeNew, int nProtocolVersionIn);
 
     ADD_SERIALIZE_METHODS;
 
@@ -195,12 +186,15 @@ public:
         READWRITE(lastPing);
         READWRITE(vchSig);
         READWRITE(sigTime);
+        if(nProtocolVersion == 70208) {
+        READWRITE(enableTime);	
+        }
         READWRITE(nLastDsq);
         READWRITE(nTimeLastChecked);
         READWRITE(nTimeLastPaid);
         READWRITE(nTimeLastWatchdogVote);
         READWRITE(nActiveState);
-        READWRITE(nCacheCollateralBlock);
+        READWRITE(nCollateralMinConfBlockHash);
         READWRITE(nBlockLastPaid);
         READWRITE(nProtocolVersion);
         READWRITE(nPoSeBanScore);
@@ -210,40 +204,13 @@ public:
         READWRITE(mapGovernanceObjectsVotedOn);
     }
 
-    void swap(CGoldminenode& first, CGoldminenode& second) // nothrow
-    {
-        // enable ADL (not necessary in our case, but good practice)
-        using std::swap;
-
-        // by swapping the members of two classes,
-        // the two classes are effectively swapped
-        swap(first.vin, second.vin);
-        swap(first.addr, second.addr);
-        swap(first.pubKeyCollateralAddress, second.pubKeyCollateralAddress);
-        swap(first.pubKeyGoldminenode, second.pubKeyGoldminenode);
-        swap(first.lastPing, second.lastPing);
-        swap(first.vchSig, second.vchSig);
-        swap(first.sigTime, second.sigTime);
-        swap(first.nLastDsq, second.nLastDsq);
-        swap(first.nTimeLastChecked, second.nTimeLastChecked);
-        swap(first.nTimeLastPaid, second.nTimeLastPaid);
-        swap(first.nTimeLastWatchdogVote, second.nTimeLastWatchdogVote);
-        swap(first.nActiveState, second.nActiveState);
-        swap(first.nCacheCollateralBlock, second.nCacheCollateralBlock);
-        swap(first.nBlockLastPaid, second.nBlockLastPaid);
-        swap(first.nProtocolVersion, second.nProtocolVersion);
-        swap(first.nPoSeBanScore, second.nPoSeBanScore);
-        swap(first.nPoSeBanHeight, second.nPoSeBanHeight);
-        swap(first.fAllowMixingTx, second.fAllowMixingTx);
-        swap(first.fUnitTest, second.fUnitTest);
-        swap(first.mapGovernanceObjectsVotedOn, second.mapGovernanceObjectsVotedOn);
-    }
-
     // CALCULATE A RANK AGAINST OF GIVEN BLOCK
     arith_uint256 CalculateScore(const uint256& blockHash);
 
-    bool UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb);
+    bool UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb, CConnman& connman);
 
+    static CollateralStatus CheckCollateral(const COutPoint& outpoint);
+    static CollateralStatus CheckCollateral(const COutPoint& outpoint, int& nHeightRet);
     void Check(bool fForce = false);
 
     bool IsBroadcastedWithin(int nSeconds) { return GetAdjustedTime() - sigTime < nSeconds; }
@@ -290,11 +257,15 @@ public:
         return false;
     }
 
+    /// Is the input associated with collateral public key? (and there is 1000 ARCTIC - checking if valid goldminenode)
+    bool IsInputAssociatedWithPubkey();
+
     bool IsValidNetAddr();
     static bool IsValidNetAddr(CService addrIn);
 
     void IncreasePoSeBanScore() { if(nPoSeBanScore < GOLDMINENODE_POSE_BAN_MAX_SCORE) nPoSeBanScore++; }
     void DecreasePoSeBanScore() { if(nPoSeBanScore > -GOLDMINENODE_POSE_BAN_MAX_SCORE) nPoSeBanScore--; }
+    void PoSeBan() { nPoSeBanScore = GOLDMINENODE_POSE_BAN_MAX_SCORE; }
 
     goldminenode_info_t GetInfo();
 
@@ -302,36 +273,36 @@ public:
     std::string GetStateString() const;
     std::string GetStatus() const;
 
-    int GetCollateralAge();
-
     int GetLastPaidTime() { return nTimeLastPaid; }
     int GetLastPaidBlock() { return nBlockLastPaid; }
     void UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToScanBack);
 
-    // KEEP TRACK OF EACH GOVERNANCE ITEM INCASE THIS NODE GOES OFFLINE, SO WE CAN RECALC THEIR STATUS
-    void AddGovernanceVote(uint256 nGovernanceObjectHash);
-    // RECALCULATE CACHED STATUS FLAGS FOR ALL AFFECTED OBJECTS
-    void FlagGovernanceItemsAsDirty();
+    void UpdateWatchdogVoteTime(uint64_t nVoteTime = 0);
 
-    void RemoveGovernanceObject(uint256 nGovernanceObjectHash);
-
-    void UpdateWatchdogVoteTime();
-
-    CGoldminenode& operator=(CGoldminenode from)
+    CGoldminenode& operator=(CGoldminenode const& from)
     {
-        swap(*this, from);
+        static_cast<goldminenode_info_t&>(*this)=from;
+        lastPing = from.lastPing;
+        vchSig = from.vchSig;
+        nCollateralMinConfBlockHash = from.nCollateralMinConfBlockHash;
+        nBlockLastPaid = from.nBlockLastPaid;
+        nPoSeBanScore = from.nPoSeBanScore;
+        nPoSeBanHeight = from.nPoSeBanHeight;
+        fAllowMixingTx = from.fAllowMixingTx;
+        fUnitTest = from.fUnitTest;
+        mapGovernanceObjectsVotedOn = from.mapGovernanceObjectsVotedOn;
         return *this;
     }
-    friend bool operator==(const CGoldminenode& a, const CGoldminenode& b)
-    {
-        return a.vin == b.vin;
-    }
-    friend bool operator!=(const CGoldminenode& a, const CGoldminenode& b)
-    {
-        return !(a.vin == b.vin);
-    }
-
 };
+
+inline bool operator==(const CGoldminenode& a, const CGoldminenode& b)
+{
+    return a.vin == b.vin;
+}
+inline bool operator!=(const CGoldminenode& a, const CGoldminenode& b)
+{
+    return !(a.vin == b.vin);
+}
 
 
 //
@@ -346,8 +317,8 @@ public:
 
     CGoldminenodeBroadcast() : CGoldminenode(), fRecovery(false) {}
     CGoldminenodeBroadcast(const CGoldminenode& mn) : CGoldminenode(mn), fRecovery(false) {}
-    CGoldminenodeBroadcast(CService addrNew, CTxIn vinNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyGoldminenodeNew, int nProtocolVersionIn) :
-        CGoldminenode(addrNew, vinNew, pubKeyCollateralAddressNew, pubKeyGoldminenodeNew, nProtocolVersionIn), fRecovery(false) {}
+    CGoldminenodeBroadcast(CService addrNew, COutPoint outpointNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyGoldminenodeNew, int nProtocolVersionIn) :
+        CGoldminenode(addrNew, outpointNew, pubKeyCollateralAddressNew, pubKeyGoldminenodeNew, nProtocolVersionIn), fRecovery(false) {}
 
     ADD_SERIALIZE_METHODS;
 
@@ -359,6 +330,9 @@ public:
         READWRITE(pubKeyGoldminenode);
         READWRITE(vchSig);
         READWRITE(sigTime);
+        /*if(nProtocolVersion == 70208) {
+        READWRITE(enableTime);
+        }*/
         READWRITE(nProtocolVersion);
         READWRITE(lastPing);
     }
@@ -366,66 +340,46 @@ public:
     uint256 GetHash() const
     {
         CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        //
-        // REMOVE AFTER MIGRATION TO 12.1
-        //
-        if(nProtocolVersion < 70201) {
-            ss << sigTime;
-            ss << pubKeyCollateralAddress;
-        } else {
-        //
-        // END REMOVE
-        //
-            ss << vin;
-            ss << pubKeyCollateralAddress;
-            ss << sigTime;
-        }
+        ss << vin;
+        ss << pubKeyCollateralAddress;
+        ss << sigTime;
+        /*if(nProtocolVersion == 70208) {
+        ss << enableTime;
+        }*/
         return ss.GetHash();
     }
 
     /// Create Goldminenode broadcast, needs to be relayed manually after that
-    static bool Create(CTxIn vin, CService service, CKey keyCollateralAddressNew, CPubKey pubKeyCollateralAddressNew, CKey keyGoldminenodeNew, CPubKey pubKeyGoldminenodeNew, std::string &strErrorRet, CGoldminenodeBroadcast &mnbRet);
+    static bool Create(const COutPoint& outpoint, const CService& service, const CKey& keyCollateralAddressNew, const CPubKey& pubKeyCollateralAddressNew, const CKey& keyGoldminenodeNew, const CPubKey& pubKeyGoldminenodeNew, std::string &strErrorRet, CGoldminenodeBroadcast &mnbRet);
     static bool Create(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CGoldminenodeBroadcast &mnbRet, bool fOffline = false);
 
     bool SimpleCheck(int& nDos);
-    bool Update(CGoldminenode* pmn, int& nDos);
+    bool Update(CGoldminenode* pmn, int& nDos, CConnman& connman);
     bool CheckOutpoint(int& nDos);
 
-    bool Sign(CKey& keyCollateralAddress);
+    bool Sign(const CKey& keyCollateralAddress);
     bool CheckSignature(int& nDos);
-    void Relay();
+    void Relay(CConnman& connman);
 };
 
 class CGoldminenodeVerification
 {
 public:
-    CTxIn vin1;
-    CTxIn vin2;
-    CService addr;
-    int nonce;
-    int nBlockHeight;
-    std::vector<unsigned char> vchSig1;
-    std::vector<unsigned char> vchSig2;
+    CTxIn vin1{};
+    CTxIn vin2{};
+    CService addr{};
+    int nonce{};
+    int nBlockHeight{};
+    std::vector<unsigned char> vchSig1{};
+    std::vector<unsigned char> vchSig2{};
 
-    CGoldminenodeVerification() :
-        vin1(),
-        vin2(),
-        addr(),
-        nonce(0),
-        nBlockHeight(0),
-        vchSig1(),
-        vchSig2()
-        {}
+    CGoldminenodeVerification() = default;
 
     CGoldminenodeVerification(CService addr, int nonce, int nBlockHeight) :
-        vin1(),
-        vin2(),
         addr(addr),
         nonce(nonce),
-        nBlockHeight(nBlockHeight),
-        vchSig1(),
-        vchSig2()
-        {}
+        nBlockHeight(nBlockHeight)
+    {}
 
     ADD_SERIALIZE_METHODS;
 
@@ -454,7 +408,7 @@ public:
     void Relay() const
     {
         CInv inv(MSG_GOLDMINENODE_VERIFY, GetHash());
-        RelayInv(inv);
+        g_connman->RelayInv(inv);
     }
 };
 

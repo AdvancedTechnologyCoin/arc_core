@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+#  arcd The ARC server.
+#
+#
+# chkconfig: 345 80 20
+# description: arcd
+# processname: arcd
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+# you can override defaults in /etc/sysconfig/arcd, see below
+if [ -f /etc/sysconfig/arcd ]; then
+        . /etc/sysconfig/arcd
+fi
+
+RETVAL=0
+
+prog=arcd
+# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/arcd
+lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/arcd}
+
+# arcd defaults to /usr/bin/arcd, override with BITCOIND_BIN
+arcd=${BITCOIND_BIN-/usr/bin/arcd}
+
+# arcd opts default to -disablewallet, override with BITCOIND_OPTS
+arcd_opts=${BITCOIND_OPTS--disablewallet}
+
+start() {
+    echo -n $"Starting $prog: "
+    daemon $DAEMONOPTS $arcd $arcd_opts
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    killproc $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status $prog
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: service $prog {start|stop|status|restart}"
+        exit 1
+        ;;
+esac

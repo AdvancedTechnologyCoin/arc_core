@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef GOLDMINENODE_SYNC_H
@@ -12,13 +12,10 @@
 class CGoldminenodeSync;
 
 static const int GOLDMINENODE_SYNC_FAILED          = -1;
-static const int GOLDMINENODE_SYNC_INITIAL         = 0;
-static const int GOLDMINENODE_SYNC_SPORKS          = 1;
+static const int GOLDMINENODE_SYNC_INITIAL         = 0; // sync just started, was reset recently or still in IDB
+static const int GOLDMINENODE_SYNC_WAITING         = 1; // waiting after initial to see if we can get more headers/blocks
 static const int GOLDMINENODE_SYNC_LIST            = 2;
 static const int GOLDMINENODE_SYNC_MNW             = 3;
-static const int GOLDMINENODE_SYNC_GOVERNANCE      = 4;
-static const int GOLDMINENODE_SYNC_GOVOBJ          = 10;
-static const int GOLDMINENODE_SYNC_GOVOBJ_VOTE     = 11;
 static const int GOLDMINENODE_SYNC_FINISHED        = 999;
 
 static const int GOLDMINENODE_SYNC_TICK_SECONDS    = 6;
@@ -42,51 +39,39 @@ private:
 
     // Time when current goldminenode asset sync started
     int64_t nTimeAssetSyncStarted;
-
-    // Last time when we received some goldminenode asset ...
-    int64_t nTimeLastGoldminenodeList;
-    int64_t nTimeLastPaymentVote;
-    int64_t nTimeLastGovernanceItem;
+    // ... last bumped
+    int64_t nTimeLastBumped;
     // ... or failed
     int64_t nTimeLastFailure;
 
-    // How many times we failed
-    int nCountFailures;
-
-    // Keep track of current block index
-    const CBlockIndex *pCurrentBlockIndex;
-
-    bool CheckNodeHeight(CNode* pnode, bool fDisconnectStuckNodes = false);
     void Fail();
-    void ClearFulfilledRequests();
+    void ClearFulfilledRequests(CConnman& connman);
 
 public:
     CGoldminenodeSync() { Reset(); }
-
-    void AddedGoldminenodeList() { nTimeLastGoldminenodeList = GetTime(); }
-    void AddedPaymentVote() { nTimeLastPaymentVote = GetTime(); }
-    void AddedGovernanceItem() { nTimeLastGovernanceItem = GetTime(); };
-
-    void SendGovernanceSyncRequest(CNode* pnode);
-
+	
     bool IsFailed() { return nRequestedGoldminenodeAssets == GOLDMINENODE_SYNC_FAILED; }
-    bool IsBlockchainSynced(bool fBlockAccepted = false);
+    bool IsBlockchainSynced() { return nRequestedGoldminenodeAssets > GOLDMINENODE_SYNC_WAITING; }
     bool IsGoldminenodeListSynced() { return nRequestedGoldminenodeAssets > GOLDMINENODE_SYNC_LIST; }
     bool IsWinnersListSynced() { return nRequestedGoldminenodeAssets > GOLDMINENODE_SYNC_MNW; }
     bool IsSynced() { return nRequestedGoldminenodeAssets == GOLDMINENODE_SYNC_FINISHED; }
 
     int GetAssetID() { return nRequestedGoldminenodeAssets; }
     int GetAttempt() { return nRequestedGoldminenodeAttempt; }
+    void BumpAssetLastTime(std::string strFuncName);
+    int64_t GetAssetStartTime() { return nTimeAssetSyncStarted; }
     std::string GetAssetName();
     std::string GetSyncStatus();
 
     void Reset();
-    void SwitchToNextAsset();
+    void SwitchToNextAsset(CConnman& connman);
 
     void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
-    void ProcessTick();
+    void ProcessTick(CConnman& connman);
 
-    void UpdatedBlockTip(const CBlockIndex *pindex);
+    void AcceptedBlockHeader(const CBlockIndex *pindexNew);
+    void NotifyHeaderTip(const CBlockIndex *pindexNew, bool fInitialDownload, CConnman& connman);
+    void UpdatedBlockTip(const CBlockIndex *pindexNew, bool fInitialDownload, CConnman& connman);
 };
 
 #endif

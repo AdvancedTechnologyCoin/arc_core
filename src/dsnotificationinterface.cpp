@@ -1,34 +1,58 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "chainparams.h"
 #include "dsnotificationinterface.h"
-#include "spysend.h"
 #include "instantx.h"
-#include "governance.h"
 #include "goldminenodeman.h"
 #include "goldminenode-payments.h"
 #include "goldminenode-sync.h"
+#include "privatesend.h"
+#ifdef ENABLE_WALLET
+#include "privatesend-client.h"
+#endif // ENABLE_WALLET
 
-CDSNotificationInterface::CDSNotificationInterface()
+void CDSNotificationInterface::InitializeCurrentBlockTip()
 {
+    LOCK(cs_main);
+    UpdatedBlockTip(chainActive.Tip(), NULL, IsInitialBlockDownload());
 }
 
-CDSNotificationInterface::~CDSNotificationInterface()
+void CDSNotificationInterface::AcceptedBlockHeader(const CBlockIndex *pindexNew)
 {
+    goldminenodeSync.AcceptedBlockHeader(pindexNew);
 }
 
-void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindex)
+void CDSNotificationInterface::NotifyHeaderTip(const CBlockIndex *pindexNew, bool fInitialDownload)
 {
-    mnodeman.UpdatedBlockTip(pindex);
-    darkSendPool.UpdatedBlockTip(pindex);
-    instantsend.UpdatedBlockTip(pindex);
-    mnpayments.UpdatedBlockTip(pindex);
-    governance.UpdatedBlockTip(pindex);
-    goldminenodeSync.UpdatedBlockTip(pindex);
+    goldminenodeSync.NotifyHeaderTip(pindexNew, fInitialDownload, connman);
+}
+
+void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, const CBlockIndex *pindexFork, bool fInitialDownload)
+{
+    if (pindexNew == pindexFork) // blocks were disconnected without any new ones
+        return;
+
+    goldminenodeSync.UpdatedBlockTip(pindexNew, fInitialDownload, connman);
+
+    // Update global DIP0001 activation status
+    fDIP0001ActiveAtTip = (VersionBitsState(pindexNew, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0001, versionbitscache) == THRESHOLD_ACTIVE);
+
+    if (fInitialDownload)
+        return;
+
+    mnodeman.UpdatedBlockTip(pindexNew);
+    CPrivateSend::UpdatedBlockTip(pindexNew);
+#ifdef ENABLE_WALLET
+    privateSendClient.UpdatedBlockTip(pindexNew);
+#endif // ENABLE_WALLET
+    instantsend.UpdatedBlockTip(pindexNew);
+    mnpayments.UpdatedBlockTip(pindexNew, connman);
 }
 
 void CDSNotificationInterface::SyncTransaction(const CTransaction &tx, const CBlock *pblock)
 {
     instantsend.SyncTransaction(tx, pblock);
+    CPrivateSend::SyncTransaction(tx, pblock);
 }

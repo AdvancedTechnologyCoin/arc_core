@@ -2,14 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "rpcserver.h"
-#include "rpcclient.h"
+#include "rpc/server.h"
+#include "rpc/client.h"
 
 #include "base58.h"
-#include "main.h"
+#include "validation.h"
 #include "wallet/wallet.h"
 
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/test/unit_test.hpp>
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(rpc_wallet)
     {
         LOCK(pwalletMain->cs_wallet);
 
-        demoPubkey = pwalletMain->GenerateNewKey();
+        demoPubkey = pwalletMain->GenerateNewKey(0, false);
         demoAddress = CBitcoinAddress(CTxDestination(demoPubkey.GetID()));
         string strPurpose = "receive";
         BOOST_CHECK_NO_THROW({ /*Initialize Wallet with an account */
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(rpc_wallet)
             walletdb.WriteAccount(strAccount, account);
         });
 
-        CPubKey setaccountDemoPubkey = pwalletMain->GenerateNewKey();
+        CPubKey setaccountDemoPubkey = pwalletMain->GenerateNewKey(0, false);
         setaccountDemoAddress = CBitcoinAddress(CTxDestination(setaccountDemoPubkey.GetID()));
     }
     /*********************************

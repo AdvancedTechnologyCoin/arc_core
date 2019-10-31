@@ -1,81 +1,42 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "activegoldminenode.h"
-#include "consensus/validation.h"
-#include "spysend.h"
+#include "base58.h"
 #include "init.h"
-#include "governance.h"
+#include "netbase.h"
 #include "goldminenode.h"
 #include "goldminenode-payments.h"
 #include "goldminenode-sync.h"
 #include "goldminenodeman.h"
+#include "messagesigner.h"
+#include "script/standard.h"
 #include "util.h"
+#ifdef ENABLE_WALLET
+#include "wallet/wallet.h"
+#endif // ENABLE_WALLET
 
 #include <boost/lexical_cast.hpp>
 
 
 CGoldminenode::CGoldminenode() :
-    vin(),
-    addr(),
-    pubKeyCollateralAddress(),
-    pubKeyGoldminenode(),
-    lastPing(),
-    vchSig(),
-    sigTime(GetAdjustedTime()),
-    nLastDsq(0),
-    nTimeLastChecked(0),
-    nTimeLastPaid(0),
-    nTimeLastWatchdogVote(0),
-    nActiveState(GOLDMINENODE_ENABLED),
-    nCacheCollateralBlock(0),
-    nBlockLastPaid(0),
-    nProtocolVersion(PROTOCOL_VERSION),
-    nPoSeBanScore(0),
-    nPoSeBanHeight(0),
-    fAllowMixingTx(true),
-    fUnitTest(false)
+    goldminenode_info_t{ GOLDMINENODE_ENABLED, PROTOCOL_VERSION, GetAdjustedTime()},
+    fAllowMixingTx(true)
 {}
 
-CGoldminenode::CGoldminenode(CService addrNew, CTxIn vinNew, CPubKey pubKeyCollateralAddressNew, CPubKey pubKeyGoldminenodeNew, int nProtocolVersionIn) :
-    vin(vinNew),
-    addr(addrNew),
-    pubKeyCollateralAddress(pubKeyCollateralAddressNew),
-    pubKeyGoldminenode(pubKeyGoldminenodeNew),
-    lastPing(),
-    vchSig(),
-    sigTime(GetAdjustedTime()),
-    nLastDsq(0),
-    nTimeLastChecked(0),
-    nTimeLastPaid(0),
-    nTimeLastWatchdogVote(0),
-    nActiveState(GOLDMINENODE_ENABLED),
-    nCacheCollateralBlock(0),
-    nBlockLastPaid(0),
-    nProtocolVersion(nProtocolVersionIn),
-    nPoSeBanScore(0),
-    nPoSeBanHeight(0),
-    fAllowMixingTx(true),
-    fUnitTest(false)
+CGoldminenode::CGoldminenode(CService addr, COutPoint outpoint, CPubKey pubKeyCollateralAddress, CPubKey pubKeyGoldminenode, int nProtocolVersionIn) :
+    goldminenode_info_t{ GOLDMINENODE_ENABLED, nProtocolVersionIn, GetAdjustedTime(),
+                       outpoint, addr, pubKeyCollateralAddress, pubKeyGoldminenode},
+    fAllowMixingTx(true)
 {}
 
 CGoldminenode::CGoldminenode(const CGoldminenode& other) :
-    vin(other.vin),
-    addr(other.addr),
-    pubKeyCollateralAddress(other.pubKeyCollateralAddress),
-    pubKeyGoldminenode(other.pubKeyGoldminenode),
+    goldminenode_info_t{other},
     lastPing(other.lastPing),
     vchSig(other.vchSig),
-    sigTime(other.sigTime),
-    nLastDsq(other.nLastDsq),
-    nTimeLastChecked(other.nTimeLastChecked),
-    nTimeLastPaid(other.nTimeLastPaid),
-    nTimeLastWatchdogVote(other.nTimeLastWatchdogVote),
-    nActiveState(other.nActiveState),
-    nCacheCollateralBlock(other.nCacheCollateralBlock),
+    nCollateralMinConfBlockHash(other.nCollateralMinConfBlockHash),
     nBlockLastPaid(other.nBlockLastPaid),
-    nProtocolVersion(other.nProtocolVersion),
     nPoSeBanScore(other.nPoSeBanScore),
     nPoSeBanHeight(other.nPoSeBanHeight),
     fAllowMixingTx(other.fAllowMixingTx),
@@ -83,36 +44,27 @@ CGoldminenode::CGoldminenode(const CGoldminenode& other) :
 {}
 
 CGoldminenode::CGoldminenode(const CGoldminenodeBroadcast& mnb) :
-    vin(mnb.vin),
-    addr(mnb.addr),
-    pubKeyCollateralAddress(mnb.pubKeyCollateralAddress),
-    pubKeyGoldminenode(mnb.pubKeyGoldminenode),
+    goldminenode_info_t{ mnb.nActiveState, mnb.nProtocolVersion, mnb.sigTime,
+                       mnb.vin.prevout, mnb.addr, mnb.pubKeyCollateralAddress, mnb.pubKeyGoldminenode,
+                       mnb.sigTime /*nTimeLastWatchdogVote*/},
     lastPing(mnb.lastPing),
     vchSig(mnb.vchSig),
-    sigTime(mnb.sigTime),
-    nLastDsq(0),
-    nTimeLastChecked(0),
-    nTimeLastPaid(0),
-    nTimeLastWatchdogVote(mnb.sigTime),
-    nActiveState(mnb.nActiveState),
-    nCacheCollateralBlock(0),
-    nBlockLastPaid(0),
-    nProtocolVersion(mnb.nProtocolVersion),
-    nPoSeBanScore(0),
-    nPoSeBanHeight(0),
-    fAllowMixingTx(true),
-    fUnitTest(false)
-{}
+    fAllowMixingTx(true)
+{
+	
+	enableTime = mnb.enableTime;
+}
 
 //
 // When a new goldminenode broadcast is sent, update our information
 //
-bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb)
+bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb, CConnman& connman)
 {
     if(mnb.sigTime <= sigTime && !mnb.fRecovery) return false;
 
     pubKeyGoldminenode = mnb.pubKeyGoldminenode;
     sigTime = mnb.sigTime;
+	enableTime = mnb.enableTime;
     vchSig = mnb.vchSig;
     nProtocolVersion = mnb.nProtocolVersion;
     addr = mnb.addr;
@@ -120,7 +72,7 @@ bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb)
     nPoSeBanHeight = 0;
     nTimeLastChecked = 0;
     int nDos = 0;
-    if(mnb.lastPing == CGoldminenodePing() || (mnb.lastPing != CGoldminenodePing() && mnb.lastPing.CheckAndUpdate(this, true, nDos))) {
+    if(mnb.lastPing == CGoldminenodePing() || (mnb.lastPing != CGoldminenodePing() && mnb.lastPing.CheckAndUpdate(this, true, nDos, connman))) {
         lastPing = mnb.lastPing;
         mnodeman.mapSeenGoldminenodePing.insert(std::make_pair(lastPing.GetHash(), lastPing));
     }
@@ -129,7 +81,7 @@ bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb)
         nPoSeBanScore = -GOLDMINENODE_POSE_BAN_MAX_SCORE;
         if(nProtocolVersion == PROTOCOL_VERSION) {
             // ... and PROTOCOL_VERSION, then we've been remotely activated ...
-            activeGoldminenode.ManageState();
+            activeGoldminenode.ManageState(connman);
         } else {
             // ... otherwise we need to reactivate our node, do not add it to the list and do not relay
             // but also do not ban the node we get this message from
@@ -147,18 +99,33 @@ bool CGoldminenode::UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb)
 //
 arith_uint256 CGoldminenode::CalculateScore(const uint256& blockHash)
 {
-    uint256 aux = ArithToUint256(UintToArith256(vin.prevout.hash) + vin.prevout.n);
-
+    // Deterministically calculate a "score" for a Goldminenode based on any given (block)hash
     CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-    ss << blockHash;
-    arith_uint256 hash2 = UintToArith256(ss.GetHash());
+    ss << vin.prevout << nCollateralMinConfBlockHash << blockHash;
+    return UintToArith256(ss.GetHash());
+}
 
-    CHashWriter ss2(SER_GETHASH, PROTOCOL_VERSION);
-    ss2 << blockHash;
-    ss2 << aux;
-    arith_uint256 hash3 = UintToArith256(ss2.GetHash());
+CGoldminenode::CollateralStatus CGoldminenode::CheckCollateral(const COutPoint& outpoint)
+{
+    int nHeight;
+    return CheckCollateral(outpoint, nHeight);
+}
 
-    return (hash3 > hash2 ? hash3 - hash2 : hash2 - hash3);
+CGoldminenode::CollateralStatus CGoldminenode::CheckCollateral(const COutPoint& outpoint, int& nHeightRet)
+{
+    AssertLockHeld(cs_main);
+
+    Coin coin;
+    if(!GetUTXOCoin(outpoint, coin)) {
+        return COLLATERAL_UTXO_NOT_FOUND;
+    }
+
+    if(coin.out.nValue != 10000 * COIN) {
+        return COLLATERAL_INVALID_AMOUNT;
+    }
+
+    nHeightRet = coin.nHeight;
+    return COLLATERAL_OK;
 }
 
 void CGoldminenode::Check(bool fForce)
@@ -180,10 +147,8 @@ void CGoldminenode::Check(bool fForce)
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain) return;
 
-        CCoins coins;
-        if(!pcoinsTip->GetCoins(vin.prevout.hash, coins) ||
-           (unsigned int)vin.prevout.n>=coins.vout.size() ||
-           coins.vout[vin.prevout.n].IsNull()) {
+        CollateralStatus err = CheckCollateral(vin.prevout);
+        if (err == COLLATERAL_UTXO_NOT_FOUND) {
             nActiveState = GOLDMINENODE_OUTPOINT_SPENT;
             LogPrint("goldminenode", "CGoldminenode::Check -- Failed to find Goldminenode UTXO, goldminenode=%s\n", vin.prevout.ToStringShort());
             return;
@@ -226,22 +191,6 @@ void CGoldminenode::Check(bool fForce)
     // keep old goldminenodes on start, give them a chance to receive updates...
     bool fWaitForPing = !goldminenodeSync.IsGoldminenodeListSynced() && !IsPingedWithin(GOLDMINENODE_MIN_MNP_SECONDS);
 
-    //
-    // REMOVE AFTER MIGRATION TO 12.1
-    //
-    // Old nodes don't send pings on dseg, so they could switch to one of the expired states
-    // if we were offline for too long even if they are actually enabled for the rest
-    // of the network. Postpone their check for GOLDMINENODE_MIN_MNP_SECONDS seconds.
-    // This could be usefull for 12.1 migration, can be removed after it's done.
-    static int64_t nTimeStart = GetTime();
-    if(nProtocolVersion < 70204) {
-        if(!goldminenodeSync.IsGoldminenodeListSynced()) nTimeStart = GetTime();
-        fWaitForPing = GetTime() - nTimeStart < GOLDMINENODE_MIN_MNP_SECONDS;
-    }
-    //
-    // END REMOVE
-    //
-
     if(fWaitForPing && !fOurGoldminenode) {
         // ...but if it was already expired before the initial check - return right away
         if(IsExpired() || IsWatchdogExpired() || IsNewStartRequired()) {
@@ -262,10 +211,10 @@ void CGoldminenode::Check(bool fForce)
         }
 
         bool fWatchdogActive = goldminenodeSync.IsSynced() && mnodeman.IsWatchdogActive();
-        bool fWatchdogExpired = (fWatchdogActive && ((GetTime() - nTimeLastWatchdogVote) > GOLDMINENODE_WATCHDOG_MAX_SECONDS));
+        bool fWatchdogExpired = (fWatchdogActive && ((GetAdjustedTime() - nTimeLastWatchdogVote) > GOLDMINENODE_WATCHDOG_MAX_SECONDS));
 
-        LogPrint("goldminenode", "CGoldminenode::Check -- outpoint=%s, nTimeLastWatchdogVote=%d, GetTime()=%d, fWatchdogExpired=%d\n",
-                vin.prevout.ToStringShort(), nTimeLastWatchdogVote, GetTime(), fWatchdogExpired);
+        LogPrint("goldminenode", "CGoldminenode::Check -- outpoint=%s, nTimeLastWatchdogVote=%d, GetAdjustedTime()=%d, fWatchdogExpired=%d\n",
+                vin.prevout.ToStringShort(), nTimeLastWatchdogVote, GetAdjustedTime(), fWatchdogExpired);
 
         if(fWatchdogExpired) {
             nActiveState = GOLDMINENODE_WATCHDOG_EXPIRED;
@@ -298,6 +247,21 @@ void CGoldminenode::Check(bool fForce)
     }
 }
 
+bool CGoldminenode::IsInputAssociatedWithPubkey()
+{
+    CScript payee;
+    payee = GetScriptForDestination(pubKeyCollateralAddress.GetID());
+
+    CTransaction tx;
+    uint256 hash;
+    if(GetTransaction(vin.prevout.hash, tx, Params().GetConsensus(), hash, true)) {
+        BOOST_FOREACH(CTxOut out, tx.vout)
+            if(out.nValue == 1000*COIN && out.scriptPubKey == payee) return true;
+    }
+
+    return false;
+}
+
 bool CGoldminenode::IsValidNetAddr()
 {
     return IsValidNetAddr(addr);
@@ -313,19 +277,8 @@ bool CGoldminenode::IsValidNetAddr(CService addrIn)
 
 goldminenode_info_t CGoldminenode::GetInfo()
 {
-    goldminenode_info_t info;
-    info.vin = vin;
-    info.addr = addr;
-    info.pubKeyCollateralAddress = pubKeyCollateralAddress;
-    info.pubKeyGoldminenode = pubKeyGoldminenode;
-    info.sigTime = sigTime;
-    info.nLastDsq = nLastDsq;
-    info.nTimeLastChecked = nTimeLastChecked;
-    info.nTimeLastPaid = nTimeLastPaid;
-    info.nTimeLastWatchdogVote = nTimeLastWatchdogVote;
+    goldminenode_info_t info{*this};
     info.nTimeLastPing = lastPing.sigTime;
-    info.nActiveState = nActiveState;
-    info.nProtocolVersion = nProtocolVersion;
     info.fInfoValid = true;
     return info;
 }
@@ -354,27 +307,6 @@ std::string CGoldminenode::GetStatus() const
 {
     // TODO: return smth a bit more human readable here
     return GetStateString();
-}
-
-int CGoldminenode::GetCollateralAge()
-{
-    int nHeight;
-    {
-        TRY_LOCK(cs_main, lockMain);
-        if(!lockMain || !chainActive.Tip()) return -1;
-        nHeight = chainActive.Height();
-    }
-
-    if (nCacheCollateralBlock == 0) {
-        int nInputAge = GetInputAge(vin);
-        if(nInputAge > 0) {
-            nCacheCollateralBlock = nHeight - nInputAge;
-        } else {
-            return nInputAge;
-        }
-    }
-
-    return nHeight - nCacheCollateralBlock;
 }
 
 void CGoldminenode::UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToScanBack)
@@ -416,51 +348,46 @@ void CGoldminenode::UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToSc
     // LogPrint("goldminenode", "CGoldminenode::UpdateLastPaidBlock -- searching for block with payment to %s -- keeping old %d\n", vin.prevout.ToStringShort(), nBlockLastPaid);
 }
 
+#ifdef ENABLE_WALLET
 bool CGoldminenodeBroadcast::Create(std::string strService, std::string strKeyGoldminenode, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CGoldminenodeBroadcast &mnbRet, bool fOffline)
 {
-    CTxIn txin;
+    COutPoint outpoint;
     CPubKey pubKeyCollateralAddressNew;
     CKey keyCollateralAddressNew;
     CPubKey pubKeyGoldminenodeNew;
     CKey keyGoldminenodeNew;
 
+    auto Log = [&strErrorRet](std::string sErr)->bool
+    {
+        strErrorRet = sErr;
+        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
+        return false;
+    };
+
     //need correct blocks to send ping
-    if(!fOffline && !goldminenodeSync.IsBlockchainSynced()) {
-        strErrorRet = "Sync in progress. Must wait until sync is complete to start Goldminenode";
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        return false;
-    }
+    if (!fOffline && !goldminenodeSync.IsBlockchainSynced())
+        return Log("Sync in progress. Must wait until sync is complete to start Goldminenode");
 
-    if(!darkSendSigner.GetKeysFromSecret(strKeyGoldminenode, keyGoldminenodeNew, pubKeyGoldminenodeNew)) {
-        strErrorRet = strprintf("Invalid goldminenode key %s", strKeyGoldminenode);
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        return false;
-    }
+    if (!CMessageSigner::GetKeysFromSecret(strKeyGoldminenode, keyGoldminenodeNew, pubKeyGoldminenodeNew))
+        return Log(strprintf("Invalid goldminenode key %s", strKeyGoldminenode));
 
-    if(!pwalletMain->GetGoldminenodeVinAndKeys(txin, pubKeyCollateralAddressNew, keyCollateralAddressNew, strTxHash, strOutputIndex)) {
-        strErrorRet = strprintf("Could not allocate txin %s:%s for goldminenode %s", strTxHash, strOutputIndex, strService);
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        return false;
-    }
+    if (!pwalletMain->GetGoldminenodeOutpointAndKeys(outpoint, pubKeyCollateralAddressNew, keyCollateralAddressNew, strTxHash, strOutputIndex))
+        return Log(strprintf("Could not allocate outpoint %s:%s for goldminenode %s", strTxHash, strOutputIndex, strService));
 
-    CService service = CService(strService);
+    CService service;
+    if (!Lookup(strService.c_str(), service, 0, false))
+        return Log(strprintf("Invalid address %s for goldminenode.", strService));
     int mainnetDefaultPort = Params(CBaseChainParams::MAIN).GetDefaultPort();
-    if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
-        if(service.GetPort() != mainnetDefaultPort) {
-            strErrorRet = strprintf("Invalid port %u for goldminenode %s, only %d is supported on mainnet.", service.GetPort(), strService, mainnetDefaultPort);
-            LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-            return false;
-        }
-    } else if (service.GetPort() == mainnetDefaultPort) {
-        strErrorRet = strprintf("Invalid port %u for goldminenode %s, %d is the only supported on mainnet.", service.GetPort(), strService, mainnetDefaultPort);
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        return false;
-    }
+    if (Params().NetworkIDString() == CBaseChainParams::MAIN) {
+        if (service.GetPort() != mainnetDefaultPort)
+            return Log(strprintf("Invalid port %u for goldminenode %s, only %d is supported on mainnet.", service.GetPort(), strService, mainnetDefaultPort));
+    } else if (service.GetPort() == mainnetDefaultPort)
+        return Log(strprintf("Invalid port %u for goldminenode %s, %d is the only supported on mainnet.", service.GetPort(), strService, mainnetDefaultPort));
 
-    return Create(txin, CService(strService), keyCollateralAddressNew, pubKeyCollateralAddressNew, keyGoldminenodeNew, pubKeyGoldminenodeNew, strErrorRet, mnbRet);
+    return Create(outpoint, service, keyCollateralAddressNew, pubKeyCollateralAddressNew, keyGoldminenodeNew, pubKeyGoldminenodeNew, strErrorRet, mnbRet);
 }
 
-bool CGoldminenodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollateralAddressNew, CPubKey pubKeyCollateralAddressNew, CKey keyGoldminenodeNew, CPubKey pubKeyGoldminenodeNew, std::string &strErrorRet, CGoldminenodeBroadcast &mnbRet)
+bool CGoldminenodeBroadcast::Create(const COutPoint& outpoint, const CService& service, const CKey& keyCollateralAddressNew, const CPubKey& pubKeyCollateralAddressNew, const CKey& keyGoldminenodeNew, const CPubKey& pubKeyGoldminenodeNew, std::string &strErrorRet, CGoldminenodeBroadcast &mnbRet)
 {
     // wait for reindex and/or import to finish
     if (fImporting || fReindex) return false;
@@ -469,34 +396,30 @@ bool CGoldminenodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollat
              CBitcoinAddress(pubKeyCollateralAddressNew.GetID()).ToString(),
              pubKeyGoldminenodeNew.GetID().ToString());
 
-
-    CGoldminenodePing mnp(txin);
-    if(!mnp.Sign(keyGoldminenodeNew, pubKeyGoldminenodeNew)) {
-        strErrorRet = strprintf("Failed to sign ping, goldminenode=%s", txin.prevout.ToStringShort());
+    auto Log = [&strErrorRet,&mnbRet](std::string sErr)->bool
+    {
+        strErrorRet = sErr;
         LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
         mnbRet = CGoldminenodeBroadcast();
         return false;
-    }
+    };
 
-    mnbRet = CGoldminenodeBroadcast(service, txin, pubKeyCollateralAddressNew, pubKeyGoldminenodeNew, PROTOCOL_VERSION);
+    CGoldminenodePing mnp(outpoint);
+    if (!mnp.Sign(keyGoldminenodeNew, pubKeyGoldminenodeNew))
+        return Log(strprintf("Failed to sign ping, goldminenode=%s", outpoint.ToStringShort()));
 
-    if(!mnbRet.IsValidNetAddr()) {
-        strErrorRet = strprintf("Invalid IP address, goldminenode=%s", txin.prevout.ToStringShort());
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        mnbRet = CGoldminenodeBroadcast();
-        return false;
-    }
+    mnbRet = CGoldminenodeBroadcast(service, outpoint, pubKeyCollateralAddressNew, pubKeyGoldminenodeNew, PROTOCOL_VERSION);
+
+    if (!mnbRet.IsValidNetAddr())
+        return Log(strprintf("Invalid IP address, goldminenode=%s", outpoint.ToStringShort()));
 
     mnbRet.lastPing = mnp;
-    if(!mnbRet.Sign(keyCollateralAddressNew)) {
-        strErrorRet = strprintf("Failed to sign broadcast, goldminenode=%s", txin.prevout.ToStringShort());
-        LogPrintf("CGoldminenodeBroadcast::Create -- %s\n", strErrorRet);
-        mnbRet = CGoldminenodeBroadcast();
-        return false;
-    }
+    if (!mnbRet.Sign(keyCollateralAddressNew))
+        return Log(strprintf("Failed to sign broadcast, goldminenode=%s", outpoint.ToStringShort()));
 
     return true;
 }
+#endif // ENABLE_WALLET
 
 bool CGoldminenodeBroadcast::SimpleCheck(int& nDos)
 {
@@ -521,7 +444,7 @@ bool CGoldminenodeBroadcast::SimpleCheck(int& nDos)
         // one of us is probably forked or smth, just mark it as expired and check the rest of the rules
         nActiveState = GOLDMINENODE_EXPIRED;
     }
-
+    LogPrintf("CGoldminenodeBroadcast:: nProtocolVersion= %d\n",nProtocolVersion);
     if(nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto()) {
         LogPrintf("CGoldminenodeBroadcast::SimpleCheck -- ignoring outdated Goldminenode: goldminenode=%s  nProtocolVersion=%d\n", vin.prevout.ToStringShort(), nProtocolVersion);
         return false;
@@ -559,7 +482,7 @@ bool CGoldminenodeBroadcast::SimpleCheck(int& nDos)
     return true;
 }
 
-bool CGoldminenodeBroadcast::Update(CGoldminenode* pmn, int& nDos)
+bool CGoldminenodeBroadcast::Update(CGoldminenode* pmn, int& nDos, CConnman& connman)
 {
     nDos = 0;
 
@@ -601,11 +524,11 @@ bool CGoldminenodeBroadcast::Update(CGoldminenode* pmn, int& nDos)
     if(!pmn->IsBroadcastedWithin(GOLDMINENODE_MIN_MNB_SECONDS) || (fGoldmineNode && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode)) {
         // take the newest entry
         LogPrintf("CGoldminenodeBroadcast::Update -- Got UPDATED Goldminenode entry: addr=%s\n", addr.ToString());
-        if(pmn->UpdateFromNewBroadcast((*this))) {
+        if(pmn->UpdateFromNewBroadcast(*this, connman)) {
             pmn->Check();
-            Relay();
+            Relay(connman);
         }
-        goldminenodeSync.AddedGoldminenodeList();
+        goldminenodeSync.BumpAssetLastTime("CGoldminenodeBroadcast::Update");
     }
 
     return true;
@@ -615,7 +538,7 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
 {
     // we are a goldminenode with the same vin (i.e. already activated) and this mnb is ours (matches our Goldminenode privkey)
     // so nothing to do here for us
-    if(fGoldmineNode && vin.prevout == activeGoldminenode.vin.prevout && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
+    if(fGoldmineNode && vin.prevout == activeGoldminenode.outpoint && pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
         return false;
     }
 
@@ -628,36 +551,39 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain) {
             // not mnb fault, let it to be checked again later
-            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Failed to aquire lock, addr=%s", addr.ToString());
+            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Failed to aquire lock, addr=%s", addr.ToString());
             mnodeman.mapSeenGoldminenodeBroadcast.erase(GetHash());
             return false;
         }
 
-        CCoins coins;
-        if(!pcoinsTip->GetCoins(vin.prevout.hash, coins) ||
-           (unsigned int)vin.prevout.n>=coins.vout.size() ||
-           coins.vout[vin.prevout.n].IsNull()) {
-            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Failed to find Goldminenode UTXO, goldminenode=%s\n", vin.prevout.ToStringShort());
+        int nHeight;
+        CollateralStatus err = CheckCollateral(vin.prevout, nHeight);
+        if (err == COLLATERAL_UTXO_NOT_FOUND) {
+            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Failed to find Goldminenode UTXO, goldminenode=%s\n", vin.prevout.ToStringShort());
             return false;
         }
-        if(coins.vout[vin.prevout.n].nValue != 1000 * COIN) {
-            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO should have 1000 ARC, goldminenode=%s\n", vin.prevout.ToStringShort());
+
+        if (err == COLLATERAL_INVALID_AMOUNT) {
+            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO should have 10000 ARCTIC, goldminenode=%s\n", vin.prevout.ToStringShort());
             return false;
         }
-        if(chainActive.Height() - coins.nHeight + 1 < Params().GetConsensus().nGoldminenodeMinimumConfirmations) {
+
+        if(chainActive.Height() - nHeight + 1 < Params().GetConsensus().nGoldminenodeMinimumConfirmations) {
             LogPrintf("CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO must have at least %d confirmations, goldminenode=%s\n",
                     Params().GetConsensus().nGoldminenodeMinimumConfirmations, vin.prevout.ToStringShort());
             // maybe we miss few blocks, let this mnb to be checked again later
             mnodeman.mapSeenGoldminenodeBroadcast.erase(GetHash());
             return false;
         }
+        // remember the hash of the block where goldminenode collateral had minimum required confirmations
+        nCollateralMinConfBlockHash = chainActive[nHeight + Params().GetConsensus().nGoldminenodeMinimumConfirmations - 1]->GetBlockHash();
     }
 
-    LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO verified\n");
+    LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO verified\n");
 
-    // make sure the vout that was signed is related to the transaction that spawned the Goldminenode
-    //  - this is expensive, so it's only done once per Goldminenode
-    if(!darkSendSigner.IsVinAssociatedWithPubkey(vin, pubKeyCollateralAddress)) {
+    // make sure the input that was signed in goldminenode broadcast message is related to the transaction
+    // that spawned the Goldminenode - this is expensive, so it's only done once per Goldminenode
+    if(!IsInputAssociatedWithPubkey()) {
         LogPrintf("CGoldminenodeMan::CheckOutpoint -- Got mismatched pubKeyCollateralAddress and vin\n");
         nDos = 33;
         return false;
@@ -685,23 +611,24 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
     return true;
 }
 
-bool CGoldminenodeBroadcast::Sign(CKey& keyCollateralAddress)
+bool CGoldminenodeBroadcast::Sign(const CKey& keyCollateralAddress)
 {
     std::string strError;
     std::string strMessage;
 
     sigTime = GetAdjustedTime();
+    enableTime = GetAdjustedTime();
 
     strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) +
                     pubKeyCollateralAddress.GetID().ToString() + pubKeyGoldminenode.GetID().ToString() +
                     boost::lexical_cast<std::string>(nProtocolVersion);
 
-    if(!darkSendSigner.SignMessage(strMessage, vchSig, keyCollateralAddress)) {
+    if(!CMessageSigner::SignMessage(strMessage, vchSig, keyCollateralAddress)) {
         LogPrintf("CGoldminenodeBroadcast::Sign -- SignMessage() failed\n");
         return false;
     }
 
-    if(!darkSendSigner.VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)) {
+    if(!CMessageSigner::VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)) {
         LogPrintf("CGoldminenodeBroadcast::Sign -- VerifyMessage() failed, error: %s\n", strError);
         return false;
     }
@@ -715,95 +642,58 @@ bool CGoldminenodeBroadcast::CheckSignature(int& nDos)
     std::string strError = "";
     nDos = 0;
 
-    //
-    // REMOVE AFTER MIGRATION TO 12.1
-    //
-    if(nProtocolVersion < 70201) {
-        std::string vchPubkeyCollateralAddress(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
-        std::string vchPubkeyGoldminenode(pubKeyGoldminenode.begin(), pubKeyGoldminenode.end());
-        strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) +
-                        vchPubkeyCollateralAddress + vchPubkeyGoldminenode + boost::lexical_cast<std::string>(nProtocolVersion);
+    strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) +
+                    pubKeyCollateralAddress.GetID().ToString() + pubKeyGoldminenode.GetID().ToString() +
+                    boost::lexical_cast<std::string>(nProtocolVersion);
 
-        LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckSignature -- sanitized strMessage: %s  pubKeyCollateralAddress address: %s  sig: %s\n",
-            SanitizeString(strMessage), CBitcoinAddress(pubKeyCollateralAddress.GetID()).ToString(),
-            EncodeBase64(&vchSig[0], vchSig.size()));
+    LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckSignature -- strMessage: %s  pubKeyCollateralAddress address: %s  sig: %s\n", strMessage, CBitcoinAddress(pubKeyCollateralAddress.GetID()).ToString(), EncodeBase64(&vchSig[0], vchSig.size()));
 
-        if(!darkSendSigner.VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)) {
-            if(addr.ToString() != addr.ToString(false)) {
-                // maybe it's wrong format, try again with the old one
-                strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) +
-                                vchPubkeyCollateralAddress + vchPubkeyGoldminenode + boost::lexical_cast<std::string>(nProtocolVersion);
-
-                LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckSignature -- second try, sanitized strMessage: %s  pubKeyCollateralAddress address: %s  sig: %s\n",
-                    SanitizeString(strMessage), CBitcoinAddress(pubKeyCollateralAddress.GetID()).ToString(),
-                    EncodeBase64(&vchSig[0], vchSig.size()));
-
-                if(!darkSendSigner.VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)) {
-                    // didn't work either
-                    LogPrintf("CGoldminenodeBroadcast::CheckSignature -- Got bad Goldminenode announce signature, second try, sanitized error: %s\n",
-                        SanitizeString(strError));
-                    // don't ban for old goldminenodes, their sigs could be broken because of the bug
-                    return false;
-                }
-            } else {
-                // nope, sig is actually wrong
-                LogPrintf("CGoldminenodeBroadcast::CheckSignature -- Got bad Goldminenode announce signature, sanitized error: %s\n",
-                    SanitizeString(strError));
-                // don't ban for old goldminenodes, their sigs could be broken because of the bug
-                return false;
-            }
-        }
-    } else {
-    //
-    // END REMOVE
-    //
-        strMessage = addr.ToString(false) + boost::lexical_cast<std::string>(sigTime) +
-                        pubKeyCollateralAddress.GetID().ToString() + pubKeyGoldminenode.GetID().ToString() +
-                        boost::lexical_cast<std::string>(nProtocolVersion);
-
-        LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckSignature -- strMessage: %s  pubKeyCollateralAddress address: %s  sig: %s\n", strMessage, CBitcoinAddress(pubKeyCollateralAddress.GetID()).ToString(), EncodeBase64(&vchSig[0], vchSig.size()));
-
-        if(!darkSendSigner.VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)){
-            LogPrintf("CGoldminenodeBroadcast::CheckSignature -- Got bad Goldminenode announce signature, error: %s\n", strError);
-            nDos = 100;
-            return false;
-        }
+    if(!CMessageSigner::VerifyMessage(pubKeyCollateralAddress, vchSig, strMessage, strError)){
+        LogPrintf("CGoldminenodeBroadcast::CheckSignature -- Got bad Goldminenode announce signature, error: %s\n", strError);
+        nDos = 100;
+        return false;
     }
 
     return true;
 }
 
-void CGoldminenodeBroadcast::Relay()
+void CGoldminenodeBroadcast::Relay(CConnman& connman)
 {
+    // Do not relay until fully synced
+    if(!goldminenodeSync.IsSynced()) {
+        LogPrint("goldminenode", "CGoldminenodeBroadcast::Relay -- won't relay until fully synced\n");
+        return;
+    }
+
     CInv inv(MSG_GOLDMINENODE_ANNOUNCE, GetHash());
-    RelayInv(inv);
+    connman.RelayInv(inv);
 }
 
-CGoldminenodePing::CGoldminenodePing(CTxIn& vinNew)
+CGoldminenodePing::CGoldminenodePing(const COutPoint& outpoint)
 {
     LOCK(cs_main);
     if (!chainActive.Tip() || chainActive.Height() < 12) return;
 
-    vin = vinNew;
+    vin = CTxIn(outpoint);
     blockHash = chainActive[chainActive.Height() - 12]->GetBlockHash();
     sigTime = GetAdjustedTime();
-    vchSig = std::vector<unsigned char>();
 }
 
-bool CGoldminenodePing::Sign(CKey& keyGoldminenode, CPubKey& pubKeyGoldminenode)
+bool CGoldminenodePing::Sign(const CKey& keyGoldminenode, const CPubKey& pubKeyGoldminenode)
 {
     std::string strError;
     std::string strGoldmineNodeSignMessage;
 
+    // TODO: add sentinel data
     sigTime = GetAdjustedTime();
     std::string strMessage = vin.ToString() + blockHash.ToString() + boost::lexical_cast<std::string>(sigTime);
 
-    if(!darkSendSigner.SignMessage(strMessage, vchSig, keyGoldminenode)) {
+    if(!CMessageSigner::SignMessage(strMessage, vchSig, keyGoldminenode)) {
         LogPrintf("CGoldminenodePing::Sign -- SignMessage() failed\n");
         return false;
     }
 
-    if(!darkSendSigner.VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
+    if(!CMessageSigner::VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
         LogPrintf("CGoldminenodePing::Sign -- VerifyMessage() failed, error: %s\n", strError);
         return false;
     }
@@ -813,11 +703,12 @@ bool CGoldminenodePing::Sign(CKey& keyGoldminenode, CPubKey& pubKeyGoldminenode)
 
 bool CGoldminenodePing::CheckSignature(CPubKey& pubKeyGoldminenode, int &nDos)
 {
+    // TODO: add sentinel data
     std::string strMessage = vin.ToString() + blockHash.ToString() + boost::lexical_cast<std::string>(sigTime);
     std::string strError = "";
     nDos = 0;
 
-    if(!darkSendSigner.VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
+    if(!CMessageSigner::VerifyMessage(pubKeyGoldminenode, vchSig, strMessage, strError)) {
         LogPrintf("CGoldminenodePing::CheckSignature -- Got bad Goldminenode ping signature, goldminenode=%s, error: %s\n", vin.prevout.ToStringShort(), strError);
         nDos = 33;
         return false;
@@ -837,7 +728,7 @@ bool CGoldminenodePing::SimpleCheck(int& nDos)
     }
 
     {
-        LOCK(cs_main);
+        AssertLockHeld(cs_main);
         BlockMap::iterator mi = mapBlockIndex.find(blockHash);
         if (mi == mapBlockIndex.end()) {
             LogPrint("goldminenode", "CGoldminenodePing::SimpleCheck -- Goldminenode ping is invalid, unknown block hash: goldminenode=%s blockHash=%s\n", vin.prevout.ToStringShort(), blockHash.ToString());
@@ -850,7 +741,7 @@ bool CGoldminenodePing::SimpleCheck(int& nDos)
     return true;
 }
 
-bool CGoldminenodePing::CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcast, int& nDos)
+bool CGoldminenodePing::CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcast, int& nDos, CConnman& connman)
 {
     // don't ban by default
     nDos = 0;
@@ -899,6 +790,16 @@ bool CGoldminenodePing::CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcas
 
     if (!CheckSignature(pmn->pubKeyGoldminenode, nDos)) return false;
 
+    // so, ping seems to be ok
+
+    // if we are still syncing and there was no known ping for this mn for quite a while
+    // (NOTE: assuming that GOLDMINENODE_EXPIRATION_SECONDS/2 should be enough to finish mn list sync)
+    if(!goldminenodeSync.IsGoldminenodeListSynced() && !pmn->IsPingedWithin(GOLDMINENODE_EXPIRATION_SECONDS/2)) {
+        // let's bump sync timeout
+        LogPrint("goldminenode", "CGoldminenodePing::CheckAndUpdate -- bumping sync timeout, goldminenode=%s\n", vin.prevout.ToStringShort());
+        goldminenodeSync.BumpAssetLastTime("CGoldminenodePing::CheckAndUpdate");
+    }
+
     // so, ping seems to be ok, let's store it
     LogPrint("goldminenode", "CGoldminenodePing::CheckAndUpdate -- Goldminenode ping accepted, goldminenode=%s\n", vin.prevout.ToStringShort());
     pmn->lastPing = *this;
@@ -910,62 +811,33 @@ bool CGoldminenodePing::CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcas
         mnodeman.mapSeenGoldminenodeBroadcast[hash].second.lastPing = *this;
     }
 
-    pmn->Check(true); // force update, ignoring cache
-    if (!pmn->IsEnabled()) return false;
+    // force update, ignoring cache
+    pmn->Check(true);
+    // relay ping for nodes in ENABLED/EXPIRED/WATCHDOG_EXPIRED state only, skip everyone else
+    if (!pmn->IsEnabled() && !pmn->IsExpired() && !pmn->IsWatchdogExpired()) return false;
 
     LogPrint("goldminenode", "CGoldminenodePing::CheckAndUpdate -- Goldminenode ping acceepted and relayed, goldminenode=%s\n", vin.prevout.ToStringShort());
-    Relay();
+    Relay(connman);
 
     return true;
 }
 
-void CGoldminenodePing::Relay()
+void CGoldminenodePing::Relay(CConnman& connman)
 {
-    CInv inv(MSG_GOLDMINENODE_PING, GetHash());
-    RelayInv(inv);
-}
-
-void CGoldminenode::AddGovernanceVote(uint256 nGovernanceObjectHash)
-{
-    if(mapGovernanceObjectsVotedOn.count(nGovernanceObjectHash)) {
-        mapGovernanceObjectsVotedOn[nGovernanceObjectHash]++;
-    } else {
-        mapGovernanceObjectsVotedOn.insert(std::make_pair(nGovernanceObjectHash, 1));
-    }
-}
-
-void CGoldminenode::RemoveGovernanceObject(uint256 nGovernanceObjectHash)
-{
-    std::map<uint256, int>::iterator it = mapGovernanceObjectsVotedOn.find(nGovernanceObjectHash);
-    if(it == mapGovernanceObjectsVotedOn.end()) {
+    // Do not relay until fully synced
+    if(!goldminenodeSync.IsSynced()) {
+        LogPrint("goldminenode", "CGoldminenodePing::Relay -- won't relay until fully synced\n");
         return;
     }
-    mapGovernanceObjectsVotedOn.erase(it);
+
+    CInv inv(MSG_GOLDMINENODE_PING, GetHash());
+    connman.RelayInv(inv);
 }
 
-void CGoldminenode::UpdateWatchdogVoteTime()
+
+void CGoldminenode::UpdateWatchdogVoteTime(uint64_t nVoteTime)
 {
     LOCK(cs);
-    nTimeLastWatchdogVote = GetTime();
+    nTimeLastWatchdogVote = (nVoteTime == 0) ? GetAdjustedTime() : nVoteTime;
 }
 
-/**
-*   FLAG GOVERNANCE ITEMS AS DIRTY
-*
-*   - When goldminenode come and go on the network, we must flag the items they voted on to recalc it's cached flags
-*
-*/
-void CGoldminenode::FlagGovernanceItemsAsDirty()
-{
-    std::vector<uint256> vecDirty;
-    {
-        std::map<uint256, int>::iterator it = mapGovernanceObjectsVotedOn.begin();
-        while(it != mapGovernanceObjectsVotedOn.end()) {
-            vecDirty.push_back(it->first);
-            ++it;
-        }
-    }
-    for(size_t i = 0; i < vecDirty.size(); ++i) {
-        mnodeman.AddDirtyGovernanceObjectHash(vecDirty[i]);
-    }
-}

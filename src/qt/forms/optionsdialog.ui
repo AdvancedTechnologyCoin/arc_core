@@ -30,10 +30,10 @@
        <item>
         <widget class="QCheckBox" name="bitcoinAtStartup">
          <property name="toolTip">
-          <string>Automatically start Arctic Core after logging in to the system.</string>
+          <string>Automatically start ARC after logging in to the system.</string>
          </property>
          <property name="text">
-          <string>&amp;Start Arctic Core on system login</string>
+          <string>&amp;Start ARC on system login</string>
          </property>
         </widget>
        </item>
@@ -298,7 +298,7 @@
        <item>
         <widget class="QCheckBox" name="mapPortUpnp">
          <property name="toolTip">
-          <string>Automatically open the Arctic Core client port on the router. This only works when your router supports UPnP and it is enabled.</string>
+          <string>Automatically open the ARC client port on the router. This only works when your router supports UPnP and it is enabled.</string>
          </property>
          <property name="text">
           <string>Map port using &amp;UPnP</string>
@@ -614,6 +614,16 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_Window">
        <item>
+        <widget class="QCheckBox" name="hideTrayIcon">
+         <property name="toolTip">
+          <string>&amp;Hide the icon from the system tray.</string>
+         </property>
+         <property name="text">
+          <string>Hide tray icon</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="minimizeToTray">
          <property name="toolTip">
           <string>Show only a tray icon after minimizing the window.</string>
@@ -671,7 +681,7 @@
          <item>
           <widget class="QValueComboBox" name="lang">
            <property name="toolTip">
-            <string>The user interface language can be set here. This setting will take effect after restarting Arctic Core.</string>
+            <string>The user interface language can be set here. This setting will take effect after restarting ARC.</string>
            </property>
           </widget>
          </item>
@@ -693,7 +703,7 @@
          </property>
          <property name="text">
           <string>Language missing or translation incomplete? Help contributing translations here:
-https://www.transifex.com/projects/p/arcticcoin/</string>
+https://www.transifex.com/projects/p/arc/</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

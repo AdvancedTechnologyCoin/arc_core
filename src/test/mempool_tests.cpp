@@ -5,7 +5,7 @@
 #include "txmempool.h"
 #include "util.h"
 
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <boost/test/unit_test.hpp>
 #include <list>

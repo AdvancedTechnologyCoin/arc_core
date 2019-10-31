@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -164,7 +164,7 @@ UniValue generate(const UniValue& params, bool fHelp)
     UniValue blockHashes(UniValue::VARR);
     while (nHeight < nHeightEnd)
     {
-        auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlock(Params(), coinbaseScript->reserveScript));
+        unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlock(Params(), coinbaseScript->reserveScript));
         if (!pblocktemplate.get())
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
         CBlock *pblock = &pblocktemplate->block;
@@ -458,13 +458,13 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Arctic Core is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "ARC is not connected!");
 
     if (IsInitialBlockDownload())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Arctic Core is downloading blocks...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "ARC is downloading blocks...");
 
     if (!goldminenodeSync.IsSynced())
-        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Arctic Core is syncing with network...");
+        throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "ARC is syncing with network...");
 
     static unsigned int nTransactionsUpdatedLast;
 
@@ -623,7 +623,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         goldminenodeObj.push_back(Pair("amount", pblock->txoutGoldminenode.nValue));
     }
     result.push_back(Pair("goldminenode", goldminenodeObj));
-    result.push_back(Pair("goldminenode_payments_started", pindexPrev->nHeight + 1 > Params().GetConsensus().nGoldminenodePaymentsStartBlock));
+    result.push_back(Pair("goldminenode_payments_started", pindexPrev->nHeight + 1 > sporkManager.GetSporkValue(SPORK_11_GOLDMINENODE_ENABLED)) );
     result.push_back(Pair("goldminenode_payments_enforced", sporkManager.IsSporkActive(SPORK_8_GOLDMINENODE_PAYMENT_ENFORCEMENT)));
 
     UniValue superblockObjArray(UniValue::VARR);
@@ -639,9 +639,11 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
             superblockObjArray.push_back(entry);
         }
     }
-    result.push_back(Pair("superblock", superblockObjArray));
-    result.push_back(Pair("superblocks_started", pindexPrev->nHeight + 1 > Params().GetConsensus().nSuperblockStartBlock));
-    result.push_back(Pair("superblocks_enabled", sporkManager.IsSporkActive(SPORK_9_SUPERBLOCKS_ENABLED)));
+    result.push_back(Pair("evolution", superblockObjArray));
+	bool bWk1 = sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS);
+    bool bWk2 = (pindexPrev->nHeight+1) > sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT);
+	result.push_back(Pair("evolution_payments_started", bWk1) );
+    result.push_back(Pair("evolution_payments_enforced", bWk2) );
 
     return result;
 }

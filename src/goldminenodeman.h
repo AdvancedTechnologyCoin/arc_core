@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,6 +11,7 @@
 using namespace std;
 
 class CGoldminenodeMan;
+class CConnman;
 
 extern CGoldminenodeMan mnodeman;
 
@@ -81,18 +82,12 @@ private:
 class CGoldminenodeMan
 {
 public:
-    typedef std::map<CTxIn,int> index_m_t;
-
-    typedef index_m_t::iterator index_m_it;
-
-    typedef index_m_t::const_iterator index_m_cit;
+    typedef std::pair<arith_uint256, CGoldminenode*> score_pair_t;
+    typedef std::vector<score_pair_t> score_pair_vec_t;
+    typedef std::pair<int, CGoldminenode> rank_pair_t;
+    typedef std::vector<rank_pair_t> rank_pair_vec_t;
 
 private:
-    static const int MAX_EXPECTED_INDEX_SIZE = 30000;
-
-    /// Only allow 1 index rebuild per hour
-    static const int64_t MIN_INDEX_REBUILD_TIME = 3600;
-
     static const std::string SERIALIZATION_VERSION_STRING;
 
     static const int DSEG_UPDATE_SECONDS        = 3 * 60 * 60;
@@ -114,11 +109,11 @@ private:
     // critical section to protect the inner data structures
     mutable CCriticalSection cs;
 
-    // Keep track of current block index
-    const CBlockIndex *pCurrentBlockIndex;
+    // Keep track of current block height
+    int nCachedBlockHeight;
 
     // map to hold all MNs
-    std::vector<CGoldminenode> vGoldminenodes;
+    std::map<COutPoint, CGoldminenode> mapGoldminenodes;
     // who's asked for the Goldminenode list and the last time
     std::map<CNetAddr, int64_t> mAskedUsForGoldminenodeList;
     // who we asked for the Goldminenode list and the last time
@@ -133,26 +128,21 @@ private:
     std::map<uint256, std::vector<CGoldminenodeBroadcast> > mMnbRecoveryGoodReplies;
     std::list< std::pair<CService, uint256> > listScheduledMnbRequestConnections;
 
-    int64_t nLastIndexRebuildTime;
 
     CGoldminenodeIndex indexGoldminenodes;
-
-    CGoldminenodeIndex indexGoldminenodesOld;
-
-    /// Set when index has been rebuilt, clear when read
-    bool fIndexRebuilt;
-
     /// Set when goldminenodes are added, cleared when CGovernanceManager is notified
     bool fGoldminenodesAdded;
 
     /// Set when goldminenodes are removed, cleared when CGovernanceManager is notified
     bool fGoldminenodesRemoved;
 
-    std::vector<uint256> vecDirtyGovernanceObjectHashes;
-
     int64_t nLastWatchdogVoteTime;
 
     friend class CGoldminenodeSync;
+    /// Find an entry
+    CGoldminenode* Find(const COutPoint& outpoint);
+
+    bool GetGoldminenodeScores(const uint256& nBlockHash, score_pair_vec_t& vecGoldminenodeScoresRet, int nMinProtocol = 0);
 
 public:
     // Keep track of all broadcasts I've seen
@@ -179,7 +169,7 @@ public:
             READWRITE(strVersion);
         }
 
-        READWRITE(vGoldminenodes);
+        READWRITE(mapGoldminenodes);
         READWRITE(mAskedUsForGoldminenodeList);
         READWRITE(mWeAskedForGoldminenodeList);
         READWRITE(mWeAskedForGoldminenodeListEntry);
@@ -202,14 +192,20 @@ public:
     bool Add(CGoldminenode &mn);
 
     /// Ask (source) node for mnb
-    void AskForMN(CNode *pnode, const CTxIn &vin);
+    void AskForMN(CNode *pnode, const COutPoint& outpoint, CConnman& connman);
     void AskForMnb(CNode *pnode, const uint256 &hash);
+
+    bool PoSeBan(const COutPoint &outpoint);
+    bool AllowMixing(const COutPoint &outpoint);
+    bool DisallowMixing(const COutPoint &outpoint);
 
     /// Check all Goldminenodes
     void Check();
 
     /// Check all Goldminenodes and remove inactive
-    void CheckAndRemove();
+    void CheckAndRemove(CConnman& connman);
+    /// This is dummy overload to be used for dumping/loading mncache.dat
+    void CheckAndRemove() {}
 
     /// Clear Goldminenode vector
     void Clear();
@@ -224,134 +220,62 @@ public:
     /// Count Goldminenodes by network type - NET_IPV4, NET_IPV6, NET_TOR
     // int CountByIP(int nNetworkType);
 
-    void DsegUpdate(CNode* pnode);
-
-    /// Find an entry
-    CGoldminenode* Find(const CScript &payee);
-    CGoldminenode* Find(const CTxIn& vin);
-    CGoldminenode* Find(const CPubKey& pubKeyGoldminenode);
+    void DsegUpdate(CNode* pnode, CConnman& connman);
 
     /// Versions of Find that are safe to use from outside the class
-    bool Get(const CPubKey& pubKeyGoldminenode, CGoldminenode& goldminenode);
-    bool Get(const CTxIn& vin, CGoldminenode& goldminenode);
+    bool Get(const COutPoint& outpoint, CGoldminenode& goldminenodeRet);
+    bool Has(const COutPoint& outpoint);
 
-    /// Retrieve goldminenode vin by index
-    bool Get(int nIndex, CTxIn& vinGoldminenode, bool& fIndexRebuiltOut) {
-        LOCK(cs);
-        fIndexRebuiltOut = fIndexRebuilt;
-        return indexGoldminenodes.Get(nIndex, vinGoldminenode);
-    }
-
-    bool GetIndexRebuiltFlag() {
-        LOCK(cs);
-        return fIndexRebuilt;
-    }
-
-    /// Get index of a goldminenode vin
-    int GetGoldminenodeIndex(const CTxIn& vinGoldminenode) {
-        LOCK(cs);
-        return indexGoldminenodes.GetGoldminenodeIndex(vinGoldminenode);
-    }
-
-    /// Get old index of a goldminenode vin
-    int GetGoldminenodeIndexOld(const CTxIn& vinGoldminenode) {
-        LOCK(cs);
-        return indexGoldminenodesOld.GetGoldminenodeIndex(vinGoldminenode);
-    }
-
-    /// Get goldminenode VIN for an old index value
-    bool GetGoldminenodeVinForIndexOld(int nGoldminenodeIndex, CTxIn& vinGoldminenodeOut) {
-        LOCK(cs);
-        return indexGoldminenodesOld.Get(nGoldminenodeIndex, vinGoldminenodeOut);
-    }
-
-    /// Get index of a goldminenode vin, returning rebuild flag
-    int GetGoldminenodeIndex(const CTxIn& vinGoldminenode, bool& fIndexRebuiltOut) {
-        LOCK(cs);
-        fIndexRebuiltOut = fIndexRebuilt;
-        return indexGoldminenodes.GetGoldminenodeIndex(vinGoldminenode);
-    }
-
-    void ClearOldGoldminenodeIndex() {
-        LOCK(cs);
-        indexGoldminenodesOld.Clear();
-        fIndexRebuilt = false;
-    }
-
-    bool Has(const CTxIn& vin);
-
-    goldminenode_info_t GetGoldminenodeInfo(const CTxIn& vin);
-
-    goldminenode_info_t GetGoldminenodeInfo(const CPubKey& pubKeyGoldminenode);
+    bool GetGoldminenodeInfo(const COutPoint& outpoint, goldminenode_info_t& mnInfoRet);
+    bool GetGoldminenodeInfo(const CPubKey& pubKeyGoldminenode, goldminenode_info_t& mnInfoRet);
+    bool GetGoldminenodeInfo(const CScript& payee, goldminenode_info_t& mnInfoRet);
 
     /// Find an entry in the goldminenode list that is next to be paid
-    CGoldminenode* GetNextGoldminenodeInQueueForPayment(int nBlockHeight, bool fFilterSigTime, int& nCount);
+    bool GetNextGoldminenodeInQueueForMasterPayment(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
     /// Same as above but use current block height
-    CGoldminenode* GetNextGoldminenodeInQueueForPayment(bool fFilterSigTime, int& nCount);
-
+    bool GetNextGoldminenodeInQueueForMasterPayment(bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
+	///
+	bool GetNextGoldminenodeInQueueForTmp(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
     /// Find a random entry
-    CGoldminenode* FindRandomNotInVec(const std::vector<CTxIn> &vecToExclude, int nProtocolVersion = -1);
+    goldminenode_info_t FindRandomNotInVec(const std::vector<COutPoint> &vecToExclude, int nProtocolVersion = -1);
 
-    std::vector<CGoldminenode> GetFullGoldminenodeVector() { return vGoldminenodes; }
+    std::map<COutPoint, CGoldminenode> GetFullGoldminenodeMap() { return mapGoldminenodes; }
 
-    std::vector<std::pair<int, CGoldminenode> > GetGoldminenodeRanks(int nBlockHeight = -1, int nMinProtocol=0);
-    int GetGoldminenodeRank(const CTxIn &vin, int nBlockHeight, int nMinProtocol=0, bool fOnlyActive=true);
-    CGoldminenode* GetGoldminenodeByRank(int nRank, int nBlockHeight, int nMinProtocol=0, bool fOnlyActive=true);
+    bool GetGoldminenodeRanks(rank_pair_vec_t& vecGoldminenodeRanksRet, int nBlockHeight = -1, int nMinProtocol = 0);
+    bool GetGoldminenodeRank(const COutPoint &outpoint, int& nRankRet, int nBlockHeight = -1, int nMinProtocol = 0);
 
-    void ProcessGoldminenodeConnections();
+    void ProcessGoldminenodeConnections(CConnman& connman);
     std::pair<CService, std::set<uint256> > PopScheduledMnbRequestConnection();
 
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, CConnman& connman);
 
-    void DoFullVerificationStep();
+    void DoFullVerificationStep(CConnman& connman);
     void CheckSameAddr();
-    bool SendVerifyRequest(const CAddress& addr, const std::vector<CGoldminenode*>& vSortedByAddr);
-    void SendVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv);
+    bool SendVerifyRequest(const CAddress& addr, const std::vector<CGoldminenode*>& vSortedByAddr, CConnman& connman);
+    void SendVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv, CConnman& connman);
     void ProcessVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv);
     void ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeVerification& mnv);
 
     /// Return the number of (unique) Goldminenodes
-    int size() { return vGoldminenodes.size(); }
+    int size() { return mapGoldminenodes.size(); }
 
     std::string ToString() const;
 
     /// Update goldminenode list and maps using provided CGoldminenodeBroadcast
-    void UpdateGoldminenodeList(CGoldminenodeBroadcast mnb);
+    void UpdateGoldminenodeList(CGoldminenodeBroadcast mnb, CConnman& connman);
     /// Perform complete check and only then update list and maps
-    bool CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldminenodeBroadcast mnb, int& nDos);
+    bool CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldminenodeBroadcast mnb, int& nDos, CConnman& connman);
     bool IsMnbRecoveryRequested(const uint256& hash) { return mMnbRecoveryRequests.count(hash); }
 
-    void UpdateLastPaid();
-
-    void CheckAndRebuildGoldminenodeIndex();
-
-    void AddDirtyGovernanceObjectHash(const uint256& nHash)
-    {
-        LOCK(cs);
-        vecDirtyGovernanceObjectHashes.push_back(nHash);
-    }
-
-    std::vector<uint256> GetAndClearDirtyGovernanceObjectHashes()
-    {
-        LOCK(cs);
-        std::vector<uint256> vecTmp = vecDirtyGovernanceObjectHashes;
-        vecDirtyGovernanceObjectHashes.clear();
-        return vecTmp;;
-    }
+    void UpdateLastPaid(const CBlockIndex* pindex);
 
     bool IsWatchdogActive();
-    void UpdateWatchdogVoteTime(const CTxIn& vin);
-    void AddGovernanceVote(const CTxIn& vin, uint256 nGovernanceObjectHash);
-    void RemoveGovernanceObject(uint256 nGovernanceObjectHash);
+    void UpdateWatchdogVoteTime(const COutPoint& outpoint, uint64_t nVoteTime = 0);
 
-    void CheckGoldminenode(const CTxIn& vin, bool fForce = false);
-    void CheckGoldminenode(const CPubKey& pubKeyGoldminenode, bool fForce = false);
+    void CheckGoldminenode(const CPubKey& pubKeyGoldminenode, bool fForce);
 
-    int GetGoldminenodeState(const CTxIn& vin);
-    int GetGoldminenodeState(const CPubKey& pubKeyGoldminenode);
-
-    bool IsGoldminenodePingedWithin(const CTxIn& vin, int nSeconds, int64_t nTimeToCheckAt = -1);
-    void SetGoldminenodeLastPing(const CTxIn& vin, const CGoldminenodePing& mnp);
+    bool IsGoldminenodePingedWithin(const COutPoint& outpoint, int nSeconds, int64_t nTimeToCheckAt = -1);
+    void SetGoldminenodeLastPing(const COutPoint& outpoint, const CGoldminenodePing& mnp);
 
     void UpdatedBlockTip(const CBlockIndex *pindex);
 
@@ -359,7 +283,7 @@ public:
      * Called to notify CGovernanceManager that the goldminenode index has been updated.
      * Must be called while not holding the CGoldminenodeMan::cs mutex
      */
-    void NotifyGoldminenodeUpdates();
+    void NotifyGoldminenodeUpdates(CConnman& connman);
 
 };
 

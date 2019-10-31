@@ -10,7 +10,7 @@
 #ifndef BITCOIN_PROTOCOL_H
 #define BITCOIN_PROTOCOL_H
 
-#include "netbase.h"
+#include "netaddress.h"
 #include "serialize.h"
 #include "uint256.h"
 #include "version.h"
@@ -45,15 +45,15 @@ public:
         READWRITE(FLATDATA(pchMessageStart));
         READWRITE(FLATDATA(pchCommand));
         READWRITE(nMessageSize);
-        READWRITE(nChecksum);
+        READWRITE(FLATDATA(pchChecksum));
     }
 
     // TODO: make private (improves encapsulation)
 public:
     enum {
         COMMAND_SIZE = 12,
-        MESSAGE_SIZE_SIZE = sizeof(int),
-        CHECKSUM_SIZE = sizeof(int),
+        MESSAGE_SIZE_SIZE = 4,
+        CHECKSUM_SIZE = 4,
 
         MESSAGE_SIZE_OFFSET = MESSAGE_START_SIZE + COMMAND_SIZE,
         CHECKSUM_OFFSET = MESSAGE_SIZE_OFFSET + MESSAGE_SIZE_SIZE,
@@ -61,8 +61,8 @@ public:
     };
     char pchMessageStart[MESSAGE_START_SIZE];
     char pchCommand[COMMAND_SIZE];
-    unsigned int nMessageSize;
-    unsigned int nChecksum;
+    uint32_t nMessageSize;
+    uint8_t pchChecksum[CHECKSUM_SIZE];
 };
 
 /**
@@ -240,9 +240,6 @@ extern const char *DSTX;
 extern const char *DSQUEUE;
 extern const char *DSEG;
 extern const char *SYNCSTATUSCOUNT;
-extern const char *MNGOVERNANCESYNC;
-extern const char *MNGOVERNANCEOBJECT;
-extern const char *MNGOVERNANCEOBJECTVOTE;
 extern const char *MNVERIFY;
 };
 
@@ -250,17 +247,19 @@ extern const char *MNVERIFY;
 const std::vector<std::string> &getAllNetMessageTypes();
 
 /** nServices flags */
-enum {
+enum ServiceFlags : uint64_t {
+    // Nothing
+    NODE_NONE = 0,
     // NODE_NETWORK means that the node is capable of serving the block chain. It is currently
-    // set by all Arctic Core nodes, and is unset by SPV clients or other peers that just want
+    // set by all ARC nodes, and is unset by SPV clients or other peers that just want
     // network services but don't provide them.
     NODE_NETWORK = (1 << 0),
     // NODE_GETUTXO means the node is capable of responding to the getutxo protocol request.
-    // Arctic Core does not support this but a patch set called Bitcoin XT does.
+    // ARC does not support this but a patch set called Bitcoin XT does.
     // See BIP 64 for details on how this is implemented.
     NODE_GETUTXO = (1 << 1),
     // NODE_BLOOM means the node is capable and willing to handle bloom-filtered connections.
-    // Arctic Core nodes used to support this by default, without advertising this bit,
+    // ARC nodes used to support this by default, without advertising this bit,
     // but no longer do as of protocol version 70201 (= NO_BLOOM_VERSION)
     NODE_BLOOM = (1 << 2),
 
@@ -278,7 +277,7 @@ class CAddress : public CService
 {
 public:
     CAddress();
-    explicit CAddress(CService ipIn, uint64_t nServicesIn = NODE_NETWORK);
+    explicit CAddress(CService ipIn, ServiceFlags nServicesIn);
 
     void Init();
 
@@ -294,13 +293,15 @@ public:
         if ((nType & SER_DISK) ||
             (nVersion >= CADDR_TIME_VERSION && !(nType & SER_GETHASH)))
             READWRITE(nTime);
-        READWRITE(nServices);
+        uint64_t nServicesInt = nServices;
+        READWRITE(nServicesInt);
+        nServices = (ServiceFlags)nServicesInt;
         READWRITE(*(CService*)this);
     }
 
     // TODO: make private (improves encapsulation)
 public:
-    uint64_t nServices;
+    ServiceFlags nServices;
 
     // disk and network only
     unsigned int nTime;
@@ -356,8 +357,6 @@ enum {
     MSG_GOLDMINENODE_ANNOUNCE,
     MSG_GOLDMINENODE_PING,
     MSG_DSTX,
-    MSG_GOVERNANCE_OBJECT,
-    MSG_GOVERNANCE_OBJECT_VOTE,
     MSG_GOLDMINENODE_VERIFY,
 };
 

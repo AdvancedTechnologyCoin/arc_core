@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,6 +8,8 @@
 
 #include <QObject>
 #include <QDateTime>
+
+#include <atomic>
 
 class AddressTableModel;
 class BanTableModel;
@@ -53,7 +55,8 @@ public:
     int getNumConnections(unsigned int flags = CONNECTIONS_ALL) const;
     QString getGoldminenodeCountString() const;
     int getNumBlocks() const;
-
+    int getHeaderTipHeight() const;
+    int64_t getHeaderTipTime() const;
     //! Return number of transactions in the mempool
     long getMempoolSize() const;
     //! Return the dynamic memory usage of the mempool
@@ -67,17 +70,25 @@ public:
 
     //! Return true if core is doing initial block download
     bool inInitialBlockDownload() const;
-    //! Return true if core is importing blocks
+    //! Returns enum BlockSource of the current importing/syncing state
     enum BlockSource getBlockSource() const;
+    //! Return true if network activity in core is enabled
+    bool getNetworkActive() const;
+    //! Toggle network activity state in core
+    void setNetworkActive(bool active);
     //! Return warnings to be displayed in status bar
     QString getStatusBarWarnings() const;
 
     QString formatFullVersion() const;
     QString formatSubVersion() const;
-    QString formatBuildDate() const;
     bool isReleaseVersion() const;
     QString clientName() const;
     QString formatClientStartupTime() const;
+    QString dataDir() const;
+
+    // caches for the best header
+    mutable std::atomic<int> cachedBestHeaderHeight;
+    mutable std::atomic<int64_t> cachedBestHeaderTime;
 
 private:
     OptionsModel *optionsModel;
@@ -94,9 +105,10 @@ private:
 Q_SIGNALS:
     void numConnectionsChanged(int count);
     void strGoldminenodesChanged(const QString &strGoldminenodes);
-    void numBlocksChanged(int count, const QDateTime& blockDate, double nVerificationProgress);
+    void numBlocksChanged(int count, const QDateTime& blockDate, double nVerificationProgress, bool header);
     void additionalDataSyncProgressChanged(double nSyncProgress);
     void mempoolSizeChanged(long count, size_t mempoolSizeInBytes);
+    void networkActiveChanged(bool networkActive);
     void alertsChanged(const QString &warnings);
     void bytesChanged(quint64 totalBytesIn, quint64 totalBytesOut);
 
@@ -110,6 +122,7 @@ public Q_SLOTS:
     void updateTimer();
     void updateMnTimer();
     void updateNumConnections(int numConnections);
+    void updateNetworkActive(bool networkActive);
     void updateAlert(const QString &hash, int status);
     void updateBanlist();
 };

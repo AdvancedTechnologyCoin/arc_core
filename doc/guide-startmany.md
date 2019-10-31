@@ -95,7 +95,7 @@ Issue the following:
 Make note of the hash (which is your collateral_output) and index.
 
 ### Enter your Goldminenode details into your goldminenode.conf file
-[From the arcticcoin github repo](https://github.com/ArcticCore/arcticcoin/blob/goldmine/doc/goldminenode_conf.md)
+[From the arc github repo](https://github.com/ArcticCore/arc/blob/goldmine/doc/goldminenode_conf.md)
 
 `goldminenode.conf` format is a space seperated text file. Each line consisting of an alias, IP address followed by port, goldminenode private key, collateral output transaction id and collateral output index.
 
@@ -110,20 +110,20 @@ gm01 127.0.0.1:7209 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84
 gm02 127.0.0.2:7209 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f1034d973377a5e733272c3d0eced1de22555ad45d6b24abadff8087948d4 0
 ```
 
-## What about the arcticcoin.conf file?
+## What about the arc.conf file?
 
-If you are using a `goldminenode.conf` file you no longer need the `arcticcoin.conf` file. The exception is if you need custom settings (_thanks oblox_). In that case you **must** remove `goldminenode=1` from local `arcticcoin.conf` file. This option should be used only to start local Hot goldminenode now.
+If you are using a `goldminenode.conf` file you no longer need the `arc.conf` file. The exception is if you need custom settings (_thanks oblox_). In that case you **must** remove `goldminenode=1` from local `arc.conf` file. This option should be used only to start local Hot goldminenode now.
 
-## Update arcticcoin.conf on server
+## Update arc.conf on server
 
-If you generated a new goldminenode private key, you will need to update the remote `arcticcoin.conf` files.
+If you generated a new goldminenode private key, you will need to update the remote `arc.conf` files.
 
 Shut down the daemon and then edit the file.
 
-```nano .arcticcore/arcticcoin.conf```
+```nano .arcticcore/arc.conf```
 
 ### Edit the goldminenodeprivkey
-If you generated a new goldminenode private key, you will need to update the `goldminenodeprivkey` value in your remote `arcticcoin.conf` file.
+If you generated a new goldminenode private key, you will need to update the `goldminenodeprivkey` value in your remote `arc.conf` file.
 
 ## Start your Goldminenodes
 
@@ -133,9 +133,9 @@ If your remote server is not running, start your remote daemon as you normally w
 
 You can confirm that remote server is on the correct block by issuing
 
-```arcticcoin-cli getinfo```
+```arc-cli getinfo```
 
-and comparing with the official explorer at https://explorer.arcticcoin.org/
+and comparing with the official explorer at https://explorer.arc.org/
 
 ### Local
 
@@ -162,7 +162,7 @@ Example ```goldminenode start-alias mn01```
 Issue command `goldminenode status`
 It should return you something like that:
 ```
-arcticcoin-cli goldminenode status
+arc-cli goldminenode status
 {
     "vin" : "CTxIn(COutPoint(<collateral_output>, <collateral_output_index>), scriptSig=)",
     "service" : "<ipaddress>:<port>",
@@ -174,6 +174,6 @@ Command output should have "_Goldminenode successfully started_" in its `status`
 
 ### Local
 
-Search your Goldminenodes on https://arcticcoin.org/goldminenodes.html
+Search your Goldminenodes on https://arc.org/goldminenodes.html
 
 _Hint: Bookmark it, you definitely will be using this site a lot._

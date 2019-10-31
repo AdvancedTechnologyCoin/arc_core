@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -243,11 +243,11 @@ UniValue stop(const UniValue& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "stop\n"
-            "\nStop Arctic Core server.");
+            "\nStop ARC server.");
     // Event loop will exit after current HTTP requests have been handled, so
     // this reply will get back to the client.
     StartShutdown();
-    return "Arctic Core server stopping";
+    return "ARC server stopping";
 }
 
 /**
@@ -342,19 +342,15 @@ static const CRPCCommand vRPCCommands[] =
     { "hidden",             "resendwallettransactions", &resendwallettransactions, true},
 #endif
 
-    /* Arctic features */
-    { "arcticcoin",               "goldminenode",             &goldminenode,             true  },
-    { "arcticcoin",               "goldminenodelist",         &goldminenodelist,         true  },
-    { "arcticcoin",               "goldminenodebroadcast",    &goldminenodebroadcast,    true  },
-    { "arcticcoin",               "gobject",                &gobject,                true  },
-    { "arcticcoin",               "getgovernanceinfo",      &getgovernanceinfo,      true  },
-    { "arcticcoin",               "getsuperblockbudget",    &getsuperblockbudget,    true  },
-    { "arcticcoin",               "voteraw",                &voteraw,                true  },
-    { "arcticcoin",               "mnsync",                 &mnsync,                 true  },
-    { "arcticcoin",               "spork",                  &spork,                  true  },
-    { "arcticcoin",               "getpoolinfo",            &getpoolinfo,            true  },
+    /* Arc features */
+    { "arc",               "goldminenode",             &goldminenode,             true  },
+    { "arc",               "goldminenodelist",         &goldminenodelist,         true  },
+    { "arc",               "goldminenodebroadcast",    &goldminenodebroadcast,    true  },
+    { "arc",               "mnsync",                 &mnsync,                 true  },
+    { "arc",               "spork",                  &spork,                  true  },
+    { "arc",               "getpoolinfo",            &getpoolinfo,            true  },
 #ifdef ENABLE_WALLET
-    { "arcticcoin",               "privatesend",            &privatesend,            false },
+    { "arc",               "privatesend",            &privatesend,            false },
 
     /* Wallet */
     { "wallet",             "keepass",                &keepass,                true },
@@ -378,6 +374,7 @@ static const CRPCCommand vRPCCommands[] =
     { "wallet",             "getwalletinfo",          &getwalletinfo,          false },
     { "wallet",             "importprivkey",          &importprivkey,          true  },
     { "wallet",             "importwallet",           &importwallet,           true  },
+    { "wallet",             "importelectrumwallet",   &importelectrumwallet,   true  },
     { "wallet",             "importaddress",          &importaddress,          true  },
     { "wallet",             "importpubkey",           &importpubkey,           true  },
     { "wallet",             "keypoolrefill",          &keypoolrefill,          true  },
@@ -576,7 +573,7 @@ std::vector<std::string> CRPCTable::listCommands() const
 
 std::string HelpExampleCli(const std::string& methodname, const std::string& args)
 {
-    return "> arcticcoin-cli " + methodname + " " + args + "\n";
+    return "> arc-cli " + methodname + " " + args + "\n";
 }
 
 std::string HelpExampleRpc(const std::string& methodname, const std::string& args)

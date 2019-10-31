@@ -1,8 +1,8 @@
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 
 #include "cachemultimap.h"
 
-#include "test/test_arcticcoin.h"
+#include "test/test_arc.h"
 
 #include <algorithm>
 #include <iostream>

@@ -1,4 +1,4 @@
-Arctic Core 0.12.1
+ARC 0.12.8
 =====================
 
 Intro
@@ -11,13 +11,13 @@ with each other, with the help of a P2P network to check for double-spending.
 
 Setup
 -----
-Unpack the files into a directory and run arcticcoin-qt.exe.
+Unpack the files into a directory and run arc-qt.exe.
 
-Arctic Core is the original Arctic client and it builds the backbone of the network.
+ARC is the original Arctic client and it builds the backbone of the network.
 However, it downloads and stores the entire history of Arctic transactions;
 depending on the speed of your computer and network connection, the synchronization
 process can take anywhere from a few hours to a day or more.
 
-See the arcticcoin wiki at:
+See the arc wiki at:
   https://ArcticCore.atlassian.net/wiki/
 for more help and information.

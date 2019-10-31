@@ -6,13 +6,13 @@ and tests weren't explicitly disabled.
 
 After configuring, they can be run with `make check`.
 
-To run the arcticcoind tests manually, launch `src/test/test_arcticcoin`.
+To run the arcd tests manually, launch `src/test/test_arc`.
 
-To add more arcticcoind tests, add `BOOST_AUTO_TEST_CASE` functions to the existing
+To add more arcd tests, add `BOOST_AUTO_TEST_CASE` functions to the existing
 .cpp files in the `test/` directory or add new .cpp files that
 implement new BOOST_AUTO_TEST_SUITE sections.
 
-To run the arcticcoin-qt tests manually, launch `src/qt/test/test_arcticcoin-qt`
+To run the arc-qt tests manually, launch `src/qt/test/test_arc-qt`
 
-To add more arcticcoin-qt tests, add them to the `src/qt/test/` directory and
+To add more arc-qt tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.

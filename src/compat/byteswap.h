@@ -6,7 +6,7 @@
 #define BITCOIN_COMPAT_BYTESWAP_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/arcticcoin-config.h"
+#include "config/arc-config.h"
 #endif
 
 #include <stdint.h>
@@ -14,6 +14,7 @@
 #if defined(HAVE_BYTESWAP_H)
 #include <byteswap.h>
 #endif
+
 #if defined(__APPLE__)
 
 #if !defined(bswap_16)
@@ -59,5 +60,7 @@ inline uint64_t bswap_64(uint64_t x)
           | ((x & 0x00000000000000ffull) << 56));
 }
 #endif // HAVE_DECL_BSWAP64
+
 #endif // defined(__APPLE__)
+
 #endif // BITCOIN_COMPAT_BYTESWAP_H

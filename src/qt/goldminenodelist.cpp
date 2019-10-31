@@ -15,6 +15,17 @@
 #include <QTimer>
 #include <QMessageBox>
 
+int GetOffsetFromUtc()
+{
+#if QT_VERSION < 0x050200
+    const QDateTime dateTime1 = QDateTime::currentDateTime();
+    const QDateTime dateTime2 = QDateTime(dateTime1.date(), dateTime1.time(), Qt::UTC);
+    return dateTime1.secsTo(dateTime2);
+#else
+    return QDateTime::currentDateTime().offsetFromUtc();
+#endif
+}
+
 GoldminenodeList::GoldminenodeList(const PlatformStyle *platformStyle, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::GoldminenodeList),
@@ -102,9 +113,9 @@ void GoldminenodeList::StartAlias(std::string strAlias)
 
             if(fSuccess) {
                 strStatusHtml += "<br>Successfully started goldminenode.";
-                mnodeman.UpdateGoldminenodeList(mnb);
-                mnb.Relay();
-                mnodeman.NotifyGoldminenodeUpdates();
+                mnodeman.UpdateGoldminenodeList(mnb, *g_connman);
+                mnb.Relay(*g_connman);
+                mnodeman.NotifyGoldminenodeUpdates(*g_connman);
             } else {
                 strStatusHtml += "<br>Failed to start goldminenode.<br>Error: " + strError;
             }
@@ -135,17 +146,17 @@ void GoldminenodeList::StartAll(std::string strCommand)
             continue;
         }
 
-        CTxIn txin = CTxIn(uint256S(mne.getTxHash()), nOutputIndex);
+        COutPoint outpoint = COutPoint(uint256S(mne.getTxHash()), nOutputIndex);
 
-        if(strCommand == "start-missing" && mnodeman.Has(txin)) continue;
+        if(strCommand == "start-missing" && mnodeman.Has(outpoint)) continue;
 
         bool fSuccess = CGoldminenodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
 
         if(fSuccess) {
             nCountSuccessful++;
-            mnodeman.UpdateGoldminenodeList(mnb);
-            mnb.Relay();
-            mnodeman.NotifyGoldminenodeUpdates();
+            mnodeman.UpdateGoldminenodeList(mnb, *g_connman);
+            mnb.Relay(*g_connman);
+            mnodeman.NotifyGoldminenodeUpdates(*g_connman);
         } else {
             nCountFailed++;
             strFailedHtml += "\nFailed to start " + mne.getAlias() + ". Error: " + strError;
@@ -166,7 +177,7 @@ void GoldminenodeList::StartAll(std::string strCommand)
     updateMyNodeList(true);
 }
 
-void GoldminenodeList::updateMyGoldminenodeInfo(QString strAlias, QString strAddr, goldminenode_info_t& infoMn)
+void GoldminenodeList::updateMyGoldminenodeInfo(QString strAlias, QString strAddr, const COutPoint& outpoint)
 {
     bool fOldRowFound = false;
     int nNewRow = 0;
@@ -184,14 +195,17 @@ void GoldminenodeList::updateMyGoldminenodeInfo(QString strAlias, QString strAdd
         ui->tableWidgetMyGoldminenodes->insertRow(nNewRow);
     }
 
+    goldminenode_info_t infoMn;
+    bool fFound = mnodeman.GetGoldminenodeInfo(outpoint, infoMn);
+
     QTableWidgetItem *aliasItem = new QTableWidgetItem(strAlias);
-    QTableWidgetItem *addrItem = new QTableWidgetItem(infoMn.fInfoValid ? QString::fromStdString(infoMn.addr.ToString()) : strAddr);
-    QTableWidgetItem *protocolItem = new QTableWidgetItem(QString::number(infoMn.fInfoValid ? infoMn.nProtocolVersion : -1));
-    QTableWidgetItem *statusItem = new QTableWidgetItem(QString::fromStdString(infoMn.fInfoValid ? CGoldminenode::StateToString(infoMn.nActiveState) : "MISSING"));
-    QTableWidgetItem *activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(infoMn.fInfoValid ? (infoMn.nTimeLastPing - infoMn.sigTime) : 0)));
+    QTableWidgetItem *addrItem = new QTableWidgetItem(fFound ? QString::fromStdString(infoMn.addr.ToString()) : strAddr);
+    QTableWidgetItem *protocolItem = new QTableWidgetItem(QString::number(fFound ? infoMn.nProtocolVersion : -1));
+    QTableWidgetItem *statusItem = new QTableWidgetItem(QString::fromStdString(fFound ? CGoldminenode::StateToString(infoMn.nActiveState) : "MISSING"));
+    QTableWidgetItem *activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(fFound ? (infoMn.nTimeLastPing - infoMn.sigTime) : 0)));
     QTableWidgetItem *lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M",
-                                                                                                   infoMn.fInfoValid ? infoMn.nTimeLastPing + QDateTime::currentDateTime().offsetFromUtc() : 0)));
-    QTableWidgetItem *pubkeyItem = new QTableWidgetItem(QString::fromStdString(infoMn.fInfoValid ? CBitcoinAddress(infoMn.pubKeyCollateralAddress.GetID()).ToString() : ""));
+                                                                                                   fFound ? infoMn.nTimeLastPing + GetOffsetFromUtc() : 0)));
+    QTableWidgetItem *pubkeyItem = new QTableWidgetItem(QString::fromStdString(fFound ? CBitcoinAddress(infoMn.pubKeyCollateralAddress.GetID()).ToString() : ""));
 
     ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 0, aliasItem);
     ui->tableWidgetMyGoldminenodes->setItem(nNewRow, 1, addrItem);
@@ -225,11 +239,7 @@ void GoldminenodeList::updateMyNodeList(bool fForce)
             continue;
         }
 
-        CTxIn txin = CTxIn(uint256S(mne.getTxHash()), nOutputIndex);
-
-        goldminenode_info_t infoMn = mnodeman.GetGoldminenodeInfo(txin);
-
-        updateMyGoldminenodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), infoMn);
+        updateMyGoldminenodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), COutPoint(uint256S(mne.getTxHash()), nOutputIndex));
     }
     ui->tableWidgetGoldminenodes->setSortingEnabled(true);
 
@@ -263,17 +273,19 @@ void GoldminenodeList::updateNodeList()
     ui->tableWidgetGoldminenodes->setSortingEnabled(false);
     ui->tableWidgetGoldminenodes->clearContents();
     ui->tableWidgetGoldminenodes->setRowCount(0);
-    std::vector<CGoldminenode> vGoldminenodes = mnodeman.GetFullGoldminenodeVector();
+    std::map<COutPoint, CGoldminenode> mapGoldminenodes = mnodeman.GetFullGoldminenodeMap();
+	int offsetFromUtc = GetOffsetFromUtc();
 
-    BOOST_FOREACH(CGoldminenode& mn, vGoldminenodes)
+    for(auto& mnpair : mapGoldminenodes)
     {
+        CGoldminenode mn = mnpair.second;
         // populate list
         // Address, Protocol, Status, Active Seconds, Last Seen, Pub Key
         QTableWidgetItem *addressItem = new QTableWidgetItem(QString::fromStdString(mn.addr.ToString()));
         QTableWidgetItem *protocolItem = new QTableWidgetItem(QString::number(mn.nProtocolVersion));
         QTableWidgetItem *statusItem = new QTableWidgetItem(QString::fromStdString(mn.GetStatus()));
         QTableWidgetItem *activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(mn.lastPing.sigTime - mn.sigTime)));
-        QTableWidgetItem *lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + QDateTime::currentDateTime().offsetFromUtc())));
+        QTableWidgetItem *lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + offsetFromUtc)));
         QTableWidgetItem *pubkeyItem = new QTableWidgetItem(QString::fromStdString(CBitcoinAddress(mn.pubKeyCollateralAddress.GetID()).ToString()));
 
         if (strCurrentFilter != "")

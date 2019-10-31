@@ -1,7 +1,7 @@
 Translation Strings Policy
 ===========================
 
-This document provides guidelines for internationalization of the Arctic Core software.
+This document provides guidelines for internationalization of the ARC software.
 
 How to translate?
 ------------------

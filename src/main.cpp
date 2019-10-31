@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The Arctic Core developers
+// Copyright (c) 2015-2017 The ARC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -57,7 +57,7 @@
 using namespace std;
 
 #if defined(NDEBUG)
-# error "Arctic Core cannot be compiled without assertions."
+# error "ARC cannot be compiled without assertions."
 #endif
 
 /**
@@ -1741,8 +1741,8 @@ NOTE:   unlike bitcoin we are using PREVIOUS block height here,
 CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params& consensusParams, bool fSuperblockPartOnly)
 {
     double dDiff;
-    CAmount nSubsidyBase;
-	CAmount nSuperblockPart = 0;
+    CAmount nSubsidyBase, eSubsidy;
+	
     dDiff = ConvertBitsToDouble(nPrevBits);
     
 
@@ -2389,7 +2389,7 @@ bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, unsigne
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck() {
-    RenameThread("arcticcoin-scriptch");
+    RenameThread("arc-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -2780,7 +2780,15 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         return state.DoS(0, error("ConnectBlock(ARC): couldn't find goldminenode or superblock payments"),
                                 REJECT_INVALID, "bad-cb-payee");
     }
-    // END ARC
+	
+	if( goldminenodeSync.IsBlockchainSynced() && pindex->nHeight>sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) ){	
+		if( !evolutionManager.IsTransactionValid( block.vtx[0], pindex->nHeight, blockCurrEvolution )  ){
+			mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
+			return state.DoS(0, error("ConnectBlock(ARCTIC): couldn't find arc evolution payments"),
+								REJECT_INVALID, "bad-cb-payee");
+		}
+	}	
+    // END ARCTIC
 
     if (!control.Wait())
         return state.DoS(100, false);
@@ -3790,21 +3798,11 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 {
     const Consensus::Params& consensusParams = Params().GetConsensus();
     int nHeight = pindexPrev->nHeight + 1;
-    // Check proof of work
-    if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
-        // architecture issues with DGW v1 and v2)
-        unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-        double n1 = ConvertBitsToDouble(block.nBits);
-        double n2 = ConvertBitsToDouble(nBitsNext);
-
-        if (abs(n1-n2) > n1*0.5)
-            return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
-                            REJECT_INVALID, "bad-diffbits");
-    } else {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
-            return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
-                            REJECT_INVALID, "bad-diffbits");
-    }
+    
+	// Check proof of work
+	if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+		return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
+						REJECT_INVALID, "bad-diffbits");
 
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
@@ -4954,10 +4952,6 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     case MSG_DSTX:
         return mapSpySendBroadcastTxes.count(inv.hash);
 
-    case MSG_GOVERNANCE_OBJECT:
-    case MSG_GOVERNANCE_OBJECT_VOTE:
-        return ! governance.ConfirmInventoryRequest(inv);
-
     case MSG_GOLDMINENODE_VERIFY:
         return mnodeman.mapSeenGoldminenodeVerification.count(inv.hash);
     }
@@ -5155,10 +5149,7 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
                         ss << mnodeman.mapSeenGoldminenodeBroadcast[inv.hash].second;
-                        // backward compatibility patch
-                        if(pfrom->nVersion < 70204) {
-                            ss << (int64_t)0;
-                        }
+                        
                         pfrom->PushMessage(NetMsgType::MNANNOUNCE, ss);
                         pushed = true;
                     }
@@ -5180,43 +5171,6 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
                         ss.reserve(1000);
                         ss << mapSpySendBroadcastTxes[inv.hash];
                         pfrom->PushMessage(NetMsgType::DSTX, ss);
-                        pushed = true;
-                    }
-                }
-
-                if (!pushed && inv.type == MSG_GOVERNANCE_OBJECT) {
-                    LogPrint("net", "ProcessGetData -- MSG_GOVERNANCE_OBJECT: inv = %s\n", inv.ToString());
-                    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-                    bool topush = false;
-                    {
-                        if(governance.HaveObjectForHash(inv.hash)) {
-                            ss.reserve(1000);
-                            if(governance.SerializeObjectForHash(inv.hash, ss)) {
-                                topush = true;
-                            }
-                        }
-                    }
-                    LogPrint("net", "ProcessGetData -- MSG_GOVERNANCE_OBJECT: topush = %d, inv = %s\n", topush, inv.ToString());
-                    if(topush) {
-                        pfrom->PushMessage(NetMsgType::MNGOVERNANCEOBJECT, ss);
-                        pushed = true;
-                    }
-                }
-
-                if (!pushed && inv.type == MSG_GOVERNANCE_OBJECT_VOTE) {
-                    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-                    bool topush = false;
-                    {
-                        if(governance.HaveVoteForHash(inv.hash)) {
-                            ss.reserve(1000);
-                            if(governance.SerializeVoteForHash(inv.hash, ss)) {
-                                topush = true;
-                            }
-                        }
-                    }
-                    if(topush) {
-                        LogPrint("net", "ProcessGetData -- pushing: inv = %s\n", inv.ToString());
-                        pfrom->PushMessage(NetMsgType::MNGOVERNANCEOBJECTVOTE, ss);
                         pushed = true;
                     }
                 }
@@ -5344,8 +5298,15 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         pfrom->fClient = !(pfrom->nServices & NODE_NETWORK);
 
+        CNodeState* pNodeState = NULL;
+        {
+            LOCK(cs_main);
+            pNodeState = State(pfrom->GetId());
+            assert(pNodeState);
+        }
+
         // Potentially mark this peer as a preferred download peer.
-        UpdatePreferredDownload(pfrom, State(pfrom->GetId()));
+        UpdatePreferredDownload(pfrom, pNodeState);
 
         // Change version
         pfrom->PushMessage(NetMsgType::VERACK);
@@ -6303,7 +6264,6 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             instantsend.ProcessMessage(pfrom, strCommand, vRecv);
             sporkManager.ProcessSpork(pfrom, strCommand, vRecv);
             goldminenodeSync.ProcessMessage(pfrom, strCommand, vRecv);
-            governance.ProcessMessage(pfrom, strCommand, vRecv);
         }
         else
         {
