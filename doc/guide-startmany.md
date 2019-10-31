@@ -120,7 +120,7 @@ If you generated a new goldminenode private key, you will need to update the rem
 
 Shut down the daemon and then edit the file.
 
-```nano .arcticcore/arc.conf```
+```nano .arc/arc.conf```
 
 ### Edit the goldminenodeprivkey
 If you generated a new goldminenode private key, you will need to update the `goldminenodeprivkey` value in your remote `arc.conf` file.

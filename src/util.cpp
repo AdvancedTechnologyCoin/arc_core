@@ -519,7 +519,7 @@ boost::filesystem::path GetDefaultDataDir()
     // Windows < Vista: C:\Documents and Settings\Username\Application Data\ArcticCore
     // Windows >= Vista: C:\Users\Username\AppData\Roaming\ArcticCore
     // Mac: ~/Library/Application Support/ArcticCore
-    // Unix: ~/.arcticcore
+    // Unix: ~/.arc
 #ifdef WIN32
     // Windows
     return GetSpecialFolderPath(CSIDL_APPDATA) / "arc";

@@ -3,13 +3,13 @@ Description=Arctic's distributed currency daemon
 After=network.target
 
 [Service]
-User=arcticcore
-Group=arcticcore
+User=arc
+Group=arc
 
 Type=forking
 PIDFile=/var/lib/arcticcoind/arcticcoind.pid
 ExecStart=/usr/bin/arcticcoind -daemon -pid=/var/lib/arcticcoind/arcticcoind.pid \
--conf=/etc/arcticcore/arcticcoin.conf -datadir=/var/lib/arcticcoind -disablewallet
+-conf=/etc/arc/arcticcoin.conf -datadir=/var/lib/arcticcoind -disablewallet
 
 Restart=always
 PrivateTmp=true

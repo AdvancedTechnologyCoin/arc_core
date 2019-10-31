@@ -1,7 +1,7 @@
 # /etc/conf.d/arcticcoind: config file for /etc/init.d/arcticcoind
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/arcticcore/arcticcoin.conf"
+#BITCOIND_CONFIGFILE="/etc/arc/arcticcoin.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/arcticcoind"
@@ -13,8 +13,8 @@
 #BITCOIND_DATADIR="/var/lib/arcticcoind"
 
 # User and group to own arcticcoind process
-#BITCOIND_USER="arcticcore"
-#BITCOIND_GROUP="arcticcore"
+#BITCOIND_USER="arc"
+#BITCOIND_GROUP="arc"
 
 # Path to arcticcoind executable
 #BITCOIND_BIN="/usr/bin/arcticcoind"
