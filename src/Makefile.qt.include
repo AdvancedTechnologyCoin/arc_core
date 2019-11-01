@@ -205,7 +205,7 @@ RES_ICONS = \
   qt/res/icons/arcgreen/key.png \
   qt/res/icons/arcgreen/lock_closed.png \
   qt/res/icons/arcgreen/lock_open.png \
-  qt/res/icons/arcgreen/masternodes.png \
+  qt/res/icons/arcgreen/goldminenodes.png \
   qt/res/icons/arcgreen/overview.png \
   qt/res/icons/arcgreen/quit.png \
   qt/res/icons/arcgreen/receive.png \
