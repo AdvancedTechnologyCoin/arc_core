@@ -130,7 +130,7 @@ BITCOIN_QT_H = \
   qt/intro.h \
   qt/macdockiconhandler.h \
   qt/macnotificationhandler.h \
-  qt/goldminenodelist.h \
+  qt/modaloverlay.h \
   qt/goldminenodelist.h \
   qt/networkstyle.h \
   qt/notificator.h \
@@ -170,6 +170,8 @@ BITCOIN_QT_H = \
 RES_ICONS = \
   qt/res/icons/bitcoin.ico \
   qt/res/icons/bitcoin.png \
+  qt/res/icons/chevron.png \
+  qt/res/icons/warning.png \
   qt/res/icons/arcgreen/add.png \
   qt/res/icons/arcgreen/address-book.png \
   qt/res/icons/arcgreen/browse.png \
@@ -197,11 +199,13 @@ RES_ICONS = \
   qt/res/icons/arcgreen/eye_minus.png \
   qt/res/icons/arcgreen/eye_plus.png \
   qt/res/icons/arcgreen/filesave.png \
+  qt/res/icons/arcgreen/hd_disabled.png \
+  qt/res/icons/arcgreen/hd_enabled.png \
   qt/res/icons/arcgreen/history.png \
   qt/res/icons/arcgreen/key.png \
   qt/res/icons/arcgreen/lock_closed.png \
   qt/res/icons/arcgreen/lock_open.png \
-  qt/res/icons/arcgreen/goldminenodes.png \
+  qt/res/icons/arcgreen/masternodes.png \
   qt/res/icons/arcgreen/overview.png \
   qt/res/icons/arcgreen/quit.png \
   qt/res/icons/arcgreen/receive.png \
@@ -218,6 +222,10 @@ RES_ICONS = \
   qt/res/icons/arcgreen/about.png \
   qt/res/icons/arcgreen/about_qt.png \
   qt/res/icons/arcgreen/verify.png \
+  qt/res/icons/arcgreen/fontbigger.png \
+  qt/res/icons/arcgreen/fontsmaller.png \
+  qt/res/icons/arcgreen/transaction_abandoned.png \
+  qt/res/icons/arcgreen/network_disabled.png \
   qt/res/icons/trad/add.png \
   qt/res/icons/trad/address-book.png \
   qt/res/icons/trad/browse.png \
@@ -245,6 +253,8 @@ RES_ICONS = \
   qt/res/icons/trad/eye_minus.png \
   qt/res/icons/trad/eye_plus.png \
   qt/res/icons/trad/filesave.png \
+  qt/res/icons/trad/hd_disabled.png \
+  qt/res/icons/trad/hd_enabled.png \
   qt/res/icons/trad/history.png \
   qt/res/icons/trad/key.png \
   qt/res/icons/trad/lock_closed.png \
@@ -265,7 +275,11 @@ RES_ICONS = \
   qt/res/icons/trad/tx_mined.png \
   qt/res/icons/trad/about.png \
   qt/res/icons/trad/about_qt.png \
-  qt/res/icons/trad/verify.png
+  qt/res/icons/trad/verify.png \
+  qt/res/icons/trad/fontbigger.png \
+  qt/res/icons/trad/fontsmaller.png \
+  qt/res/icons/trad/transaction_abandoned.png \
+  qt/res/icons/trad/network_disabled.png
 
 BITCOIN_QT_CPP = \
   qt/bantablemodel.cpp \
@@ -355,7 +369,8 @@ RES_IMAGES = \
   qt/res/images/trad/arcgreen_walletFrame_bg.png
 
 RES_CSS = \
-  qt/res/css/arcgreen.css 
+  qt/res/css/drkblue.css \
+  qt/res/css/trad.css
 
 RES_MOVIES = $(wildcard qt/res/movies/spinner-*.png)
 
