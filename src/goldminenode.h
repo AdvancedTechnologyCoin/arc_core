@@ -342,9 +342,9 @@ public:
         ss << vin;
         ss << pubKeyCollateralAddress;
         ss << sigTime;
-        /*if(nProtocolVersion == 70208) {
+        if(nProtocolVersion == 70208) {
         ss << enableTime;
-        }*/
+        }
         return ss.GetHash();
     }
 
