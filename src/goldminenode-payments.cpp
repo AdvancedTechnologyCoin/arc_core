@@ -478,12 +478,7 @@ bool CGoldminenodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
 		
     //require at least MNPAYMENTS_SIGNATURES_REQUIRED signatures
 	
-    /*BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
-        if (payee.GetVoteCount() >= nMaxSignatures) {
-            nMaxSignatures = payee.GetVoteCount();
-        }
-    }*/
-
+   
 	if(!sporkManager.IsSporkActive(SPORK_21_MASTERNODE_ORDER_ENABLE)) 
 	{
 		BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
