@@ -1234,7 +1234,8 @@ NOTE:   unlike bitcoin we are using PREVIOUS block height here,
 CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params& consensusParams, bool fSuperblockPartOnly)
 {
     double dDiff;
-    CAmount nSubsidyBase, eSubsidy;
+    CAmount nSubsidyBase;
+    
     dDiff = ConvertBitsToDouble(nPrevBits);
     
 
@@ -1260,19 +1261,19 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
         else if(nSubsidyBase < 1) nSubsidyBase = 1;
     }
 
-    // LogPrintf("height %u diff %4.2f reward %d\n", nPrevHeight, dDiff, nSubsidyBase);
-    CAmount nSubsidy = nSubsidyBase * COIN;
-	if( nPrevHeight < 100 ){
-		 nSubsidy = 0;
-	}
+
+	CAmount nSubsidy = nSubsidyBase * COIN;
+    
+    CAmount eSubsidy;
 	
     for (int i = consensusParams.nSubsidyHalvingInterval; i <= nPrevHeight; i += consensusParams.nSubsidyHalvingInterval) {
         nSubsidy -= nSubsidy/6;
-    }
+    } 
+	
+	CAmount nSuperblockPart = nSubsidy/10;
 	
     // Hard fork to reduce the block reward by 10 extra percent (allowing budget/superblocks)
-    CAmount nSuperblockPart = nSubsidy/10;
-	if( sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS) ){
+    if( sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS) ){
 		eSubsidy = nSubsidy - nSuperblockPart; 
 	}else{
 		eSubsidy=nSubsidy;

@@ -1776,7 +1776,7 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
         nSubsidy -= nSubsidy/6;
     }
 
-    if (nPrevHeight > 0){nSuperblockPart = nSubsidy/10;}
+    CAmount nSuperblockPart = nSubsidy/10;
 
     return fSuperblockPartOnly ? nSuperblockPart : nSubsidy - nSuperblockPart;
 }
