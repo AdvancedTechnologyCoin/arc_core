@@ -266,15 +266,14 @@ void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand
             // so just quit here.
             return;
         }
-		if(sporkManager.IsSporkActive(SPORK_21_MASTERNODE_ORDER_ENABLE)) 
+		if(sporkManager.IsSporkActive(SPORK_21_GOLDMINENODE_ORDER_ENABLE)) 
 		{
 	        int nCount = 0;
-	        //masternode_info_t mnInfo;
-			if (!mnodeman.GetNextGoldminenodeInQueueForMasterPayment(vote.nBlockHeight, true, nCount, mnInfo)) {
-				LogPrintf("CGoldminenodePayments::ProcessBlock -- ERROR: Failed to find masternode to pay\n");
+	        if (!mnodeman.GetNextGoldminenodeInQueueForMasterPayment(vote.nBlockHeight, true, nCount, mnInfo)) {
+				LogPrintf("CGoldminenodePayments::ProcessBlock -- ERROR: Failed to find goldminenode to pay\n");
 	            return;
 			}
-			LogPrintf("CGoldminenodePayments::ProcessBlock -- Masternode found : %s\n", mnInfo.vin.prevout.ToStringShort());
+			LogPrintf("CGoldminenodePayments::ProcessBlock -- Goldminenode found : %s\n", mnInfo.vin.prevout.ToStringShort());
 	
 			CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
 			CGoldminenodePaymentVote voteNew(vote.vinGoldminenode.prevout, vote.nBlockHeight, payee);
@@ -285,12 +284,12 @@ void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand
 	        CBitcoinAddress address2(address1);
 			
 	
-	        LogPrint("mnpayments"," MASTERNODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s, hash=%s new\n",
+	        LogPrint("mnpayments"," GOLDMINENODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s, hash=%s new\n",
 	                    address2.ToString(), voteNew.nBlockHeight, nCachedBlockHeight, voteNew.vinGoldminenode.prevout.ToStringShort(), nHash.ToString());
 			
 	        if(AddPaymentVote(voteNew)){
 	            voteNew.Relay(connman);
-	            goldminenodeSync.BumpAssetLastTime("MASTERNODEPAYMENTVOTE");
+	            goldminenodeSync.BumpAssetLastTime("GOLDMINENODEPAYMENTVOTE");
 	        }
 		}
 		else
@@ -371,7 +370,7 @@ bool CGoldminenodePayments::AddPaymentVote(const CGoldminenodePaymentVote& vote)
 
     LOCK2(cs_mapGoldminenodeBlocks, cs_mapGoldminenodePaymentVotes);
 
-	if(sporkManager.IsSporkActive(SPORK_21_MASTERNODE_ORDER_ENABLE))
+	if(sporkManager.IsSporkActive(SPORK_21_GOLDMINENODE_ORDER_ENABLE))
 	{
 		auto it2 = mapGoldminenodeBlocks.find(vote.nBlockHeight);
 		if(it2!=mapGoldminenodeBlocks.end())
@@ -425,7 +424,7 @@ bool CGoldminenodeBlockPayees::GetBestPayee(CScript& payeeRet)
         return false;
     }
 		int nVotes = -1;
-	if(sporkManager.IsSporkActive(SPORK_21_MASTERNODE_ORDER_ENABLE)) 
+	if(sporkManager.IsSporkActive(SPORK_21_GOLDMINENODE_ORDER_ENABLE)) 
 	{
 	    BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
 			payeeRet = payee.GetPayee();
@@ -479,7 +478,7 @@ bool CGoldminenodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     //require at least MNPAYMENTS_SIGNATURES_REQUIRED signatures
 	
    
-	if(!sporkManager.IsSporkActive(SPORK_21_MASTERNODE_ORDER_ENABLE)) 
+	if(!sporkManager.IsSporkActive(SPORK_21_GOLDMINENODE_ORDER_ENABLE)) 
 	{
 		BOOST_FOREACH(CGoldminenodePayee& payee, vecPayees) {
 	        if (payee.GetVoteCount() >= nMaxSignatures) {

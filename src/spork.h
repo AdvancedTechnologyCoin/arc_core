@@ -31,8 +31,8 @@ static const int SPORK_13_OLD_SUPERBLOCK_FLAG                           = 10012;
 static const int SPORK_14_REQUIRE_SENTINEL_FLAG                         = 10013;
 static const int SPORK_18_EVOLUTION_PAYMENTS							= 10017;
 static const int SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT				= 10018;
-static const int SPORK_21_MASTERNODE_ORDER_ENABLE			        	= 10020;
-static const int SPORK_22_MASTERNODE_UPDATE_PROTO			        	= 10021;
+static const int SPORK_21_GOLDMINENODE_ORDER_ENABLE			        	= 10020;
+static const int SPORK_22_GOLDMINENODE_UPDATE_PROTO			        	= 10021;
 
 static const int64_t SPORK_2_INSTANTSEND_ENABLED_DEFAULT                = 0;            // ON
 static const int64_t SPORK_3_INSTANTSEND_BLOCK_FILTERING_DEFAULT        = 0;            // ON
@@ -45,8 +45,8 @@ static const int64_t SPORK_13_OLD_SUPERBLOCK_FLAG_DEFAULT               = 407090
 static const int64_t SPORK_14_REQUIRE_SENTINEL_FLAG_DEFAULT             = 4070908800ULL;// OFF
 static const int64_t SPORK_18_EVOLUTION_PAYMENTS_DEFAULT                = 0;			// OFF
 static const int64_t SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT_DEFAULT    = 0x7FFFFFFF;// OFF
-static const int64_t SPORK_21_MASTERNODE_ORDER_ENABLE_DEFAULT    = 0x7FFFFFFF;// OFF
-static const int64_t SPORK_22_MASTERNODE_UPDATE_PROTO_DEFAULT    = 0x7FFFFFFF;// OFF
+static const int64_t SPORK_21_GOLDMINENODE_ORDER_ENABLE_DEFAULT    = 0x7FFFFFFF;// OFF
+static const int64_t SPORK_22_GOLDMINENODE_UPDATE_PROTO_DEFAULT    = 0x7FFFFFFF;// OFF
 
 extern std::map<uint256, CSporkMessage> mapSporks;
 extern CSporkManager sporkManager;
