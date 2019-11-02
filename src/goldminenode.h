@@ -52,7 +52,6 @@ public:
         READWRITE(blockHash);
         READWRITE(sigTime);
         READWRITE(vchSig);
-        if(nProtocolVersion = 70208) {
             if(ser_action.ForRead() && (s.size() == 0))
             {
                 fSentinelIsCurrent = false;
@@ -61,7 +60,7 @@ public:
             }
             READWRITE(fSentinelIsCurrent);
             READWRITE(nSentinelVersion);
-        }
+        
     }
 
     uint256 GetHash() const
