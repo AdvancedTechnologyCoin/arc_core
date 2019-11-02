@@ -1234,8 +1234,7 @@ NOTE:   unlike bitcoin we are using PREVIOUS block height here,
 CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params& consensusParams, bool fSuperblockPartOnly)
 {
     double dDiff;
-    CAmount nSubsidyBase;
-	CAmount nSuperblockPart = 0;
+    CAmount nSubsidyBase, eSubsidy;
     dDiff = ConvertBitsToDouble(nPrevBits);
     
 
@@ -2225,7 +2224,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                                 REJECT_INVALID, "bad-cb-payee");
     }
 	
-	if( masternodeSync.IsBlockchainSynced() && pindex->nHeight>sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) ){	
+	if( goldminenodeSync.IsBlockchainSynced() && pindex->nHeight>sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) ){	
 		if( !evolutionManager.IsTransactionValid( block.vtx[0], pindex->nHeight, blockCurrEvolution )  ){
 			mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
 			return state.DoS(0, error("ConnectBlock(BEENODE): couldn't find beenode evolution payments"),
