@@ -52,7 +52,7 @@ public:
         READWRITE(blockHash);
         READWRITE(sigTime);
         READWRITE(vchSig);
-        /*if(nProtocolVersion = 70208) {
+        if(nProtocolVersion = 70208) {
             if(ser_action.ForRead() && (s.size() == 0))
             {
                 fSentinelIsCurrent = false;
@@ -61,7 +61,7 @@ public:
             }
             READWRITE(fSentinelIsCurrent);
             READWRITE(nSentinelVersion);
-        }*/
+        }
     }
 
     uint256 GetHash() const
@@ -330,9 +330,9 @@ public:
         READWRITE(pubKeyGoldminenode);
         READWRITE(vchSig);
         READWRITE(sigTime);
-        /*if(nProtocolVersion == 70208) {
+        if(nProtocolVersion == 70208) {
         READWRITE(enableTime);
-        }*/
+        }
         READWRITE(nProtocolVersion);
         READWRITE(lastPing);
     }

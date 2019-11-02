@@ -1263,15 +1263,22 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
 
     // LogPrintf("height %u diff %4.2f reward %d\n", nPrevHeight, dDiff, nSubsidyBase);
     CAmount nSubsidy = nSubsidyBase * COIN;
-
-    // yearly decline of production by 7% per year, 50% over 4 years 
+	if( nPrevHeight < 100 ){
+		 nSubsidy = 0;
+	}
+	
     for (int i = consensusParams.nSubsidyHalvingInterval; i <= nPrevHeight; i += consensusParams.nSubsidyHalvingInterval) {
         nSubsidy -= nSubsidy/6;
     }
-
-    if (nPrevHeight > 0){nSuperblockPart = nSubsidy/10;}
-
-    return fSuperblockPartOnly ? nSuperblockPart : nSubsidy - nSuperblockPart;
+	
+    // Hard fork to reduce the block reward by 10 extra percent (allowing budget/superblocks)
+    CAmount nSuperblockPart = nSubsidy/10;
+	if( sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS) ){
+		eSubsidy = nSubsidy - nSuperblockPart; 
+	}else{
+		eSubsidy=nSubsidy;
+	}	
+	return fSuperblockPartOnly ? nSuperblockPart : eSubsidy;
 }
 
 CAmount GetGoldminenodePayment(int nHeight, CAmount blockValue)
@@ -2205,7 +2212,9 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     // to recognize that block is actually invalid.
     // TODO: resync data (both ways?) and try to reprocess this block later.
     CAmount blockReward = nFees + GetBlockSubsidy(pindex->pprev->nBits, pindex->pprev->nHeight, chainparams.GetConsensus());
-    std::string strError = "";
+	CAmount blockCurrEvolution	= GetBlockSubsidy(pindex->pprev->nBits, pindex->pprev->nHeight, chainparams.GetConsensus(), true);
+	blockReward += blockCurrEvolution;		
+	std::string strError = "";
     if (!IsBlockValueValid(block, pindex->nHeight, blockReward, strError)) {
         return state.DoS(0, error("ConnectBlock(ARC): %s", strError), REJECT_INVALID, "bad-cb-amount");
     }
@@ -2214,7 +2223,16 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
         return state.DoS(0, error("ConnectBlock(ARC): couldn't find goldminenode or superblock payments"),
                                 REJECT_INVALID, "bad-cb-payee");
-    }    // END ARCTIC
+    }
+	
+	if( masternodeSync.IsBlockchainSynced() && pindex->nHeight>sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) ){	
+		if( !evolutionManager.IsTransactionValid( block.vtx[0], pindex->nHeight, blockCurrEvolution )  ){
+			mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
+			return state.DoS(0, error("ConnectBlock(BEENODE): couldn't find beenode evolution payments"),
+								REJECT_INVALID, "bad-cb-payee");
+		}
+	}	
+    // END ARCTIC
 
     if (!control.Wait())
         return state.DoS(100, false);
