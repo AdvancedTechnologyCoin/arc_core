@@ -332,8 +332,11 @@ public:
         READWRITE(pubKeyGoldminenode);
         READWRITE(vchSig);
         READWRITE(sigTime);
-        if(nProtocolVersion == 70208) {
-        READWRITE(enableTime);
+		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
+		{
+			if(nProtocolVersion == 70208) {
+				READWRITE(enableTime);
+			}
         }
         READWRITE(nProtocolVersion);
         READWRITE(lastPing);
