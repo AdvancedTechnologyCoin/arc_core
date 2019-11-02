@@ -52,6 +52,9 @@ public:
         READWRITE(blockHash);
         READWRITE(sigTime);
         READWRITE(vchSig);
+		
+		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
+		{
             if(ser_action.ForRead() && (s.size() == 0))
             {
                 fSentinelIsCurrent = false;
@@ -60,7 +63,7 @@ public:
             }
             READWRITE(fSentinelIsCurrent);
             READWRITE(nSentinelVersion);
-        
+        }
     }
 
     uint256 GetHash() const
@@ -342,9 +345,12 @@ public:
         ss << vin;
         ss << pubKeyCollateralAddress;
         ss << sigTime;
-        if(nProtocolVersion == 70208) {
-        ss << enableTime;
-        }
+		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
+		{
+			if(nProtocolVersion == 70208) {
+			ss << enableTime;
+			}
+		}
         return ss.GetHash();
     }
 
