@@ -231,9 +231,9 @@ public:
     bool GetGoldminenodeInfo(const CScript& payee, goldminenode_info_t& mnInfoRet);
 
     /// Find an entry in the goldminenode list that is next to be paid
-    bool GetNextGoldminenodeInQueueForMasterPayment(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
+    bool GetNextGoldminenodeInQueueForPayment(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
     /// Same as above but use current block height
-    bool GetNextGoldminenodeInQueueForMasterPayment(bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
+    bool GetNextGoldminenodeInQueueForPayment(bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
 	///
 	bool GetNextGoldminenodeInQueueForTmp(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet);
     /// Find a random entry

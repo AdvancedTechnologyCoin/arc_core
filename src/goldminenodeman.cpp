@@ -579,12 +579,12 @@ bool CGoldminenodeMan::GetNextGoldminenodeInQueueForTmp(int nBlockHeight, bool f
 //
 // Deterministically select the oldest/best goldminenode to pay on the network
 //
-bool CGoldminenodeMan::GetNextGoldminenodeInQueueForMasterPayment(bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet)
+bool CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment(bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet)
 {
-    return GetNextGoldminenodeInQueueForMasterPayment(nCachedBlockHeight, fFilterSigTime, nCountRet, mnInfoRet);
+    return GetNextGoldminenodeInQueueForPayment(nCachedBlockHeight, fFilterSigTime, nCountRet, mnInfoRet);
 }
 
-bool CGoldminenodeMan::GetNextGoldminenodeInQueueForMasterPayment(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet)
+bool CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet)
 {
     mnInfoRet = goldminenode_info_t();
     nCountRet = 0;
@@ -596,7 +596,7 @@ bool CGoldminenodeMan::GetNextGoldminenodeInQueueForMasterPayment(int nBlockHeig
 
     // Need LOCK2 here to ensure consistent locking order because the GetBlockHash call below locks cs_main
     LOCK2(cs_main,cs);
-
+    LogPrintf("CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment search\n");
     std::vector<std::pair<int64_t, CGoldminenode*> > vecGoldminenodeLastPaid;
 
     /*
@@ -810,7 +810,6 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
 
     if (strCommand == NetMsgType::MNANNOUNCE) 
 	{ //Goldminenode Broadcast
-LogPrintf("goldminenode MNANNOUNCE\n");
         CGoldminenodeBroadcast mnb;
         vRecv >> mnb;
 

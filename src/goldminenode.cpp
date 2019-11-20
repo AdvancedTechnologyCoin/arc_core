@@ -243,6 +243,7 @@ void CGoldminenode::Check(bool fForce)
 
     nActiveState = GOLDMINENODE_ENABLED; // OK
     if(nActiveStatePrev != nActiveState) {
+        enableTime =  GetAdjustedTime();
         LogPrint("goldminenode", "CGoldminenode::Check -- Goldminenode %s is in %s state now\n", vin.prevout.ToStringShort(), GetStateString());
     }
 }
@@ -444,7 +445,6 @@ bool CGoldminenodeBroadcast::SimpleCheck(int& nDos)
         // one of us is probably forked or smth, just mark it as expired and check the rest of the rules
         nActiveState = GOLDMINENODE_EXPIRED;
     }
-    LogPrintf("CGoldminenodeBroadcast:: nProtocolVersion= %d\n",nProtocolVersion);
     if(nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto()) {
         LogPrintf("CGoldminenodeBroadcast::SimpleCheck -- ignoring outdated Goldminenode: goldminenode=%s  nProtocolVersion=%d\n", vin.prevout.ToStringShort(), nProtocolVersion);
         return false;
@@ -579,7 +579,6 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
         nCollateralMinConfBlockHash = chainActive[nHeight + Params().GetConsensus().nGoldminenodeMinimumConfirmations - 1]->GetBlockHash();
     }
 
-    LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO verified\n");
 
     // make sure the input that was signed in goldminenode broadcast message is related to the transaction
     // that spawned the Goldminenode - this is expensive, so it's only done once per Goldminenode

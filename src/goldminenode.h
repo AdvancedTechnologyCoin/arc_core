@@ -53,8 +53,8 @@ public:
         READWRITE(sigTime);
         READWRITE(vchSig);
 		
-		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
-		{
+        if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
+        {
             if(ser_action.ForRead() && (s.size() == 0))
             {
                 fSentinelIsCurrent = false;
@@ -188,7 +188,7 @@ public:
         READWRITE(lastPing);
         READWRITE(vchSig);
         READWRITE(sigTime);
-        if(nProtocolVersion == 70208) {
+        if(nProtocolVersion >= 70208) {
         READWRITE(enableTime);	
         }
         READWRITE(nLastDsq);
@@ -334,7 +334,7 @@ public:
         READWRITE(sigTime);
 		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
 		{
-			if(nProtocolVersion == 70208) {
+			if(nProtocolVersion >= 70208) {
 				READWRITE(enableTime);
 			}
         }
@@ -350,7 +350,7 @@ public:
         ss << sigTime;
 		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
 		{
-			if(nProtocolVersion == 70208) {
+			if(nProtocolVersion >= 70208) {
 			ss << enableTime;
 			}
 		}
