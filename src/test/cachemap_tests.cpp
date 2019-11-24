@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 
 #include "cachemap.h"
 

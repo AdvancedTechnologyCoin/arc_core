@@ -35,7 +35,7 @@ const char *FILTERADD="filteradd";
 const char *FILTERCLEAR="filterclear";
 const char *REJECT="reject";
 const char *SENDHEADERS="sendheaders";
-// Arctic message types
+// Arc message types
 const char *TXLOCKREQUEST="ix";
 const char *TXLOCKVOTE="txlvote";
 const char *SPORK="spork";
@@ -43,11 +43,11 @@ const char *GETSPORKS="getsporks";
 const char *GOLDMINENODEPAYMENTVOTE="mnw";
 const char *GOLDMINENODEPAYMENTBLOCK="mnwb";
 const char *GOLDMINENODEPAYMENTSYNC="mnget";
-const char *GMEVOLUTIONSYNC="mnvs"; // depreciated since 12.1
-const char *GMEVOLUTIONVOTE="mvote"; // depreciated since 12.1
-const char *GMEVOLUTIONPROPOSAL="mprop"; // depreciated since 12.1
-const char *GMEVOLUTIONFINAL="fbs"; // depreciated since 12.1
-const char *GMEVOLUTIONFINALVOTE="fbvote"; // depreciated since 12.1
+const char *MNBUDGETSYNC="mnvs"; // depreciated since 12.1
+const char *MNBUDGETVOTE="mvote"; // depreciated since 12.1
+const char *MNBUDGETPROPOSAL="mprop"; // depreciated since 12.1
+const char *MNBUDGETFINAL="fbs"; // depreciated since 12.1
+const char *MNBUDGETFINALVOTE="fbvote"; // depreciated since 12.1
 const char *MNQUORUM="mn quorum"; // not implemented
 const char *MNANNOUNCE="mnb";
 const char *MNPING="mnp";
@@ -70,17 +70,17 @@ static const char* ppszTypeName[] =
     NetMsgType::TX,
     NetMsgType::BLOCK,
     "filtered block", // Should never occur
-    // Arctic message types
+    // Arc message types
     // NOTE: include non-implmented here, we must keep this list in sync with enum in protocol.h
     NetMsgType::TXLOCKREQUEST,
     NetMsgType::TXLOCKVOTE,
     NetMsgType::SPORK,
     NetMsgType::GOLDMINENODEPAYMENTVOTE,
     NetMsgType::GOLDMINENODEPAYMENTBLOCK, // reusing, was MNSCANERROR previousely, was NOT used in 12.0, we need this for inv
-    NetMsgType::GMEVOLUTIONVOTE, // depreciated since 12.1
-    NetMsgType::GMEVOLUTIONPROPOSAL, // depreciated since 12.1
-    NetMsgType::GMEVOLUTIONFINAL, // depreciated since 12.1
-    NetMsgType::GMEVOLUTIONFINALVOTE, // depreciated since 12.1
+    NetMsgType::MNBUDGETVOTE, // depreciated since 12.1
+    NetMsgType::MNBUDGETPROPOSAL, // depreciated since 12.1
+    NetMsgType::MNBUDGETFINAL, // depreciated since 12.1
+    NetMsgType::MNBUDGETFINALVOTE, // depreciated since 12.1
     NetMsgType::MNQUORUM, // not implemented
     NetMsgType::MNANNOUNCE,
     NetMsgType::MNPING,
@@ -114,7 +114,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::FILTERCLEAR,
     NetMsgType::REJECT,
     NetMsgType::SENDHEADERS,
-    // Arctic message types
+    // Arc message types
     // NOTE: do NOT include non-implmented here, we want them to be "Unknown command" in ProcessMessage()
     NetMsgType::TXLOCKREQUEST,
     NetMsgType::TXLOCKVOTE,

@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -105,10 +105,10 @@ bool CWalletDB::WriteCryptedKey(const CPubKey& vchPubKey,
     return true;
 }
 
-bool CWalletDB::WriteGoldmineKey(unsigned int nID, const CGoldmineKey& kGoldmineKey)
+bool CWalletDB::WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey)
 {
     nWalletDBUpdated++;
-    return Write(std::make_pair(std::string("mkey"), nID), kGoldmineKey, true);
+    return Write(std::make_pair(std::string("mkey"), nID), kMasterKey, true);
 }
 
 bool CWalletDB::WriteCScript(const uint160& hash, const CScript& redeemScript)
@@ -500,16 +500,16 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
         {
             unsigned int nID;
             ssKey >> nID;
-            CGoldmineKey kGoldmineKey;
-            ssValue >> kGoldmineKey;
-            if(pwallet->mapGoldmineKeys.count(nID) != 0)
+            CMasterKey kMasterKey;
+            ssValue >> kMasterKey;
+            if(pwallet->mapMasterKeys.count(nID) != 0)
             {
-                strErr = strprintf("Error reading wallet database: duplicate CGoldmineKey id %u", nID);
+                strErr = strprintf("Error reading wallet database: duplicate CMasterKey id %u", nID);
                 return false;
             }
-            pwallet->mapGoldmineKeys[nID] = kGoldmineKey;
-            if (pwallet->nGoldmineKeyMaxID < nID)
-                pwallet->nGoldmineKeyMaxID = nID;
+            pwallet->mapMasterKeys[nID] = kMasterKey;
+            if (pwallet->nMasterKeyMaxID < nID)
+                pwallet->nMasterKeyMaxID = nID;
         }
         else if (strType == "ckey")
         {

@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -23,8 +23,8 @@ static const int MNPAYMENTS_SIGNATURES_TOTAL            = 10;
 //  vote for goldminenode and be elected as a payment winner
 // V1 - Last protocol version before update
 // V2 - Newest protocol version
-static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1 = 70206;
-static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_2 = 70208;
+static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_1 = 70208;
+static const int MIN_GOLDMINENODE_PAYMENT_PROTO_VERSION_2 = 70209;
 
 extern CCriticalSection cs_vecPayees;
 extern CCriticalSection cs_mapGoldminenodeBlocks;

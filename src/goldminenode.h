@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -52,9 +52,6 @@ public:
         READWRITE(blockHash);
         READWRITE(sigTime);
         READWRITE(vchSig);
-		
-        if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
-        {
             if(ser_action.ForRead() && (s.size() == 0))
             {
                 fSentinelIsCurrent = false;
@@ -63,7 +60,7 @@ public:
             }
             READWRITE(fSentinelIsCurrent);
             READWRITE(nSentinelVersion);
-        }
+        
     }
 
     uint256 GetHash() const
@@ -130,7 +127,7 @@ struct goldminenode_info_t
 };
 
 //
-// The Goldminenode Class. For managing the SpySend process. It contains the input of the 1000DRK, signature to prove
+// The Goldminenode Class. For managing the Darksend process. It contains the input of the 1000DRK, signature to prove
 // it's the one who own that ip address and code for calculating the payment election.
 //
 class CGoldminenode : public goldminenode_info_t
@@ -259,7 +256,7 @@ public:
         return false;
     }
 
-    /// Is the input associated with collateral public key? (and there is 1000 ARCTIC - checking if valid goldminenode)
+    /// Is the input associated with collateral public key? (and there is 10000 ARC - checking if valid goldminenode)
     bool IsInputAssociatedWithPubkey();
 
     bool IsValidNetAddr();
@@ -332,12 +329,11 @@ public:
         READWRITE(pubKeyGoldminenode);
         READWRITE(vchSig);
         READWRITE(sigTime);
-		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
-		{
+		
 			if(nProtocolVersion >= 70208) {
 				READWRITE(enableTime);
 			}
-        }
+        
         READWRITE(nProtocolVersion);
         READWRITE(lastPing);
     }
@@ -348,12 +344,11 @@ public:
         ss << vin;
         ss << pubKeyCollateralAddress;
         ss << sigTime;
-		if(sporkManager.IsSporkActive(SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES))
-		{
+		
 			if(nProtocolVersion >= 70208) {
 			ss << enableTime;
 			}
-		}
+		
         return ss.GetHash();
     }
 

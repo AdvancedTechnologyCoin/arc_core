@@ -1,26 +1,26 @@
-ARC staging tree 0.12.8.1
+ARC staging tree 0.12.9
 ===============================
 
+`master:` [![Build Status](https://travis-ci.org/bee-group/beenode.svg?branch=master)](https://travis-ci.org/bee-group/beenode) `develop:` [![Build Status](https://travis-ci.org/bee-group/beenode.svg?branch=develop)](https://travis-ci.org/bee-group/beenode/branches)
 https://advtech.group/
 
-
-What is Arctic?
+What is Arc?
 ----------------
 
-Arctic is an experimental new digital currency that enables anonymous, instant
-payments to anyone, anywhere in the world. Arctic uses peer-to-peer technology
+Arc is an experimental new digital currency that enables anonymous, instant
+payments to anyone, anywhere in the world. Arc uses peer-to-peer technology
 to operate with no central authority: managing transactions and issuing money
-are carried out collectively by the network. ARC is the name of the open
+are carried out collectively by the network. Arc Core is the name of the open
 source software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the ARC software, see https://advtech.group/#wallets.
+the Arc Core software, see https://advtech.group/#wallets.
 
 
 License
 -------
 
-ARC is released under the terms of the MIT license. See [COPYING](COPYING) for more
+Arc Core is released under the terms of the MIT license. See [COPYING](COPYING) for more
 information or see https://opensource.org/licenses/MIT.
 
 Development Process
@@ -28,7 +28,7 @@ Development Process
 
 The `goldmine` branch is meant to be stable. Development is normally done in separate branches.
 [Tags](https://github.com/AdvancedTechnologyCoin/arc_core/arc/tags) are created to indicate new official,
-stable release versions of ARC.
+stable release versions of Arc Core.
 
 The contribution workflow is described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -64,7 +64,7 @@ Translations
 ------------
 
 Changes to translations as well as new translations can be submitted to
-[ARC's Transifex page](https://www.transifex.com/projects/p/arc/).
+[Arc Core's Transifex page](https://www.transifex.com/projects/p/arc/).
 
 Translations are periodically pulled from Transifex and merged into the git repository. See the
 [translation process](doc/translation_process.md) for details on how this works.

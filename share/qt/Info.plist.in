@@ -17,7 +17,7 @@
   <string>APPL</string>
 
   <key>CFBundleGetInfoString</key>
-  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@, Copyright © 2009-@COPYRIGHT_YEAR@ The Bitcoin Core developers, 2014-@COPYRIGHT_YEAR@ The ARC developers</string>
+  <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@, Copyright © 2009-@COPYRIGHT_YEAR@ The Bitcoin Core developers, @COPYRIGHT_YEAR@  The Advanced Technology Coin and Eternity Group</string>
 
   <key>CFBundleShortVersionString</key>
   <string>@CLIENT_VERSION_MAJOR@.@CLIENT_VERSION_MINOR@.@CLIENT_VERSION_REVISION@</string>
@@ -29,16 +29,16 @@
   <string>????</string>
 
   <key>CFBundleExecutable</key>
-  <string>Arctic-Qt</string>
+  <string>Arc-Qt</string>
   
   <key>CFBundleName</key>
-  <string>Arctic-Qt</string>
+  <string>Arc-Qt</string>
 
   <key>LSHasLocalizedDisplayName</key>
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>org.arc.Arctic-Qt</string>
+  <string>org.arc.Arc-Qt</string>
 
   <key>CFBundleURLTypes</key>
   <array>
@@ -46,7 +46,7 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
       <key>CFBundleURLName</key>
-      <string>org.arc.ArcticCorement</string>
+      <string>org.arc.ArcPayment</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>arc</string>
@@ -60,7 +60,7 @@
       <key>UTTypeIdentifier</key>
       <string>org.arc.paymentrequest</string>
       <key>UTTypeDescription</key>
-      <string>Arctic payment request</string>
+      <string>Arc payment request</string>
       <key>UTTypeConformsTo</key>
       <array>
         <string>public.data</string>
@@ -71,7 +71,7 @@
         <string>application/x-arc-payment-request</string>
         <key>public.filename-extension</key>
         <array>
-          <string>ArcticCorementrequest</string>
+          <string>arcpaymentrequest</string>
         </array>
       </dict>
     </dict>

@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -596,7 +596,7 @@ bool CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment(int nBlockHeight, bo
 
     // Need LOCK2 here to ensure consistent locking order because the GetBlockHash call below locks cs_main
     LOCK2(cs_main,cs);
-    LogPrintf("CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment search\n");
+
     std::vector<std::pair<int64_t, CGoldminenode*> > vecGoldminenodeLastPaid;
 
     /*
@@ -810,6 +810,7 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
 
     if (strCommand == NetMsgType::MNANNOUNCE) 
 	{ //Goldminenode Broadcast
+
         CGoldminenodeBroadcast mnb;
         vRecv >> mnb;
 
@@ -1282,7 +1283,7 @@ void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerificatio
         // increase ban score for everyone else
         BOOST_FOREACH(CGoldminenode* pmn, vpGoldminenodesToBan) {
             pmn->IncreasePoSeBanScore();
-            LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- increased PoSe ban score for %s addr %s, new score %d\n",
+            LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyReply -- increased PoSe ban score for %s addr %s, new score %d\n",
                         prealGoldminenode->vin.prevout.ToStringShort(), pnode->addr.ToString(), pmn->nPoSeBanScore);
         }
         if(!vpGoldminenodesToBan.empty())
@@ -1309,7 +1310,7 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
     }
 
     if(mnv.vin1.prevout == mnv.vin2.prevout) {
-        LogPrint("goldminenode", "GoldminenodeMan::ProcessVerifyBroadcast -- ERROR: same vins %s, peer=%d\n",
+        LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- ERROR: same vins %s, peer=%d\n",
                     mnv.vin1.prevout.ToStringShort(), pnode->id);
         // that was NOT a good idea to cheat and verify itself,
         // ban the node we received such message from
@@ -1320,7 +1321,7 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
     uint256 blockHash;
     if(!GetBlockHash(blockHash, mnv.nBlockHeight)) {
         // this shouldn't happen...
-        LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- Can't get block hash for unknown block height %d, peer=%d\n", mnv.nBlockHeight, pnode->id);
+        LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- Can't get block hash for unknown block height %d, peer=%d\n", mnv.nBlockHeight, pnode->id);
         return;
     }
 
@@ -1361,17 +1362,30 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
             LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- addr %s does not match %s\n", mnv.addr.ToString(), pmn1->addr.ToString());
             return;
         }
-
-        if(CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
-            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
-            return;
-        }
-
-        if(CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
-            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
-            return;
-        }
-
+		if(sporkManager.IsSporkActive(SPORK_23_GOLDMINENODE_UPDATE_PROTO2))
+		{
+	        if(!CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
+	            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
+	            return;
+	        }
+	
+	        if(!CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
+	            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
+	            return;
+	        }
+		}
+		else
+		{
+			if(CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
+	            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
+	            return;
+	        }
+	
+	        if(CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
+	            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
+	            return;
+	        }
+		}
         if(!pmn1->IsPoSeVerified()) {
             pmn1->DecreasePoSeBanScore();
         }

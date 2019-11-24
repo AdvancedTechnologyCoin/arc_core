@@ -61,5 +61,5 @@ Here's a description of Gavin's setup on OSX 10.6:
 5. Still inside Ubuntu, tell gitian-builder to use LXC, then follow the "Once you've got the right hardware and software" instructions above:
 
 	export USE_LXC=1
-	git clone git://github.com/AdvancedTechnologyCoin/arc_core/arc.git
+	git clone git://github.com/AdvancedTechnologyCoin/arc_core.git
 	... etc

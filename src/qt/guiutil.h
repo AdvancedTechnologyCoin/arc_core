@@ -30,7 +30,7 @@ class QUrl;
 class QWidget;
 QT_END_NAMESPACE
 
-/** Utility functions used by the Arctic Qt UI.
+/** Utility functions used by the Arc Qt UI.
  */
 namespace GUIUtil
 {

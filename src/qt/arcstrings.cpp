@@ -42,7 +42,7 @@ QT_TRANSLATE_NOOP("arc-core", ""
 "notation for IPv6. This option can be specified multiple times (default: "
 "bind to all interfaces)"),
 QT_TRANSLATE_NOOP("arc-core", ""
-"Cannot obtain a lock on data directory %s. arc Core is probably already "
+"Cannot obtain a lock on data directory %s. Arc Core is probably already "
 "running."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Create new files with system default permissions, instead of umask 077 (only "
@@ -51,7 +51,7 @@ QT_TRANSLATE_NOOP("arc-core", ""
 "Delete all wallet transactions and only recover those parts of the "
 "blockchain through -rescan on startup"),
 QT_TRANSLATE_NOOP("arc-core", ""
-"Disable all arc specific functionality (Goldminenodes, PrivateSend, "
+"Disable all Arc specific functionality (Goldminenodes, PrivateSend, "
 "InstantSend) (0-1, default: %u)"),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Discover own IP addresses (default: 1 when listening and no -externalip or -"
@@ -119,7 +119,7 @@ QT_TRANSLATE_NOOP("arc-core", ""
 "testnet: %s)"),
 QT_TRANSLATE_NOOP("arc-core", ""
 "InstantSend doesn't support sending values that high yet. Transactions are "
-"currently limited to %1 arc."),
+"currently limited to %1 ARC."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "InstantSend requires inputs with at least %d confirmations, you might need "
 "to wait a few minutes and try again."),
@@ -158,7 +158,7 @@ QT_TRANSLATE_NOOP("arc-core", ""
 "Output debugging information (default: %u, supplying <category> is optional)"),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Please check that your computer's date and time are correct! If your clock "
-"is wrong arc Core will not work properly."),
+"is wrong Arc Core will not work properly."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "PrivateSend uses exact denominated amounts to send funds, you might simply "
 "need to anonymize some more coins."),
@@ -221,15 +221,15 @@ QT_TRANSLATE_NOOP("arc-core", ""
 "Tries to keep outbound traffic under the given target (in MiB per 24h), 0 = "
 "no limit (default: %d)"),
 QT_TRANSLATE_NOOP("arc-core", ""
-"Unable to bind to %s on this computer. arc Core is probably already running."),
+"Unable to bind to %s on this computer. Arc Core is probably already running."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Unable to locate enough PrivateSend denominated funds for this transaction."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Unable to locate enough PrivateSend non-denominated funds for this "
-"transaction that are not equal 1000 arc."),
+"transaction that are not equal 1000 ARC."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Unable to locate enough funds for this transaction that are not equal 1000 "
-"arc."),
+"ARC."),
 QT_TRANSLATE_NOOP("arc-core", ""
 "Unsupported argument -socks found. Setting SOCKS version isn't possible "
 "anymore, only SOCKS5 proxies are supported."),
@@ -358,7 +358,7 @@ QT_TRANSLATE_NOOP("arc-core", "Error loading %s: You can't disable HD on a alrea
 QT_TRANSLATE_NOOP("arc-core", "Error loading block database"),
 QT_TRANSLATE_NOOP("arc-core", "Error loading wallet.dat"),
 QT_TRANSLATE_NOOP("arc-core", "Error loading wallet.dat: Wallet corrupted"),
-QT_TRANSLATE_NOOP("arc-core", "Error loading wallet.dat: Wallet requires newer version of arc Core"),
+QT_TRANSLATE_NOOP("arc-core", "Error loading wallet.dat: Wallet requires newer version of Arc Core"),
 QT_TRANSLATE_NOOP("arc-core", "Error opening block database"),
 QT_TRANSLATE_NOOP("arc-core", "Error reading from database, shutting down."),
 QT_TRANSLATE_NOOP("arc-core", "Error"),
@@ -384,7 +384,7 @@ QT_TRANSLATE_NOOP("arc-core", "Incompatible mode."),
 QT_TRANSLATE_NOOP("arc-core", "Incompatible version."),
 QT_TRANSLATE_NOOP("arc-core", "Incorrect or no genesis block found. Wrong datadir for network?"),
 QT_TRANSLATE_NOOP("arc-core", "Information"),
-QT_TRANSLATE_NOOP("arc-core", "Initialization sanity check failed. arc Core is shutting down."),
+QT_TRANSLATE_NOOP("arc-core", "Initialization sanity check failed. Arc Core is shutting down."),
 QT_TRANSLATE_NOOP("arc-core", "Input is not valid."),
 QT_TRANSLATE_NOOP("arc-core", "InstantSend options:"),
 QT_TRANSLATE_NOOP("arc-core", "Insufficient funds."),
@@ -402,7 +402,7 @@ QT_TRANSLATE_NOOP("arc-core", "Invalid port detected in goldminenode.conf"),
 QT_TRANSLATE_NOOP("arc-core", "Invalid script detected."),
 QT_TRANSLATE_NOOP("arc-core", "KeePassHttp id for the established association"),
 QT_TRANSLATE_NOOP("arc-core", "KeePassHttp key for AES encrypted communication with KeePass"),
-QT_TRANSLATE_NOOP("arc-core", "Keep N arc anonymized (default: %u)"),
+QT_TRANSLATE_NOOP("arc-core", "Keep N ARC anonymized (default: %u)"),
 QT_TRANSLATE_NOOP("arc-core", "Keep at most <n> unconnectable transactions in memory (default: %u)"),
 QT_TRANSLATE_NOOP("arc-core", "Keep the transaction memory pool below <n> megabytes (default: %u)"),
 QT_TRANSLATE_NOOP("arc-core", "Keypool ran out, please call keypoolrefill first"),
@@ -534,7 +534,7 @@ QT_TRANSLATE_NOOP("arc-core", "Verifying wallet..."),
 QT_TRANSLATE_NOOP("arc-core", "Very low number of keys left: %d"),
 QT_TRANSLATE_NOOP("arc-core", "Wallet %s resides outside data directory %s"),
 QT_TRANSLATE_NOOP("arc-core", "Wallet is locked."),
-QT_TRANSLATE_NOOP("arc-core", "Wallet needed to be rewritten: restart arc Core to complete"),
+QT_TRANSLATE_NOOP("arc-core", "Wallet needed to be rewritten: restart Arc Core to complete"),
 QT_TRANSLATE_NOOP("arc-core", "Wallet options:"),
 QT_TRANSLATE_NOOP("arc-core", "Wallet window title"),
 QT_TRANSLATE_NOOP("arc-core", "Warning"),

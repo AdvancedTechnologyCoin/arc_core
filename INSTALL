@@ -1,7 +1,7 @@
-Building ARC
+Building Arc Core
 
 After you install the usual build tools and C++ development tools,
-ARC also needs some build dependencies which are not always provided
+Arc Core also needs some build dependencies which are not always provided
 by default by the OS package manager
 (in particular BerkeleyDB 4.8 for building with wallet support).
 
@@ -21,10 +21,10 @@ use the autogen script to prepare the build environment.
     make
 
 Precompiled binaries are available at github, see
-https://github.com/ArcticCore/arc-binaries
+https://github.com/AdvancedTechnologyCoin/arc-binaries
 
 Always verify the signatures and checksums.
 
 See doc/build-*.md for instructions on building arcd,
-the intended-for-services, no-graphical-interface, reference
-implementation of Arctic.
+the intended-for-services, no-graphical-interface,
+reference implementation of Arc.

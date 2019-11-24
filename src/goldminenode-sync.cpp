@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -246,7 +246,7 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
             // MNLIST : SYNC GOLDMINENODE LIST FROM OTHER CONNECTED CLIENTS
 
             if(nRequestedGoldminenodeAssets == GOLDMINENODE_SYNC_LIST) {
-                LogPrint("goldminenode", "CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d nTimeLastGoldminenodeList %lld GetTime() %lld diff %lld\n", nTick, nRequestedGoldminenodeAssets, nTimeLastBumped, GetTime(), GetTime() - nTimeLastBumped);
+                LogPrint("goldminenode", "CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d nTimeLastBumped %lld GetTime() %lld diff %lld\n", nTick, nRequestedGoldminenodeAssets, nTimeLastBumped, GetTime(), GetTime() - nTimeLastBumped);
                 // check for timeout first
                 if(GetTime() - nTimeLastBumped > GOLDMINENODE_SYNC_TIMEOUT_SECONDS) {
                     LogPrintf("CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d -- timeout\n", nTick, nRequestedGoldminenodeAssets);

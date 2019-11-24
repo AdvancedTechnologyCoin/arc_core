@@ -8,7 +8,7 @@ packages:
 - "faketime"
 reference_datetime: "2019-11-01 00:00:00"
 remotes:
-- "url": "https://github.com/ArcticCore/arc-detached-sigs.git"
+- "url": "https://github.com/AdvancedTechnologyCoin/arc"
   "dir": "signature"
 files:
 - "arc-osx-unsigned.tar.gz"
@@ -33,5 +33,5 @@ script: |
 
   tar -xf ${UNSIGNED}
   ./detached-sig-apply.sh ${UNSIGNED} signature/osx
-  ${WRAP_DIR}/genisoimage -no-cache-inodes -D -l -probe -V "Arctic-Core" -no-pad -r -dir-mode 0755 -apple -o uncompressed.dmg signed-app
+  ${WRAP_DIR}/genisoimage -no-cache-inodes -D -l -probe -V "Arc-Core" -no-pad -r -dir-mode 0755 -apple -o uncompressed.dmg signed-app
   ${WRAP_DIR}/dmg dmg uncompressed.dmg ${OUTDIR}/${SIGNED}

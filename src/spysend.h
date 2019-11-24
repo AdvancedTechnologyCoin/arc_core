@@ -1,16 +1,16 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef DARKSEND_H
-#define DARKSEND_H
+#ifndef SPYSEND_H
+#define SPYSEND_H
 
 #include "goldminenode.h"
 #include "wallet/wallet.h"
 
-class CSpySendPool;
-class CDarkSendSigner;
-class CSpySendBroadcastTx;
+class CSpysendPool;
+class CSpySendSigner;
+class CSpysendBroadcastTx;
 
 // timeouts
 static const int PRIVATESEND_AUTO_TIMEOUT_MIN       = 5;
@@ -36,19 +36,19 @@ static const int PRIVATESEND_KEYS_THRESHOLD_WARNING = 100;
 // Stop mixing completely, it's too dangerous to continue when we have only this many keys left
 static const int PRIVATESEND_KEYS_THRESHOLD_STOP    = 50;
 
-extern int nSpySendRounds;
-extern int nSpySendAmount;
+extern int nPrivateSendRounds;
+extern int nPrivateSendAmount;
 extern int nLiquidityProvider;
-extern bool fEnableSpySend;
-extern bool fSpySendMultiSession;
+extern bool fEnablePrivateSend;
+extern bool fPrivateSendMultiSession;
 
 // The main object for accessing mixing
-extern CSpySendPool darkSendPool;
+extern CSpysendPool spySendPool;
 // A helper object for signing messages from Goldminenodes
-extern CDarkSendSigner darkSendSigner;
+extern CSpySendSigner spySendSigner;
 
-extern std::map<uint256, CSpySendBroadcastTx> mapSpySendBroadcastTxes;
-extern std::vector<CAmount> vecSpySendDenominations;
+extern std::map<uint256, CSpysendBroadcastTx> mapSpysendBroadcastTxes;
+extern std::vector<CAmount> vecPrivateSendDenominations;
 
 /** Holds an mixing input
  */
@@ -90,20 +90,20 @@ public:
 };
 
 // A clients transaction in the mixing pool
-class CDarkSendEntry
+class CSpySendEntry
 {
 public:
     std::vector<CTxDSIn> vecTxDSIn;
     std::vector<CTxDSOut> vecTxDSOut;
     CTransaction txCollateral;
 
-    CDarkSendEntry() :
+    CSpySendEntry() :
         vecTxDSIn(std::vector<CTxDSIn>()),
         vecTxDSOut(std::vector<CTxDSOut>()),
         txCollateral(CTransaction())
         {}
 
-    CDarkSendEntry(const std::vector<CTxIn>& vecTxIn, const std::vector<CTxOut>& vecTxOut, const CTransaction& txCollateral) :
+    CSpySendEntry(const std::vector<CTxIn>& vecTxIn, const std::vector<CTxOut>& vecTxOut, const CTransaction& txCollateral) :
         txCollateral(txCollateral)
     {
         BOOST_FOREACH(CTxIn txin, vecTxIn)
@@ -128,7 +128,7 @@ public:
 /**
  * A currently inprogress mixing merge and denomination information
  */
-class CSpySendQueue
+class CSpysendQueue
 {
 public:
     int nDenom;
@@ -139,7 +139,7 @@ public:
     // memory only
     bool fTried;
 
-    CSpySendQueue() :
+    CSpysendQueue() :
         nDenom(0),
         vin(CTxIn()),
         nTime(0),
@@ -148,7 +148,7 @@ public:
         fTried(false)
         {}
 
-    CSpySendQueue(int nDenom, CTxIn vin, int64_t nTime, bool fReady) :
+    CSpysendQueue(int nDenom, CTxIn vin, int64_t nTime, bool fReady) :
         nDenom(nDenom),
         vin(vin),
         nTime(nTime),
@@ -190,7 +190,7 @@ public:
                         nDenom, nTime, fReady ? "true" : "false", fTried ? "true" : "false", vin.prevout.ToStringShort());
     }
 
-    friend bool operator==(const CSpySendQueue& a, const CSpySendQueue& b)
+    friend bool operator==(const CSpysendQueue& a, const CSpysendQueue& b)
     {
         return a.nDenom == b.nDenom && a.vin.prevout == b.vin.prevout && a.nTime == b.nTime && a.fReady == b.fReady;
     }
@@ -198,7 +198,7 @@ public:
 
 /** Helper class to store mixing transaction (tx) information.
  */
-class CSpySendBroadcastTx
+class CSpysendBroadcastTx
 {
 public:
     CTransaction tx;
@@ -206,14 +206,14 @@ public:
     std::vector<unsigned char> vchSig;
     int64_t sigTime;
 
-    CSpySendBroadcastTx() :
+    CSpysendBroadcastTx() :
         tx(CTransaction()),
         vin(CTxIn()),
         vchSig(std::vector<unsigned char>()),
         sigTime(0)
         {}
 
-    CSpySendBroadcastTx(CTransaction tx, CTxIn vin, int64_t sigTime) :
+    CSpysendBroadcastTx(CTransaction tx, CTxIn vin, int64_t sigTime) :
         tx(tx),
         vin(vin),
         vchSig(std::vector<unsigned char>()),
@@ -236,7 +236,7 @@ public:
 
 /** Helper object for signing and checking signatures
  */
-class CDarkSendSigner
+class CSpySendSigner
 {
 public:
     /// Is the input associated with this public key? (and there is 1000 ARC - checking if valid goldminenode)
@@ -251,7 +251,7 @@ public:
 
 /** Used to keep track of current status of mixing pool
  */
-class CSpySendPool
+class CSpysendPool
 {
 private:
     // pool responses
@@ -303,7 +303,7 @@ private:
     mutable CCriticalSection cs_spysend;
 
     // The current mixing sessions in progress on the network
-    std::vector<CSpySendQueue> vecSpySendQueue;
+    std::vector<CSpysendQueue> vecSpysendQueue;
     // Keep track of the used Goldminenodes
     std::vector<CTxIn> vecGoldminenodesUsed;
 
@@ -312,7 +312,7 @@ private:
     // Mixing uses collateral transactions to trust parties entering the pool
     // to behave honestly. If they don't it takes their money.
     std::vector<CTransaction> vecSessionCollaterals;
-    std::vector<CDarkSendEntry> vecEntries; // Goldminenode/clients entries
+    std::vector<CSpySendEntry> vecEntries; // Goldminenode/clients entries
 
     PoolState nState; // should be one of the POOL_STATE_XXX values
     int64_t nTimeLastSuccessfulStep; // the time when last successful mixing step was performed, in UTC milliseconds
@@ -335,7 +335,7 @@ private:
     CMutableTransaction finalMutableTransaction; // the finalized transaction ready for signing
 
     /// Add a clients entry to the pool
-    bool AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessageIDRet);
+    bool AddEntry(const CSpySendEntry& entryNew, PoolMessage& nMessageIDRet);
     /// Add signature to a txin
     bool AddScriptSig(const CTxIn& txin);
 
@@ -407,7 +407,7 @@ private:
     void RelayFinalTransaction(const CTransaction& txFinal);
     void RelaySignaturesAnon(std::vector<CTxIn>& vin);
     void RelayInAnon(std::vector<CTxIn>& vin, std::vector<CTxOut>& vout);
-    void RelayIn(const CDarkSendEntry& entry);
+    void RelayIn(const CSpySendEntry& entry);
     void PushStatus(CNode* pnode, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID);
     void RelayStatus(PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID = MSG_NOERR);
     void RelayCompletedTransaction(PoolMessage nMessageID);
@@ -420,7 +420,7 @@ public:
     int nCachedNumBlocks; //used for the overview screen
     bool fCreateAutoBackups; //builtin support for automatic backups
 
-    CSpySendPool() :
+    CSpysendPool() :
         nCachedLastSuccessBlock(0),
         nMinBlockSpacing(0),
         fUnitTest(false),
@@ -459,7 +459,7 @@ public:
 
     void UnlockCoins();
 
-    int GetQueueSize() const { return vecSpySendQueue.size(); }
+    int GetQueueSize() const { return vecSpysendQueue.size(); }
     int GetState() const { return nState; }
     std::string GetStateString() const;
     std::string GetStatus();
@@ -478,6 +478,6 @@ public:
     void UpdatedBlockTip(const CBlockIndex *pindex);
 };
 
-void ThreadCheckDarkSendPool();
+void ThreadCheckSpySendPool();
 
 #endif

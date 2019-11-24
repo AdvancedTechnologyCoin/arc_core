@@ -16,8 +16,6 @@
 #include "consensus/validation.h"
 #include "hash.h"
 #include "init.h"
-#include "merkleblock.h"
-#include "net.h"
 #include "policy/policy.h"
 #include "pow.h"
 #include "primitives/block.h"
@@ -1273,11 +1271,11 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
 	CAmount nSuperblockPart = nSubsidy/10;
 	
     // Hard fork to reduce the block reward by 10 extra percent (allowing budget/superblocks)
-    if( sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS) ){
+//    if( sporkManager.IsSporkWorkActive(SPORK_18_EVOLUTION_PAYMENTS) ){
 		eSubsidy = nSubsidy - nSuperblockPart; 
-	}else{
-		eSubsidy=nSubsidy;
-	}	
+//	}else{
+//		eSubsidy=nSubsidy;
+//	}	
 	return fSuperblockPartOnly ? nSuperblockPart : eSubsidy;
 }
 
@@ -2203,7 +2201,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime3 - nTime2), 0.001 * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * 0.000001);
 
-    // ARCTIC : MODIFIED TO CHECK GOLDMINENODE PAYMENTS AND SUPERBLOCKS
+    // ARC : MODIFIED TO CHECK GOLDMINENODE PAYMENTS AND SUPERBLOCKS
 
     // It's possible that we simply don't have enough data and this could fail
     // (i.e. block itself could be a correct one and we need to store it),
@@ -2228,11 +2226,11 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 	if( goldminenodeSync.IsBlockchainSynced() && pindex->nHeight>sporkManager.GetSporkValue(SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT) ){	
 		if( !evolutionManager.IsTransactionValid( block.vtx[0], pindex->nHeight, blockCurrEvolution )  ){
 			mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
-			return state.DoS(0, error("ConnectBlock(BEENODE): couldn't find beenode evolution payments"),
+			return state.DoS(0, error("ConnectBlock(ARC): couldn't find arc evolution payments"),
 								REJECT_INVALID, "bad-cb-payee");
 		}
 	}	
-    // END ARCTIC
+    // END ARC
 
     if (!control.Wait())
         return state.DoS(100, false);
@@ -3164,7 +3162,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-cb-multiple");
 
 
-    // ARCTIC : CHECK TRANSACTIONS FOR INSTANTSEND
+    // ARC : CHECK TRANSACTIONS FOR INSTANTSEND
 
     if(sporkManager.IsSporkActive(SPORK_3_INSTANTSEND_BLOCK_FILTERING)) {
         // We should never accept block which conflicts with completed transaction lock,
@@ -3181,17 +3179,18 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                     // relaying instantsend data won't help it.
                     LOCK(cs_main);
                     mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
-                    return state.DoS(0, error("CheckBlock(ARCTIC): transaction %s conflicts with transaction lock %s",
+                    return state.DoS(0, error("CheckBlock(ARC): transaction %s conflicts with transaction lock %s",
                                                 tx.GetHash().ToString(), hashLocked.ToString()),
                                      REJECT_INVALID, "conflict-tx-lock");
                 }
             }
         }
     } else {
-        LogPrintf("CheckBlock(ARCTIC): spork is off, skipping transaction locking checks\n");
+        LogPrintf("CheckBlock(ARC): spork is off, skipping transaction locking checks\n");
     }
 
-    // END ARCTIC
+    // END ARC
+ 
 
     // Check transactions
     BOOST_FOREACH(const CTransaction& tx, block.vtx)
@@ -3235,20 +3234,9 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     const Consensus::Params& consensusParams = Params().GetConsensus();
     int nHeight = pindexPrev->nHeight + 1;
     // Check proof of work
-    if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
-        // architecture issues with DGW v1 and v2)
-        unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-        double n1 = ConvertBitsToDouble(block.nBits);
-        double n2 = ConvertBitsToDouble(nBitsNext);
-
-        if (abs(n1-n2) > n1*0.5)
-            return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
-                            REJECT_INVALID, "bad-diffbits");
-    } else {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
-            return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
-                            REJECT_INVALID, "bad-diffbits");
-    }
+	if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+		return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
+						REJECT_INVALID, "bad-diffbits");
 
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())

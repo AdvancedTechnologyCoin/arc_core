@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -75,10 +75,10 @@ static int AppInitRPC(int argc, char* argv[])
     //
     ParseParameters(argc, argv);
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("-h") || mapArgs.count("-help") || mapArgs.count("-version")) {
-        std::string strUsage = _("ARC RPC client version") + " " + FormatFullVersion() + "\n";
+        std::string strUsage = _("Arc Core RPC client version") + " " + FormatFullVersion() + "\n";
         if (!mapArgs.count("-version")) {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  arc-cli [options] <command> [params]  " + _("Send command to ARC") + "\n" +
+                  "  arc-cli [options] <command> [params]  " + _("Send command to Arc Core") + "\n" +
                   "  arc-cli [options] help                " + _("List commands") + "\n" +
                   "  arc-cli [options] help <command>      " + _("Get help for a command") + "\n";
 

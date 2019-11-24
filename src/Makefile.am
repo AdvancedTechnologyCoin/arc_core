@@ -464,7 +464,7 @@ arc_tx_LDADD = \
 arc_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
-# bitcoinconsensus library #
+# arcconsensus library #
 if BUILD_BITCOIN_LIBS
 include_HEADERS = script/arcconsensus.h
 libarcconsensus_la_SOURCES = \

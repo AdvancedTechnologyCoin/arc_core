@@ -1,7 +1,7 @@
 // Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
-#ifndef ARCTICCOIN_HDCHAIN_H
-#define ARCTICCOIN_HDCHAIN_H
+#ifndef ARC_HDCHAIN_H
+#define ARC_HDCHAIN_H
 
 #include "key.h"
 #include "sync.h"
@@ -149,4 +149,4 @@ public:
     std::string GetKeyPath() const;
 };
 
-#endif // ARCTICCOIN_HDCHAIN_H
+#endif // ARC_HDCHAIN_H

@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -232,7 +232,7 @@ UniValue importaddress(const UniValue& params, bool fHelp)
         std::vector<unsigned char> data(ParseHex(params[0].get_str()));
         ImportScript(CScript(data.begin(), data.end()), strLabel, fP2SH);
     } else {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Arctic address or script");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Arc address or script");
     }
 
     if (fRescan)
@@ -570,7 +570,7 @@ UniValue dumpprivkey(const UniValue& params, bool fHelp)
     string strAddress = params[0].get_str();
     CBitcoinAddress address;
     if (!address.SetString(strAddress))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Arctic address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Arc address");
     CKeyID keyID;
     if (!address.GetKeyID(keyID))
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
@@ -665,7 +665,7 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
     std::sort(vKeyBirth.begin(), vKeyBirth.end());
 
     // produce output
-    file << strprintf("# Wallet dump created by ARC %s (%s)\n", CLIENT_BUILD, CLIENT_DATE);
+    file << strprintf("# Wallet dump created by Arc Core %s (%s)\n", CLIENT_BUILD, CLIENT_DATE);
     file << strprintf("# * Created on %s\n", EncodeDumpTime(GetTime()));
     file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
@@ -694,14 +694,14 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
         CBitcoinExtKey b58extkey;
         b58extkey.SetKey(masterKey);
 
-        file << "# extended private goldminekey: " << b58extkey.ToString() << "\n";
+        file << "# extended private masterkey: " << b58extkey.ToString() << "\n";
 
         CExtPubKey masterPubkey;
         masterPubkey = masterKey.Neuter();
 
         CBitcoinExtPubKey b58extpubkey;
         b58extpubkey.SetKey(masterPubkey);
-        file << "# extended public goldminekey: " << b58extpubkey.ToString() << "\n\n";
+        file << "# extended public masterkey: " << b58extpubkey.ToString() << "\n\n";
 
         for (size_t i = 0; i < hdChainCurrent.CountAccounts(); ++i)
         {

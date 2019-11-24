@@ -92,8 +92,8 @@ OptionsDialog::OptionsDialog(QWidget *parent, bool enableWallet) :
     }
     
     /* Theme selector */
-    ui->theme->addItem(QString("Arctic-green"), QVariant("arcgreen"));
-    ui->theme->addItem(QString("Arctic-traditional"), QVariant("trad"));
+    ui->theme->addItem(QString("ARC-green"), QVariant("arcgreen"));
+    ui->theme->addItem(QString("ARC-traditional"), QVariant("trad"));
     
     /* Language selector */
     QDir translations(":translations");

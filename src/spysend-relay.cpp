@@ -2,7 +2,7 @@
 #include "spysend-relay.h"
 
 
-CDarkSendRelay::CDarkSendRelay()
+CSpySendRelay::CSpySendRelay()
 {
     vinGoldminenode = CTxIn();
     nBlockHeight = 0;
@@ -11,7 +11,7 @@ CDarkSendRelay::CDarkSendRelay()
     out = CTxOut();
 }
 
-CDarkSendRelay::CDarkSendRelay(CTxIn& vinGoldminenodeIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2)
+CSpySendRelay::CSpySendRelay(CTxIn& vinGoldminenodeIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2)
 {
     vinGoldminenode = vinGoldminenodeIn;
     vchSig = vchSigIn;
@@ -21,7 +21,7 @@ CDarkSendRelay::CDarkSendRelay(CTxIn& vinGoldminenodeIn, vector<unsigned char>& 
     out = out2;
 }
 
-std::string CDarkSendRelay::ToString()
+std::string CSpySendRelay::ToString()
 {
     std::ostringstream info;
 
@@ -34,7 +34,7 @@ std::string CDarkSendRelay::ToString()
     return info.str();   
 }
 
-bool CDarkSendRelay::Sign(std::string strSharedKey)
+bool CSpySendRelay::Sign(std::string strSharedKey)
 {
     std::string strError = "";
     std::string strMessage = in.ToString() + out.ToString();
@@ -42,25 +42,25 @@ bool CDarkSendRelay::Sign(std::string strSharedKey)
     CKey key2;
     CPubKey pubkey2;
 
-    if(!darkSendSigner.GetKeysFromSecret(strSharedKey, key2, pubkey2)) {
-        LogPrintf("CDarkSendRelay::Sign -- GetKeysFromSecret() failed, invalid shared key %s\n", strSharedKey);
+    if(!spySendSigner.GetKeysFromSecret(strSharedKey, key2, pubkey2)) {
+        LogPrintf("CSpySendRelay::Sign -- GetKeysFromSecret() failed, invalid shared key %s\n", strSharedKey);
         return false;
     }
 
-    if(!darkSendSigner.SignMessage(strMessage, vchSig2, key2)) {
-        LogPrintf("CDarkSendRelay::Sign -- SignMessage() failed\n");
+    if(!spySendSigner.SignMessage(strMessage, vchSig2, key2)) {
+        LogPrintf("CSpySendRelay::Sign -- SignMessage() failed\n");
         return false;
     }
 
-    if(!darkSendSigner.VerifyMessage(pubkey2, vchSig2, strMessage, strError)) {
-        LogPrintf("CDarkSendRelay::Sign -- VerifyMessage() failed, error: %s\n", strError);
+    if(!spySendSigner.VerifyMessage(pubkey2, vchSig2, strMessage, strError)) {
+        LogPrintf("CSpySendRelay::Sign -- VerifyMessage() failed, error: %s\n", strError);
         return false;
     }
 
     return true;
 }
 
-bool CDarkSendRelay::VerifyMessage(std::string strSharedKey)
+bool CSpySendRelay::VerifyMessage(std::string strSharedKey)
 {
     std::string strError = "";
     std::string strMessage = in.ToString() + out.ToString();
@@ -68,20 +68,20 @@ bool CDarkSendRelay::VerifyMessage(std::string strSharedKey)
     CKey key2;
     CPubKey pubkey2;
 
-    if(!darkSendSigner.GetKeysFromSecret(strSharedKey, key2, pubkey2)) {
-        LogPrintf("CDarkSendRelay::VerifyMessage -- GetKeysFromSecret() failed, invalid shared key %s\n", strSharedKey);
+    if(!spySendSigner.GetKeysFromSecret(strSharedKey, key2, pubkey2)) {
+        LogPrintf("CSpySendRelay::VerifyMessage -- GetKeysFromSecret() failed, invalid shared key %s\n", strSharedKey);
         return false;
     }
 
-    if(!darkSendSigner.VerifyMessage(pubkey2, vchSig2, strMessage, strError)) {
-        LogPrintf("CDarkSendRelay::VerifyMessage -- VerifyMessage() failed, error: %s\n", strError);
+    if(!spySendSigner.VerifyMessage(pubkey2, vchSig2, strMessage, strError)) {
+        LogPrintf("CSpySendRelay::VerifyMessage -- VerifyMessage() failed, error: %s\n", strError);
         return false;
     }
 
     return true;
 }
 
-void CDarkSendRelay::Relay()
+void CSpySendRelay::Relay()
 {
     int nCount = std::min(mnodeman.CountEnabled(MIN_PRIVATESEND_PEER_PROTO_VERSION), 20);
     int nRank1 = (rand() % nCount)+1; 
@@ -97,7 +97,7 @@ void CDarkSendRelay::Relay()
     RelayThroughNode(nRank2);
 }
 
-void CDarkSendRelay::RelayThroughNode(int nRank)
+void CSpySendRelay::RelayThroughNode(int nRank)
 {
     CGoldminenode* pmn = mnodeman.GetGoldminenodeByRank(nRank, nBlockHeight, MIN_PRIVATESEND_PEER_PROTO_VERSION);
 

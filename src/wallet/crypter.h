@@ -15,10 +15,10 @@ const unsigned int WALLET_CRYPTO_KEY_SIZE = 32;
 const unsigned int WALLET_CRYPTO_SALT_SIZE = 8;
 
 /**
- * Private key encryption is done based on a CGoldmineKey,
+ * Private key encryption is done based on a CMasterKey,
  * which holds a salt and random encryption key.
  * 
- * CGoldmineKeys are encrypted using AES-256-CBC using a key
+ * CMasterKeys are encrypted using AES-256-CBC using a key
  * derived using derivation method nDerivationMethod
  * (0 == EVP_sha512()) and derivation iterations nDeriveIterations.
  * vchOtherDerivationParameters is provided for alternative algorithms
@@ -26,11 +26,11 @@ const unsigned int WALLET_CRYPTO_SALT_SIZE = 8;
  * 
  * Wallet Private Keys are then encrypted using AES-256-CBC
  * with the double-sha256 of the public key as the IV, and the
- * goldmine key's key as the encryption key (see keystore.[ch]).
+ * master key's key as the encryption key (see keystore.[ch]).
  */
 
-/** Goldmine key for wallet encryption */
-class CGoldmineKey
+/** Master key for wallet encryption */
+class CMasterKey
 {
 public:
     std::vector<unsigned char> vchCryptedKey;
@@ -54,7 +54,7 @@ public:
         READWRITE(vchOtherDerivationParameters);
     }
 
-    CGoldmineKey()
+    CMasterKey()
     {
         // 25000 rounds is just under 0.1 seconds on a 1.86 GHz Pentium M
         // ie slightly lower than the lowest hardware we need bother supporting
@@ -120,10 +120,10 @@ private:
     CryptedKeyMap mapCryptedKeys;
     CHDChain cryptedHDChain;
 
-    CKeyingMaterial vGoldmineKey;
+    CKeyingMaterial vMasterKey;
 
     //! if fUseCrypto is true, mapKeys must be empty
-    //! if fUseCrypto is false, vGoldmineKey must be empty
+    //! if fUseCrypto is false, vMasterKey must be empty
     bool fUseCrypto;
 
     //! keeps track of whether Unlock has run a thorough check before
@@ -136,14 +136,14 @@ protected:
     bool SetCrypted();
 
     //! will encrypt previously unencrypted keys
-    bool EncryptKeys(CKeyingMaterial& vGoldmineKeyIn);
+    bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
 
-    bool EncryptHDChain(const CKeyingMaterial& vGoldmineKeyIn);
+    bool EncryptHDChain(const CKeyingMaterial& vMasterKeyIn);
     bool DecryptHDChain(CHDChain& hdChainRet) const;
     bool SetHDChain(const CHDChain& chain);
     bool SetCryptedHDChain(const CHDChain& chain);
 
-    bool Unlock(const CKeyingMaterial& vGoldmineKeyIn, bool fForMixingOnly = false);
+    bool Unlock(const CKeyingMaterial& vMasterKeyIn, bool fForMixingOnly = false);
 
 public:
     CCryptoKeyStore() : fUseCrypto(false), fDecryptionThoroughlyChecked(false), fOnlyMixingAllowed(false)
@@ -170,7 +170,7 @@ public:
         bool result;
         {
             LOCK(cs_KeyStore);
-            result = vGoldmineKey.empty();
+            result = vMasterKey.empty();
         }
         // fForMixing   fOnlyMixingAllowed  return
         // ---------------------------------------

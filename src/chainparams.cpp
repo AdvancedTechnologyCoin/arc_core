@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -100,15 +100,15 @@ public:
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256S(GENESIS_MAIN_HASH);
         consensus.powLimit = uint256S("00000fffff000000000000000000000000000000000000000000000000000000");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arc: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arc: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1406156401; //  24/07/2014
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1437696001; // 24/07/2015
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
@@ -145,17 +145,17 @@ public:
 
         vSeeds.push_back(CDNSSeedData("advtech.group", "dnsseed.advtech.group"));
 
-        // ArcticCoin addresses start with 'A'
+        // Arc addresses start with 'A'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,23);
-        // ArcticCoin script addresses start with '4'
+        // Arc script addresses start with '4'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,8);
-        // ArcticCoin private keys start with '7' or 'X'
+        // Arc private keys start with '7' or 'X'
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,176);
-        // ArcticCoin BIP32 pubkeys start with 'xpub' (Bitcoin defaults)
+        // Arc BIP32 pubkeys start with 'xpub' (Bitcoin defaults)
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x07)(0xE8)(0xF8)(0x9C).convert_to_container<std::vector<unsigned char> >();
-        // ArcticCoin BIP32 prvkeys start with 'xprv' (Bitcoin defaults)
+        // Arc BIP32 prvkeys start with 'xprv' (Bitcoin defaults)
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x07)(0x74)(0xA1)(0x37).convert_to_container<std::vector<unsigned char> >();
-        // ArcticCoin BIP44 coin type is '5'
+        // Arc BIP44 coin type is '5'
         nExtCoinType = 5;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
@@ -169,11 +169,11 @@ public:
         nPoolMaxTransactions = 3;
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
         strSporkPubKey = "040d2e49efb5881619c17f419e1e7355ec7e8065a69055dc0acff4054908823d5d2a0910f206369b5ccbff34373d371e8b0ce46fd0d766e44160bbc09cded59801";
-        //strGoldminenodePaymentsPubKey = "040d2e49efb5881619c17f419e1e7355ec7e8065a69055dc0acff4054908823d5d2a0910f206369b5ccbff34373d371e8b0ce46fd0d766e44160bbc09cded59801";
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            (  0, uint256S(GENESIS_MAIN_HASH)),
+            (  0, uint256S(GENESIS_MAIN_HASH))
+			(  629750, uint256S("0x0000000000096483b9b64a604417b22d838176689cd3e501810f8a1b26bba73f")),
             GENESIS_MAIN_TIME, // * UNIX timestamp of last checkpoint block
             107745,    // * total number of transactions between genesis and last checkpoint
                         //   (the tx=... number in the SetBestChain debug.log lines)
@@ -202,8 +202,8 @@ public:
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256S(GENESIS_TEST_HASH);
         consensus.powLimit = uint256S("00000fffff000000000000000000000000000000000000000000000000000000");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arc: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arc: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
@@ -214,8 +214,8 @@ public:
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1456790400; // March 1st, 2016
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1493596800; // May 1st, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1506556800; // September 28th, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1538092800; // September 28th, 2018
 
         // Deployment of DIP0001
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0001].bit = 1;
@@ -231,6 +231,7 @@ public:
         vAlertPubKey = ParseHex("04c13c7e9839b6867a73bf0933d3a5e455433c599189ba851c048194eafc739022c0dad460996da18dfde0a825b4e80bcf2bb0e81a471e0caff58f6ed4e9f57e26");
         nDefaultPort = 14244;
         nMaxTipAge = 0x7fffffff; // allow mining on top of old blocks for testnet
+        nDelayGetHeadersTime = 24 * 60 * 60;
         nPruneAfterHeight = 1000;
 
         genesis = CreateGenesisBlock(GENESIS_TEST_TIME, GENESIS_TEST_NONCE, 0x1e0ffff0, 1, 50 * COIN);
@@ -240,19 +241,19 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-		vSeeds.push_back(CDNSSeedData("https://advtech.group/", "https://advtech.group/"));
+		vSeeds.push_back(CDNSSeedData("advtech.group/", "testnet-seed.advtech.group/"));
 
-        // Testnet ArcticCoin addresses start with 'y'
+        // Testnet Arc addresses start with 'y'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,83);
-        // Testnet ArcticCoin script addresses start with '8' or '9'
+        // Testnet Arc script addresses start with '8' or '9'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,9);
         // Testnet private keys start with '9' or 'c' (Bitcoin defaults)
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
-        // Testnet ArcticCoin BIP32 pubkeys start with 'tpub' (Bitcoin defaults)
+        // Testnet Arc BIP32 pubkeys start with 'tpub' (Bitcoin defaults)
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x09)(0x72)(0x98)(0xBF).convert_to_container<std::vector<unsigned char> >();
-        // Testnet ArcticCoin BIP32 prvkeys start with 'tprv' (Bitcoin defaults)
+        // Testnet Arc BIP32 prvkeys start with 'tprv' (Bitcoin defaults)
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x09)(0x62)(0x3A)(0x6F).convert_to_container<std::vector<unsigned char> >();
-        // Testnet ArcticCoin BIP44 coin type is '1' (All coin's testnet default)
+        // Testnet Arc BIP44 coin type is '1' (All coin's testnet default)
         nExtCoinType = 1;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
@@ -266,7 +267,6 @@ public:
 		nPoolMaxTransactions = 3;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
         strSporkPubKey = "04d65cdbb409be1be32829855bd43a150666f731f422850ca1b101e56f4f1dcd3109402fd7b9068fc39d77666d4338982d9f30c4997ce948c4e0c770f99b7fc95b";
-//        strGoldminenodePaymentsPubKey = "04d65cdbb409be1be32829855bd43a150666f731f422850ca1b101e56f4f1dcd3109402fd7b9068fc39d77666d4338982d9f30c4997ce948c4e0c770f99b7fc95b";
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
@@ -300,8 +300,8 @@ public:
         consensus.BIP34Height = -1; // BIP34 has not necessarily activated on regtest
         consensus.BIP34Hash = uint256();
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arctic: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // Arctic: 2.5 minutes
+        consensus.nPowTargetTimespan = 24 * 60 * 60; // Arc: 1 day
+        consensus.nPowTargetSpacing = 2.5 * 60; // Arc: 2.5 minutes
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 108; // 75% for testchains
@@ -322,7 +322,7 @@ public:
         pchMessageStart[3] = 0x3d;
         nMaxTipAge = 6 * 60 * 60; // ~144 blocks behind -> 2 x fork detection time, was 24 * 60 * 60 in bitcoin
         nDelayGetHeadersTime = 0; // never delay GETHEADERS in regtests
-        nDefaultPort = 17203;
+        nDefaultPort = 27209;
         nPruneAfterHeight = 1000;
 
         genesis = CreateGenesisBlock(GENESIS_RTEST_TIME, GENESIS_RTEST_NONCE, 0x207fffff, 1, 50 * COIN);
@@ -348,17 +348,17 @@ public:
             0,
             0
         };
-        // Regtest ArcticCoin addresses start with 'y'
+        // Regtest Arc addresses start with 'y'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
-        // Regtest ArcticCoin script addresses start with '8' or '9'
+        // Regtest Arc script addresses start with '8' or '9'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,19);
         // Regtest private keys start with '9' or 'c' (Bitcoin defaults)
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
-        // Regtest ArcticCoin BIP32 pubkeys start with 'tpub' (Bitcoin defaults)
+        // Regtest Arc BIP32 pubkeys start with 'tpub' (Bitcoin defaults)
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x35)(0x87)(0xCF).convert_to_container<std::vector<unsigned char> >();
-        // Regtest ArcticCoin BIP32 prvkeys start with 'tprv' (Bitcoin defaults)
+        // Regtest Arc BIP32 prvkeys start with 'tprv' (Bitcoin defaults)
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x35)(0x83)(0x94).convert_to_container<std::vector<unsigned char> >();
-        // Regtest ArcticCoin BIP44 coin type is '1' (All coin's testnet default)
+        // Regtest Arc BIP44 coin type is '1' (All coin's testnet default)
         nExtCoinType = 1;
    }
 };
