@@ -2222,11 +2222,10 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, std::atomic<bool>& interru
         try
         {
             fRet = ProcessMessage(pfrom, strCommand, vRecv, msg.nTime, connman, interruptMsgProc);
-            boost::this_thread::interruption_point();
-            /*if (interruptMsgProc)
+            if (interruptMsgProc)
                 return false;
             if (!pfrom->vRecvGetData.empty())
-                fMoreWork = true;*/
+                fMoreWork = true;
         }
         catch (const std::ios_base::failure& e)
         {

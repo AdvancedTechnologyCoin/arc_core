@@ -118,6 +118,7 @@
     </qresource>
     <qresource prefix="/css">
         <file alias="arcgreen">res/css/arcgreen.css</file>
+        <file alias="trad">res/css/trad.css</file>
     </qresource>
     <qresource prefix="/images/arcgreen">
         <file alias="about">res/images/arcgreen/about.png</file>

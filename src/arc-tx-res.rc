@@ -16,8 +16,8 @@ BEGIN
     BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
-            VALUE "CompanyName",        "Arctic"
-            VALUE "FileDescription",    "arc-tx (CLI Arctic transaction editor utility)"
+            VALUE "CompanyName",        "Arc"
+            VALUE "FileDescription",    "arc-tx (CLI Arc transaction editor utility)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
             VALUE "InternalName",       "arc-tx"
             VALUE "LegalCopyright",     COPYRIGHT_STR

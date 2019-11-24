@@ -10,7 +10,7 @@
 
 /**
  * CBaseChainParams defines the base parameters (shared between arc-cli and arcd)
- * of a given instance of the Arctic system.
+ * of a given instance of the Arc system.
  */
 class CBaseChainParams
 {

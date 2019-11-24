@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -445,6 +445,7 @@ bool CGoldminenodeBroadcast::SimpleCheck(int& nDos)
         // one of us is probably forked or smth, just mark it as expired and check the rest of the rules
         nActiveState = GOLDMINENODE_EXPIRED;
     }
+
     if(nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto()) {
         LogPrintf("CGoldminenodeBroadcast::SimpleCheck -- ignoring outdated Goldminenode: goldminenode=%s  nProtocolVersion=%d\n", vin.prevout.ToStringShort(), nProtocolVersion);
         return false;
@@ -551,7 +552,7 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain) {
             // not mnb fault, let it to be checked again later
-            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Failed to aquire lock, addr=%s", addr.ToString());
+            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Failed to aquire lock, addr=%s", addr.ToString());
             mnodeman.mapSeenGoldminenodeBroadcast.erase(GetHash());
             return false;
         }
@@ -559,12 +560,12 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
         int nHeight;
         CollateralStatus err = CheckCollateral(vin.prevout, nHeight);
         if (err == COLLATERAL_UTXO_NOT_FOUND) {
-            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Failed to find Goldminenode UTXO, goldminenode=%s\n", vin.prevout.ToStringShort());
+            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Failed to find Goldminenode UTXO, goldminenode=%s\n", vin.prevout.ToStringShort());
             return false;
         }
 
         if (err == COLLATERAL_INVALID_AMOUNT) {
-            LogPrintf("goldminenode CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO should have 10000 ARCTIC, goldminenode=%s\n", vin.prevout.ToStringShort());
+            LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO should have 1000 ARC, goldminenode=%s\n", vin.prevout.ToStringShort());
             return false;
         }
 
@@ -579,6 +580,7 @@ bool CGoldminenodeBroadcast::CheckOutpoint(int& nDos)
         nCollateralMinConfBlockHash = chainActive[nHeight + Params().GetConsensus().nGoldminenodeMinimumConfirmations - 1]->GetBlockHash();
     }
 
+    LogPrint("goldminenode", "CGoldminenodeBroadcast::CheckOutpoint -- Goldminenode UTXO verified\n");
 
     // make sure the input that was signed in goldminenode broadcast message is related to the transaction
     // that spawned the Goldminenode - this is expensive, so it's only done once per Goldminenode
@@ -799,7 +801,7 @@ bool CGoldminenodePing::CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcas
         goldminenodeSync.BumpAssetLastTime("CGoldminenodePing::CheckAndUpdate");
     }
 
-    // so, ping seems to be ok, let's store it
+    // let's store this ping as the last one
     LogPrint("goldminenode", "CGoldminenodePing::CheckAndUpdate -- Goldminenode ping accepted, goldminenode=%s\n", vin.prevout.ToStringShort());
     pmn->lastPing = *this;
 

@@ -13,7 +13,7 @@
  * for both arcd and arc-qt, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("ARC");
+const std::string CLIENT_NAME("Arc Core");
 
 /**
  * Client version number
@@ -43,10 +43,10 @@ const std::string CLIENT_NAME("ARC");
 #endif
 
 //! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
-#define GIT_ARCHIVE 1
+//#define GIT_ARCHIVE 1
 #ifdef GIT_ARCHIVE
-#define GIT_COMMIT_ID "a1ef547"
-#define GIT_COMMIT_DATE "Thu, 23 Feb 2017 21:23:30 +0400"
+#define GIT_COMMIT_ID ""
+#define GIT_COMMIT_DATE ""
 #endif
 
 #define BUILD_DESC_WITH_SUFFIX(maj, min, rev, build, suffix) \
@@ -93,7 +93,7 @@ std::string FormatFullVersion()
 }
 
 /** 
- * Format the subversion field according to BIP 14 spec (https://github.com/bitcoin/bips/blob/goldmine/bip-0014.mediawiki) 
+ * Format the subversion field according to BIP 14 spec (https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki) 
  */
 std::string FormatSubVersion(const std::string& name, int nClientVersion, const std::vector<std::string>& comments)
 {

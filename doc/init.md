@@ -68,9 +68,9 @@ can then be controlled by group membership.
 3b) Mac OS X
 
 Binary:              `/usr/local/bin/arcd`  
-Configuration file:  `~/Library/Application Support/ArcticCore/arc.conf`  
-Data directory:      `~/Library/Application Support/ArcticCore`
-Lock file:           `~/Library/Application Support/ArcticCore/.lock`
+Configuration file:  `~/Library/Application Support/Arc/arc.conf`  
+Data directory:      `~/Library/Application Support/Arc`
+Lock file:           `~/Library/Application Support/Arc/.lock`
 
 4. Installing Service Configuration
 -----------------------------------
@@ -104,7 +104,7 @@ use old versions of Upstart and do not supply the start-stop-daemon utility.
 Copy arcd.init to /etc/init.d/arcd. Test by running `service arcd start`.
 
 Using this script, you can adjust the path and flags to the arcd program by
-setting the ARCTICCOIND and FLAGS environment variables in the file
+setting the ARCD and FLAGS environment variables in the file
 /etc/sysconfig/arcd. You can also use the DAEMONOPTS environment variable here.
 
 4e) Mac OS X

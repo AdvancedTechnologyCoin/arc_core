@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -104,7 +104,7 @@ namespace boost {
 
 using namespace std;
 
-//Arctic only features
+//Arc only features
 bool fGoldmineNode = false;
 bool fLiteMode = false;
 /**
@@ -271,7 +271,7 @@ bool LogAcceptCategory(const char* category)
             const vector<string>& categories = mapMultiArgs["-debug"];
             ptrCategory.reset(new set<string>(categories.begin(), categories.end()));
             // thread_specific_ptr automatically deletes the set when the thread ends.
-            // "arc" is a composite category enabling all Arctic-related debug output
+            // "arc" is a composite category enabling all Arc-related debug output
             if(ptrCategory->count(string("arc"))) {
                 ptrCategory->insert(string("privatesend"));
                 ptrCategory->insert(string("instantsend"));
@@ -516,9 +516,9 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\ArcticCore
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\ArcticCore
-    // Mac: ~/Library/Application Support/ArcticCore
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Arc
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Arc
+    // Mac: ~/Library/Application Support/Arc
     // Unix: ~/.arc
 #ifdef WIN32
     // Windows

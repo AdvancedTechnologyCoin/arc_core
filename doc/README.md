@@ -1,18 +1,18 @@
-ARC 0.12.8
+Arc Core 0.12.9
 =====================
 
-This is the official reference wallet for ARC digital currency and comprises the backbone of the ARC peer-to-peer network. You can [download ARC](https://advtech.group/#wallets) or [build it yourself](#building) using the guides below.
+This is the official reference wallet for Arc digital currency and comprises the backbone of the Arc peer-to-peer network. You can [download Arc Core](https://advtech.group/#wallets) or [build it yourself](#building) using the guides below.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Arctic on your native platform.
+The following are some helpful notes on how to run Arc on your native platform.
 
 ### Unix
 
 Unpack the files into a directory and run:
 
-- `bin/bitcoin-qt` (GUI) or
-- `bin/bitcoind` (headless)
+- `bin/arc-qt` (GUI) or
+- `bin/arcd` (headless)
 
 ### Windows
 
@@ -20,18 +20,18 @@ Unpack the files into a directory, and then run arc-qt.exe.
 
 ### OS X
 
-Drag Arctic-Qt to your applications folder, and then run Arctic-Qt.
+Drag Arc-Qt to your applications folder, and then run Arc-Qt.
 
 ### Need Help?
 
-* See the [ARC documentation](readme.md)
+* See the [Arc documentation](https://arc.atlassian.net/wiki/display/DOC)
 for help and more information.
 * Ask for help on [#ARCCore](https://discordapp.com/channels/336432726309863426/336432726309863426) on Freenode. If you don't have an IRC client use [webchat here](https://discordapp.com/channels/336432726309863426/336432726309863426).
 * Ask for help on the [ARC_Talk](https://bitcointalk.org/index.php?topic=4548770) forums.
 
 Building
 ---------------------
-The following are developer notes on how to build ARC on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build Arc Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
 - [OS X Build Notes](build-osx.md)
 - [Unix Build Notes](build-unix.md)
@@ -41,7 +41,7 @@ The following are developer notes on how to build ARC on your native platform. T
 
 Development
 ---------------------
-The ARC repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+The Arc Core repo's [root README](/README.md) contains relevant information on the development process and automated testing.
 
 - [Developer Notes](developer-notes.md)
 - [Multiwallet Qt Development](multiwallet-qt.md)

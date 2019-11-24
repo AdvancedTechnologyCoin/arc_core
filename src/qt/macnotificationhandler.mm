@@ -13,7 +13,7 @@
 - (NSString *)__bundleIdentifier
 {
     if (self == [NSBundle mainBundle]) {
-        return @"org.arc.Arctic-Qt";
+        return @"org.arc.Arc-Qt";
     } else {
         return [self __bundleIdentifier];
     }

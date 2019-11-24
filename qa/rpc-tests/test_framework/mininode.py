@@ -1,4 +1,4 @@
-# mininode.py - Arctic P2P network half-a-node
+# mininode.py - Arc P2P network half-a-node
 #
 # Distributed under the MIT/X11 software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -35,7 +35,7 @@ import copy
 import arc_hash
 
 BIP0031_VERSION = 60000
-MY_VERSION = 70103  # past bip-31 for ping/pong
+MY_VERSION = 70208  # current MIN_PEER_PROTO_VERSION
 MY_SUBVERSION = b"/python-mininode-tester:0.0.2/"
 
 MAX_INV_SZ = 50000
@@ -1185,7 +1185,7 @@ class NodeConn(asyncore.dispatcher):
         vt.addrFrom.ip = "0.0.0.0"
         vt.addrFrom.port = 0
         self.send_message(vt, True)
-        print 'MiniNode: Connecting to Arctic Node IP # ' + dstaddr + ':' \
+        print 'MiniNode: Connecting to Arc Node IP # ' + dstaddr + ':' \
             + str(dstport)
 
         try:

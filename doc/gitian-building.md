@@ -1,9 +1,9 @@
 Gitian building
 ================
 
-*Setup instructions for a Gitian build of ARC using a Debian VM or physical system.*
+*Setup instructions for a Gitian build of Arc Core using a Debian VM or physical system.*
 
-Gitian is the deterministic build process that is used to build the Arctic
+Gitian is the deterministic build process that is used to build the Arc
 Core executables. It provides a way to be reasonably sure that the
 executables are really built from the source on GitHub. It also makes sure that
 the same, tested dependencies are used and statically built into the executable.
@@ -26,7 +26,7 @@ Table of Contents
 - [Installing Gitian](#installing-gitian)
 - [Setting up the Gitian image](#setting-up-the-gitian-image)
 - [Getting and building the inputs](#getting-and-building-the-inputs)
-- [Building ARC](#building-arc-core)
+- [Building Arc Core](#building-arc-core)
 - [Building an alternative repository](#building-an-alternative-repository)
 - [Signing externally](#signing-externally)
 - [Uploading signatures](#uploading-signatures)
@@ -41,7 +41,7 @@ Debian Linux was chosen as the host distribution because it has a lightweight in
 Any kind of virtualization can be used, for example:
 - [VirtualBox](https://www.virtualbox.org/) (covered by this guide)
 - [KVM](http://www.linux-kvm.org/page/Main_Page)
-- [LXC](https://linuxcontainers.org/), see also [Gitian host docker container](https://github.com/gdm85/tenku/tree/goldmine/docker/gitian-bitcoin-host/README.md).
+- [LXC](https://linuxcontainers.org/), see also [Gitian host docker container](https://github.com/gdm85/tenku/tree/master/docker/gitian-bitcoin-host/README.md).
 
 You can also install Gitian on actual hardware instead of using virtualization.
 
@@ -182,7 +182,7 @@ To select a different button, press `Tab`.
 
 ![](gitian-building/debian_install_19_software_selection.png)
 
-- Install the GRUB boot loader to the goldmine boot record? -> Yes
+- Install the GRUB boot loader to the master boot record? -> Yes
 
 ![](gitian-building/debian_install_20_install_grub.png)
 
@@ -300,11 +300,11 @@ cd ..
 
 **Note**: When sudo asks for a password, enter the password for the user *debian* not for *root*.
 
-Clone the git repositories for ARC and Gitian.
+Clone the git repositories for Arc Core and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/ArcticCore/arc
+git clone https://github.com/AdvancedTechnologyCoin/arc_core
 ```
 
 Setting up the Gitian image
@@ -339,16 +339,16 @@ Getting and building the inputs
 --------------------------------
 
 Follow the instructions in [doc/release-process.md](release-process.md#fetch-and-build-inputs-first-time-or-when-dependency-versions-change)
-in the ARC repository under 'Fetch and build inputs' to install sources which require
+in the Arc Core repository under 'Fetch and build inputs' to install sources which require
 manual intervention. Also optionally follow the next step: 'Seed the Gitian sources cache
 and offline git repositories' which will fetch the remaining files required for building
 offline.
 
-Building ARC
+Building Arc Core
 ----------------
 
-To build ARC (for Linux, OS X and Windows) just follow the steps under 'perform
-Gitian builds' in [doc/release-process.md](release-process.md#perform-gitian-builds) in the ARC repository.
+To build Arc Core (for Linux, OS X and Windows) just follow the steps under 'perform
+Gitian builds' in [doc/release-process.md](release-process.md#perform-gitian-builds) in the Arc Core repository.
 
 This may take some time as it will build all the dependencies needed for each descriptor.
 These dependencies will be cached after a successful build to avoid rebuilding them when possible.
@@ -368,7 +368,7 @@ Output from `gbuild` will look something like
     remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
     Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
     Resolving deltas: 100% (41590/41590), done.
-    From https://github.com/ArcticCore/arc
+    From https://github.com/AdvancedTechnologyCoin/arc_core
     ... (new tags, new branch etc)
     --- Building for precise amd64 ---
     Stopping target if it is up
@@ -444,7 +444,7 @@ Then when building, override the remote URLs that gbuild would otherwise pull fr
 ```bash
 
 cd /some/root/path/
-git clone https://github.com/ArcticCore/arc-detached-sigs.git
+git clone https://github.com/AdvancedTechnologyCoin/arc-detached-sigs.git
 
 BTCPATH=/some/root/path/arc.git
 SIGPATH=/some/root/path/arc-detached-sigs.git
@@ -476,6 +476,6 @@ Uploading signatures (not yet implemented)
 ---------------------
 
 In the future it will be possible to push your signatures (both the `.assert` and `.assert.sig` files) to the
-[arc/gitian.sigs](https://github.com/ArcticCore/gitian.sigs/) repository, or if that's not possible to create a pull
+[arc/gitian.sigs](https://github.com/AdvancedTechnologyCoin/gitian.sigs/) repository, or if that's not possible to create a pull
 request.
 There will be an official announcement when this repository is online.

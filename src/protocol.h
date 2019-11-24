@@ -219,7 +219,7 @@ extern const char *REJECT;
  */
 extern const char *SENDHEADERS;
 
-// Arctic message types
+// Arc message types
 // NOTE: do NOT declare non-implmented here, we don't want them to be exposed to the outside
 // TODO: add description
 extern const char *TXLOCKREQUEST;
@@ -251,15 +251,15 @@ enum ServiceFlags : uint64_t {
     // Nothing
     NODE_NONE = 0,
     // NODE_NETWORK means that the node is capable of serving the block chain. It is currently
-    // set by all ARC nodes, and is unset by SPV clients or other peers that just want
+    // set by all Arc Core nodes, and is unset by SPV clients or other peers that just want
     // network services but don't provide them.
     NODE_NETWORK = (1 << 0),
     // NODE_GETUTXO means the node is capable of responding to the getutxo protocol request.
-    // ARC does not support this but a patch set called Bitcoin XT does.
+    // Arc Core does not support this but a patch set called Bitcoin XT does.
     // See BIP 64 for details on how this is implemented.
     NODE_GETUTXO = (1 << 1),
     // NODE_BLOOM means the node is capable and willing to handle bloom-filtered connections.
-    // ARC nodes used to support this by default, without advertising this bit,
+    // Arc Core nodes used to support this by default, without advertising this bit,
     // but no longer do as of protocol version 70201 (= NO_BLOOM_VERSION)
     NODE_BLOOM = (1 << 2),
 
@@ -342,17 +342,17 @@ enum {
     // Nodes may always request a MSG_FILTERED_BLOCK in a getdata, however,
     // MSG_FILTERED_BLOCK should not appear in any invs except as a part of getdata.
     MSG_FILTERED_BLOCK,
-    // Arctic message types
+    // Arc message types
     // NOTE: declare non-implmented here, we must keep this enum consistent and backwards compatible
     MSG_TXLOCK_REQUEST,
     MSG_TXLOCK_VOTE,
     MSG_SPORK,
     MSG_GOLDMINENODE_PAYMENT_VOTE,
     MSG_GOLDMINENODE_PAYMENT_BLOCK, // reusing, was MSG_GOLDMINENODE_SCANNING_ERROR previousely, was NOT used in 12.0
-    MSG_EVOLUTION_VOTE, // depreciated since 12.1
-    MSG_EVOLUTION_PROPOSAL, // depreciated since 12.1
-    MSG_EVOLUTION_FINALIZED, // depreciated since 12.1
-    MSG_EVOLUTION_FINALIZED_VOTE, // depreciated since 12.1
+    MSG_BUDGET_VOTE, // depreciated since 12.1
+    MSG_BUDGET_PROPOSAL, // depreciated since 12.1
+    MSG_BUDGET_FINALIZED, // depreciated since 12.1
+    MSG_BUDGET_FINALIZED_VOTE, // depreciated since 12.1
     MSG_GOLDMINENODE_QUORUM, // not implemented
     MSG_GOLDMINENODE_ANNOUNCE,
     MSG_GOLDMINENODE_PING,

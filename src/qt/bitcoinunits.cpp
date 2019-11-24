@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -72,10 +72,10 @@ QString BitcoinUnits::description(int unit)
     {
         switch(unit)
         {
-            case ARC: return QString("Arctic");
-            case mARC: return QString("Milli-Arctic (1 / 1" THIN_SP_UTF8 "000)");
-            case uARC: return QString("Micro-Arctic (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-            case duffs: return QString("Ten Nano-Arctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case ARC: return QString("Arc");
+            case mARC: return QString("Milli-Arc (1 / 1" THIN_SP_UTF8 "000)");
+            case uARC: return QString("Micro-Arc (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case duffs: return QString("Ten Nano-Arc (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
     }
@@ -83,10 +83,10 @@ QString BitcoinUnits::description(int unit)
     {
         switch(unit)
         {
-            case ARC: return QString("TestArctics");
-            case mARC: return QString("Milli-TestArctic (1 / 1" THIN_SP_UTF8 "000)");
-            case uARC: return QString("Micro-TestArctic (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-            case duffs: return QString("Ten Nano-TestArctic (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case ARC: return QString("TestArcs");
+            case mARC: return QString("Milli-TestArc (1 / 1" THIN_SP_UTF8 "000)");
+            case uARC: return QString("Micro-TestArc (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+            case duffs: return QString("Ten Nano-TestArc (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
             default: return QString("???");
         }
     }

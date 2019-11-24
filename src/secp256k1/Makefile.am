@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = -I build-aux/m4
-CC_FOR_BUILD = gcc
+export CC_FOR_BUILD=gcc
 lib_LTLIBRARIES = libsecp256k1.la
 include_HEADERS = include/secp256k1.h
 noinst_HEADERS =
@@ -76,8 +76,8 @@ endif
 
 if USE_ECMULT_STATIC_PRECOMPUTATION
 CPPFLAGS_FOR_BUILD =
+CFLAGS_FOR_BUILD = 
 CPPFLAGS_FOR_BUILD +=-I$(top_srcdir)
-CFLAGS_FOR_BUILD=
 CFLAGS_FOR_BUILD += -Wall -Wextra -Wno-unused-function
 
 gen_context_OBJECTS = gen_context.o

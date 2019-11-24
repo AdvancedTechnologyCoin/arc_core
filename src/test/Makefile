@@ -1,6 +1,6 @@
 all:
-	$(MAKE) -C .. arcticcoin_test
+	$(MAKE) -C .. arc_test
 clean:
-	$(MAKE) -C .. arcticcoin_test_clean
+	$(MAKE) -C .. arc_test_clean
 check:
-	$(MAKE) -C .. arcticcoin_test_check
+	$(MAKE) -C .. arc_test_check

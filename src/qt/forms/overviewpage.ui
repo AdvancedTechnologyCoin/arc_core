@@ -610,7 +610,7 @@
          <item row="3" column="1">
           <widget class="QLabel" name="labelAmountRounds">
            <property name="text">
-            <string>0 ARCTIC / 0 Rounds</string>
+            <string>0 ARC / 0 Rounds</string>
            </property>
           </widget>
          </item>
@@ -647,7 +647,7 @@
             </font>
            </property>
            <property name="text">
-            <string notr="true">0 ARCTIC</string>
+            <string notr="true">0 ARC</string>
            </property>
           </widget>
          </item>

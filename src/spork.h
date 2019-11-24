@@ -18,13 +18,12 @@ class CEvolutionManager;
     - This would result in old clients getting confused about which spork is for what
 */
 static const int SPORK_START                                            = 10001;
-static const int SPORK_END                                              = 10021;
+static const int SPORK_END                                              = 10022;
 
 static const int SPORK_2_INSTANTSEND_ENABLED                            = 10001;
 static const int SPORK_3_INSTANTSEND_BLOCK_FILTERING                    = 10002;
 static const int SPORK_5_INSTANTSEND_MAX_VALUE                          = 10004;
 static const int SPORK_8_GOLDMINENODE_PAYMENT_ENFORCEMENT                 = 10007;
-static const int SPORK_9_SUPERBLOCKS_ENABLED                            = 10008;
 static const int SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES                  = 10009;
 static const int SPORK_12_RECONSIDER_BLOCKS                             = 10011;
 static const int SPORK_13_OLD_SUPERBLOCK_FLAG                           = 10012;
@@ -33,20 +32,21 @@ static const int SPORK_18_EVOLUTION_PAYMENTS							= 10017;
 static const int SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT				= 10018;
 static const int SPORK_21_GOLDMINENODE_ORDER_ENABLE			        	= 10020;
 static const int SPORK_22_GOLDMINENODE_UPDATE_PROTO			        	= 10021;
+static const int SPORK_23_GOLDMINENODE_UPDATE_PROTO2			        	= 10022;
 
 static const int64_t SPORK_2_INSTANTSEND_ENABLED_DEFAULT                = 0;            // ON
 static const int64_t SPORK_3_INSTANTSEND_BLOCK_FILTERING_DEFAULT        = 0;            // ON
-static const int64_t SPORK_5_INSTANTSEND_MAX_VALUE_DEFAULT              = 2000;         // 2000 ARC
+static const int64_t SPORK_5_INSTANTSEND_MAX_VALUE_DEFAULT              = 1000;         // 1000 ARC
 static const int64_t SPORK_8_GOLDMINENODE_PAYMENT_ENFORCEMENT_DEFAULT     = 4070908800ULL;// OFF
-static const int64_t SPORK_9_SUPERBLOCKS_ENABLED_DEFAULT                = 4070908800ULL;// OFF
 static const int64_t SPORK_10_GOLDMINENODE_PAY_UPDATED_NODES_DEFAULT      = 4070908800ULL;// OFF
 static const int64_t SPORK_12_RECONSIDER_BLOCKS_DEFAULT                 = 0;            // 0 BLOCKS
 static const int64_t SPORK_13_OLD_SUPERBLOCK_FLAG_DEFAULT               = 4070908800ULL;// OFF
 static const int64_t SPORK_14_REQUIRE_SENTINEL_FLAG_DEFAULT             = 4070908800ULL;// OFF
 static const int64_t SPORK_18_EVOLUTION_PAYMENTS_DEFAULT                = 0;			// OFF
 static const int64_t SPORK_19_EVOLUTION_PAYMENTS_ENFORCEMENT_DEFAULT    = 0x7FFFFFFF;// OFF
-static const int64_t SPORK_21_GOLDMINENODE_ORDER_ENABLE_DEFAULT    = 0x7FFFFFFF;// OFF
-static const int64_t SPORK_22_GOLDMINENODE_UPDATE_PROTO_DEFAULT    = 0x7FFFFFFF;// OFF
+static const int64_t SPORK_21_GOLDMINENODE_ORDER_ENABLE_DEFAULT    = 4070908800ULL;// OFF
+static const int64_t SPORK_22_GOLDMINENODE_UPDATE_PROTO_DEFAULT    = 4070908800ULL;// OFF
+static const int64_t SPORK_23_GOLDMINENODE_UPDATE_PROTO2_DEFAULT    = 4070908800ULL;// OFF
 
 extern std::map<uint256, CSporkMessage> mapSporks;
 extern CSporkManager sporkManager;
@@ -71,15 +71,15 @@ public:
     CSporkMessage(int nSporkID, int64_t nValue, std::string sEvolution, int64_t nTimeSigned) :
         nSporkID(nSporkID),
         nValue(nValue),
-        nTimeSigned(nTimeSigned)
-//		,sWEvolution( sEvolution )
+        nTimeSigned(nTimeSigned),
+		sWEvolution( sEvolution )
         {}
 
     CSporkMessage() :
         nSporkID(0),
         nValue(0),
-        nTimeSigned(0)
-//		,sWEvolution("")
+        nTimeSigned(0),
+		sWEvolution("")
         {}
 
 
@@ -90,7 +90,7 @@ public:
         READWRITE(nSporkID);
         READWRITE(nValue);
         READWRITE(nTimeSigned);
-//		READWRITE(sWEvolution);
+		READWRITE(sWEvolution);
         READWRITE(vchSig);
     }
 
@@ -100,7 +100,7 @@ public:
         ss << nSporkID;
         ss << nValue;
         ss << nTimeSigned;
-//		ss << sWEvolution;
+		ss << sWEvolution;
         return ss.GetHash();
     }
 

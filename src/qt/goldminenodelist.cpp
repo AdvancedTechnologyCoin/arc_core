@@ -274,7 +274,7 @@ void GoldminenodeList::updateNodeList()
     ui->tableWidgetGoldminenodes->clearContents();
     ui->tableWidgetGoldminenodes->setRowCount(0);
     std::map<COutPoint, CGoldminenode> mapGoldminenodes = mnodeman.GetFullGoldminenodeMap();
-	int offsetFromUtc = GetOffsetFromUtc();
+    int offsetFromUtc = GetOffsetFromUtc();
 
     for(auto& mnpair : mapGoldminenodes)
     {

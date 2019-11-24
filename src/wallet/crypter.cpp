@@ -110,12 +110,12 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
 }
 
 
-static bool EncryptSecret(const CKeyingMaterial& vGoldmineKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV, std::vector<unsigned char> &vchCiphertext)
+static bool EncryptSecret(const CKeyingMaterial& vMasterKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV, std::vector<unsigned char> &vchCiphertext)
 {
     CCrypter cKeyCrypter;
     std::vector<unsigned char> chIV(WALLET_CRYPTO_KEY_SIZE);
     memcpy(&chIV[0], &nIV, WALLET_CRYPTO_KEY_SIZE);
-    if(!cKeyCrypter.SetKey(vGoldmineKey, chIV))
+    if(!cKeyCrypter.SetKey(vMasterKey, chIV))
         return false;
     return cKeyCrypter.Encrypt(*((const CKeyingMaterial*)&vchPlaintext), vchCiphertext);
 }
@@ -161,12 +161,12 @@ bool EncryptAES256(const SecureString& sKey, const SecureString& sPlaintext, con
 }
 
 
-static bool DecryptSecret(const CKeyingMaterial& vGoldmineKey, const std::vector<unsigned char>& vchCiphertext, const uint256& nIV, CKeyingMaterial& vchPlaintext)
+static bool DecryptSecret(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCiphertext, const uint256& nIV, CKeyingMaterial& vchPlaintext)
 {
     CCrypter cKeyCrypter;
     std::vector<unsigned char> chIV(WALLET_CRYPTO_KEY_SIZE);
     memcpy(&chIV[0], &nIV, WALLET_CRYPTO_KEY_SIZE);
-    if(!cKeyCrypter.SetKey(vGoldmineKey, chIV))
+    if(!cKeyCrypter.SetKey(vMasterKey, chIV))
         return false;
     return cKeyCrypter.Decrypt(vchCiphertext, *((CKeyingMaterial*)&vchPlaintext));
 }
@@ -206,10 +206,10 @@ bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, con
 }
 
 
-static bool DecryptKey(const CKeyingMaterial& vGoldmineKey, const std::vector<unsigned char>& vchCryptedSecret, const CPubKey& vchPubKey, CKey& key)
+static bool DecryptKey(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCryptedSecret, const CPubKey& vchPubKey, CKey& key)
 {
     CKeyingMaterial vchSecret;
-    if(!DecryptSecret(vGoldmineKey, vchCryptedSecret, vchPubKey.GetHash(), vchSecret))
+    if(!DecryptSecret(vMasterKey, vchCryptedSecret, vchPubKey.GetHash(), vchSecret))
         return false;
 
     if (vchSecret.size() != 32)
@@ -237,7 +237,7 @@ bool CCryptoKeyStore::Lock(bool fAllowMixing)
 
     if(!fAllowMixing) {
         LOCK(cs_KeyStore);
-        vGoldmineKey.clear();
+        vMasterKey.clear();
     }
 
     fOnlyMixingAllowed = fAllowMixing;
@@ -245,7 +245,7 @@ bool CCryptoKeyStore::Lock(bool fAllowMixing)
     return true;
 }
 
-bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vGoldmineKeyIn, bool fForMixingOnly)
+bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn, bool fForMixingOnly)
 {
     {
         LOCK(cs_KeyStore);
@@ -260,7 +260,7 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vGoldmineKeyIn, bool fForMix
             const CPubKey &vchPubKey = (*mi).second.first;
             const std::vector<unsigned char> &vchCryptedSecret = (*mi).second.second;
             CKey key;
-            if (!DecryptKey(vGoldmineKeyIn, vchCryptedSecret, vchPubKey, key))
+            if (!DecryptKey(vMasterKeyIn, vchCryptedSecret, vchPubKey, key))
             {
                 keyFail = true;
                 break;
@@ -276,8 +276,10 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vGoldmineKeyIn, bool fForMix
         }
         if (keyFail || (!keyPass && cryptedHDChain.IsNull()))
             return false;
-        vGoldmineKey = vGoldmineKeyIn;
-if(!cryptedHDChain.IsNull()) {
+
+        vMasterKey = vMasterKeyIn;
+
+        if(!cryptedHDChain.IsNull()) {
             bool chainPass = false;
             // try to decrypt seed and make sure it matches
             CHDChain hdChainTmp;
@@ -286,7 +288,7 @@ if(!cryptedHDChain.IsNull()) {
                 chainPass = cryptedHDChain.GetID() == hdChainTmp.GetSeedHash();
             }
             if (!chainPass) {
-                vGoldmineKey.clear();
+                vMasterKey.clear();
                 return false;
             }
         }
@@ -309,7 +311,7 @@ bool CCryptoKeyStore::AddKeyPubKey(const CKey& key, const CPubKey &pubkey)
 
         std::vector<unsigned char> vchCryptedSecret;
         CKeyingMaterial vchSecret(key.begin(), key.end());
-        if (!EncryptSecret(vGoldmineKey, vchSecret, pubkey.GetHash(), vchCryptedSecret))
+        if (!EncryptSecret(vMasterKey, vchSecret, pubkey.GetHash(), vchCryptedSecret))
             return false;
 
         if (!AddCryptedKey(pubkey, vchCryptedSecret))
@@ -343,7 +345,7 @@ bool CCryptoKeyStore::GetKey(const CKeyID &address, CKey& keyOut) const
         {
             const CPubKey &vchPubKey = (*mi).second.first;
             const std::vector<unsigned char> &vchCryptedSecret = (*mi).second.second;
-            return DecryptKey(vGoldmineKey, vchCryptedSecret, vchPubKey, keyOut);
+            return DecryptKey(vMasterKey, vchCryptedSecret, vchPubKey, keyOut);
         }
     }
     return false;
@@ -368,7 +370,7 @@ bool CCryptoKeyStore::GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) co
     return false;
 }
 
-bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vGoldmineKeyIn)
+bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
 {
     {
         LOCK(cs_KeyStore);
@@ -382,7 +384,7 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vGoldmineKeyIn)
             CPubKey vchPubKey = key.GetPubKey();
             CKeyingMaterial vchSecret(key.begin(), key.end());
             std::vector<unsigned char> vchCryptedSecret;
-            if (!EncryptSecret(vGoldmineKeyIn, vchSecret, vchPubKey.GetHash(), vchCryptedSecret))
+            if (!EncryptSecret(vMasterKeyIn, vchSecret, vchPubKey.GetHash(), vchCryptedSecret))
                 return false;
             if (!AddCryptedKey(vchPubKey, vchCryptedSecret))
                 return false;
@@ -392,7 +394,7 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vGoldmineKeyIn)
     return true;
 }
 
-bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vGoldmineKeyIn)
+bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vMasterKeyIn)
 {
     // should call EncryptKeys first
     if (!IsCrypted())
@@ -409,7 +411,7 @@ bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vGoldmineKeyIn)
         return false;
 
     std::vector<unsigned char> vchCryptedSeed;
-    if (!EncryptSecret(vGoldmineKeyIn, hdChain.GetSeed(), hdChain.GetID(), vchCryptedSeed))
+    if (!EncryptSecret(vMasterKeyIn, hdChain.GetSeed(), hdChain.GetID(), vchCryptedSeed))
         return false;
 
     hdChain.Debug(__func__);
@@ -428,9 +430,9 @@ bool CCryptoKeyStore::EncryptHDChain(const CKeyingMaterial& vGoldmineKeyIn)
         std::vector<unsigned char> vchCryptedMnemonic;
         std::vector<unsigned char> vchCryptedMnemonicPassphrase;
 
-        if (!vchMnemonic.empty() && !EncryptSecret(vGoldmineKeyIn, vchMnemonic, hdChain.GetID(), vchCryptedMnemonic))
+        if (!vchMnemonic.empty() && !EncryptSecret(vMasterKeyIn, vchMnemonic, hdChain.GetID(), vchCryptedMnemonic))
             return false;
-        if (!vchMnemonicPassphrase.empty() && !EncryptSecret(vGoldmineKeyIn, vchMnemonicPassphrase, hdChain.GetID(), vchCryptedMnemonicPassphrase))
+        if (!vchMnemonicPassphrase.empty() && !EncryptSecret(vMasterKeyIn, vchMnemonicPassphrase, hdChain.GetID(), vchCryptedMnemonicPassphrase))
             return false;
 
         SecureVector vchSecureCryptedMnemonic(vchCryptedMnemonic.begin(), vchCryptedMnemonic.end());
@@ -459,7 +461,7 @@ bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet) const
     SecureVector vchSecureSeed;
     SecureVector vchSecureCryptedSeed = cryptedHDChain.GetSeed();
     std::vector<unsigned char> vchCryptedSeed(vchSecureCryptedSeed.begin(), vchSecureCryptedSeed.end());
-    if (!DecryptSecret(vGoldmineKey, vchCryptedSeed, cryptedHDChain.GetID(), vchSecureSeed))
+    if (!DecryptSecret(vMasterKey, vchCryptedSeed, cryptedHDChain.GetID(), vchSecureSeed))
         return false;
 
     hdChainRet = cryptedHDChain;
@@ -481,9 +483,9 @@ bool CCryptoKeyStore::DecryptHDChain(CHDChain& hdChainRet) const
         std::vector<unsigned char> vchCryptedMnemonic(vchSecureCryptedMnemonic.begin(), vchSecureCryptedMnemonic.end());
         std::vector<unsigned char> vchCryptedMnemonicPassphrase(vchSecureCryptedMnemonicPassphrase.begin(), vchSecureCryptedMnemonicPassphrase.end());
 
-        if (!vchCryptedMnemonic.empty() && !DecryptSecret(vGoldmineKey, vchCryptedMnemonic, cryptedHDChain.GetID(), vchSecureMnemonic))
+        if (!vchCryptedMnemonic.empty() && !DecryptSecret(vMasterKey, vchCryptedMnemonic, cryptedHDChain.GetID(), vchSecureMnemonic))
             return false;
-        if (!vchCryptedMnemonicPassphrase.empty() && !DecryptSecret(vGoldmineKey, vchCryptedMnemonicPassphrase, cryptedHDChain.GetID(), vchSecureMnemonicPassphrase))
+        if (!vchCryptedMnemonicPassphrase.empty() && !DecryptSecret(vMasterKey, vchCryptedMnemonicPassphrase, cryptedHDChain.GetID(), vchSecureMnemonicPassphrase))
             return false;
 
         if (!hdChainRet.SetMnemonic(vchSecureMnemonic, vchSecureMnemonicPassphrase, false))

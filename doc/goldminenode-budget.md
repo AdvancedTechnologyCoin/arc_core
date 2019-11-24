@@ -1,12 +1,12 @@
 NOTE : 12.1 -- REWRITE
 
 
-Goldminenode Evolution API
+Goldminenode Budget API
 =======================
 
-Arctic now supports full decentralized budgets that are paid directly from the blockchain via superblocks once per month.
+Arc now supports full decentralized budgets that are paid directly from the blockchain via superblocks once per month.
 
-Evolutions go through a series of stages before being paid:
+Budgets go through a series of stages before being paid:
  * prepare - create a special transaction that destroys coins in order to make a proposal
  * submit - propagate transaction to peers on network
  * voting - lobby for votes on your proposal

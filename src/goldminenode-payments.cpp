@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -28,7 +28,7 @@ CCriticalSection cs_mapGoldminenodePaymentVotes;
 *   Determine if coinbase outgoing created money is the correct value
 *
 *   Why is this needed?
-*   - In Arctic some blocks are superblocks, which output much higher amounts of coins
+*   - In Arc some blocks are superblocks, which output much higher amounts of coins
 *   - Otherblocks are 10% lower in outgoing value, so in total, no extra coins are created
 *   - When non-superblocks are detected, the normal schedule should be maintained
 */
@@ -143,16 +143,25 @@ void CGoldminenodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBloc
     LogPrintf("CGoldminenodePayments::FillBlockPayee -- prepare \n");
 
     if(!mnpayments.GetBlockPayee(nBlockHeight, payee)) {
-        // no masternode detected...
-        int nCount = 0;
-        goldminenode_info_t mnInfo;
-        if(!mnodeman.GetNextGoldminenodeInQueueForTmp(nBlockHeight, true, nCount, mnInfo)) {
-            // ...and we can't calculate it on our own
-            LogPrintf("CGoldminenodePayments::FillBlockPayee -- Failed to detect goldminenode to pay\n");
-            return;
-        }
-        // fill payee with locally calculated winner and hope for the best
-        payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
+        // no goldminenode detected...
+        if(sporkManager.IsSporkActive(SPORK_23_GOLDMINENODE_UPDATE_PROTO2))
+		{
+	        int nCount = 0;
+	        goldminenode_info_t mnInfo;
+	        if(!mnodeman.GetNextGoldminenodeInQueueForTmp(nBlockHeight, true, nCount, mnInfo)) {
+	            // ...and we can't calculate it on our own
+	            LogPrintf("CGoldminenodePayments::FillBlockPayee -- Failed to detect goldminenode to pay\n");
+	            return;
+	        }
+	        // fill payee with locally calculated winner and hope for the best
+	        payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
+    	}
+    	else
+    	{
+    		// no goldminenode detected...and we can't calculate it on our own
+			LogPrintf("CGoldminenodePayments::FillBlockPayee -- Failed to detect goldminenode to pay\n");
+			return;
+    	}
     }
 
     // GET GOLDMINENODE PAYMENT VARIABLES SETUP
@@ -179,7 +188,7 @@ int CGoldminenodePayments::GetMinGoldminenodePaymentsProto() {
 
 void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if(fLiteMode) return; // disable all Arctic specific functionality
+    if(fLiteMode) return; // disable all Arc specific functionality
 
     if (strCommand == NetMsgType::GOLDMINENODEPAYMENTSYNC) { //Goldminenode Payments Request Sync
 
@@ -257,15 +266,6 @@ void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand
             return;
         }
 
-        /*FOR TEST ONLY*/
-        int nCount = 0;
-
-    if (goldminenodeSync.IsWinnersListSynced() && !mnodeman.GetNextGoldminenodeInQueueForPayment(vote.nBlockHeight, true, nCount, mnInfo)) {
-        LogPrintf("CGoldminenodePayments::ProcessBlock -- ERROR: Failed to find goldminenode to pay\n");
-        return;
-    }
-        /*END TEST BLOCK*/
-        
         int nDos = 0;
         if(!vote.CheckSignature(mnInfo.pubKeyGoldminenode, nCachedBlockHeight, nDos)) {
             if(nDos) {
@@ -283,18 +283,47 @@ void CGoldminenodePayments::ProcessMessage(CNode* pfrom, std::string& strCommand
             // so just quit here.
             return;
         }
-		
-        CTxDestination address1;
-	ExtractDestination(vote.payee, address1);
-        CBitcoinAddress address2(address1);
-	LogPrintf("mnpayments -- GOLDMINENODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s, hash=%s new\n",
-            address2.ToString(), vote.nBlockHeight, nCachedBlockHeight, vote.vinGoldminenode.prevout.ToStringShort(), nHash.ToString());
+        if(!sporkManager.IsSporkActive(SPORK_23_GOLDMINENODE_UPDATE_PROTO2))
+		{
+			int nCount = 0;
+	        //masternode_info_t mnInfo;
+			if (!mnodeman.GetNextGoldminenodeInQueueForPayment(vote.nBlockHeight, true, nCount, mnInfo)) {
+				LogPrintf("CGoldminenodePayments::ProcessBlock -- ERROR: Failed to find masternode to pay\n");
+	            return;
+			}
+			LogPrintf("CGoldminenodePayments::ProcessBlock -- Masternode found : %s\n", mnInfo.vin.prevout.ToStringShort());
+	
+			CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
+			CGoldminenodePaymentVote voteNew(vote.vinGoldminenode.prevout, vote.nBlockHeight, payee);
+	       
 
-	if(AddPaymentVote(vote)){
-            vote.Relay(connman);
-            goldminenodeSync.BumpAssetLastTime("GOLDMINENODEPAYMENTVOTE");
-	}
-		
+	        CTxDestination address1;
+	        ExtractDestination(voteNew.payee, address1);
+	        CBitcoinAddress address2(address1);
+			
+	
+	        LogPrint("mnpayments"," MASTERNODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s, hash=%s new\n",
+	                    address2.ToString(), voteNew.nBlockHeight, nCachedBlockHeight, voteNew.vinGoldminenode.prevout.ToStringShort(), nHash.ToString());
+			
+	        if(AddPaymentVote(voteNew)){
+	            voteNew.Relay(connman);
+	            goldminenodeSync.BumpAssetLastTime("MASTERNODEPAYMENTVOTE");
+	        }
+		}
+		else
+		{
+	        CTxDestination address1;
+	        ExtractDestination(vote.payee, address1);
+	        CBitcoinAddress address2(address1);
+	
+	        LogPrint("mnpayments", "GOLDMINENODEPAYMENTVOTE -- vote: address=%s, nBlockHeight=%d, nHeight=%d, prevout=%s, hash=%s new\n",
+	                    address2.ToString(), vote.nBlockHeight, nCachedBlockHeight, vote.vinGoldminenode.prevout.ToStringShort(), nHash.ToString());
+	
+	        if(AddPaymentVote(vote)){
+	            vote.Relay(connman);
+	            goldminenodeSync.BumpAssetLastTime("GOLDMINENODEPAYMENTVOTE");
+	        }
+    	}
     }
 }
 
@@ -321,11 +350,8 @@ bool CGoldminenodePaymentVote::Sign()
 bool CGoldminenodePayments::GetBlockPayee(int nBlockHeight, CScript& payee)
 {
     if(mapGoldminenodeBlocks.count(nBlockHeight)){
-        LogPrintf("GetBlockPayee -- payee for block %d \n",nBlockHeight);
         return mapGoldminenodeBlocks[nBlockHeight].GetBestPayee(payee);
     }
-    else
-        LogPrintf("GetBlockPayee -- not found payee for block %d \n",nBlockHeight);
 
     return false;
 }
@@ -358,8 +384,6 @@ bool CGoldminenodePayments::AddPaymentVote(const CGoldminenodePaymentVote& vote)
     if(!GetBlockHash(blockHash, vote.nBlockHeight - 101)) return false;
 
     if(HasVerifiedPaymentVote(vote.GetHash())) return false;
-
-
 
     LOCK2(cs_mapGoldminenodeBlocks, cs_mapGoldminenodePaymentVotes);
 
@@ -644,11 +668,11 @@ bool CGoldminenodePayments::ProcessBlock(int nBlockHeight, CConnman& connman)
     ExtractDestination(payee, address1);
     CBitcoinAddress address2(address1);
 
-    LogPrintf("CGoldminenodePayments::ProcessBlock -- vote: payee=%s, nBlockHeight=%d\n", address2.ToString(), nBlockHeight);
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- winner: payee=%s, nBlockHeight=%d\n", address2.ToString(), nBlockHeight);
 
     // SIGN MESSAGE TO NETWORK WITH OUR GOLDMINENODE KEYS
 
-    LogPrintf("CGoldminenodePayments::ProcessBlock -- Signing vote\n");
+    LogPrintf("CGoldminenodePayments::ProcessBlock -- Signing winner\n");
     if (voteNew.Sign()) {
         LogPrintf("CGoldminenodePayments::ProcessBlock -- AddPaymentWinner()\n");
 

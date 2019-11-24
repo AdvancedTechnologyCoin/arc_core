@@ -23,7 +23,7 @@ class CAccount;
 class CAccountingEntry;
 struct CBlockLocator;
 class CKeyPool;
-class CGoldmineKey;
+class CMasterKey;
 class CScript;
 class CWallet;
 class CWalletTx;
@@ -93,7 +93,7 @@ public:
 
     bool WriteKey(const CPubKey& vchPubKey, const CPrivKey& vchPrivKey, const CKeyMetadata &keyMeta);
     bool WriteCryptedKey(const CPubKey& vchPubKey, const std::vector<unsigned char>& vchCryptedSecret, const CKeyMetadata &keyMeta);
-    bool WriteGoldmineKey(unsigned int nID, const CGoldmineKey& kGoldmineKey);
+    bool WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey);
 
     bool WriteCScript(const uint160& hash, const CScript& redeemScript);
 

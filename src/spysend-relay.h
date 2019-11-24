@@ -1,17 +1,17 @@
 
-// Copyright (c) 2015-2017 The ARC developers
+// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef DARKSEND_RELAY_H
-#define DARKSEND_RELAY_H
+#ifndef SPYSEND_RELAY_H
+#define SPYSEND_RELAY_H
 
 #include "main.h"
 #include "activegoldminenode.h"
 #include "goldminenodeman.h"
 
 
-class CDarkSendRelay
+class CSpySendRelay
 {
 public:
     CTxIn vinGoldminenode;
@@ -22,8 +22,8 @@ public:
     CTxIn in;
     CTxOut out;
 
-    CDarkSendRelay();
-    CDarkSendRelay(CTxIn& vinGoldminenodeIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2);
+    CSpySendRelay();
+    CSpySendRelay(CTxIn& vinGoldminenodeIn, vector<unsigned char>& vchSigIn, int nBlockHeightIn, int nRelayTypeIn, CTxIn& in2, CTxOut& out2);
     
     ADD_SERIALIZE_METHODS;
 

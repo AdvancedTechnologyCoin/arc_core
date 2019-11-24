@@ -21,8 +21,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef ARCTICCOIN_BIP39_H
-#define ARCTICCOIN_BIP39_H
+#ifndef ARC_BIP39_H
+#define ARC_BIP39_H
 
 #include "support/allocators/secure.h"
 
