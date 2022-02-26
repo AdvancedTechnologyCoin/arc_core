@@ -3,11 +3,13 @@
 
 #include "activegoldminenode.h"
 #include "clientmodel.h"
+#include "clientversion.h"
 #include "init.h"
 #include "guiutil.h"
 #include "goldminenode-sync.h"
 #include "goldminenodeconfig.h"
 #include "goldminenodeman.h"
+#include "qrdialog.h"
 #include "sync.h"
 #include "wallet/wallet.h"
 #include "walletmodel.h"
@@ -62,6 +64,7 @@ GoldminenodeList::GoldminenodeList(const PlatformStyle *platformStyle, QWidget *
     contextMenu = new QMenu();
     contextMenu->addAction(startAliasAction);
     connect(ui->tableWidgetMyGoldminenodes, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
+    connect(ui->tableWidgetMyGoldminenodes, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_QRButton_clicked()));
     connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
 
     timer = new QTimer(this);
@@ -104,17 +107,21 @@ void GoldminenodeList::StartAlias(std::string strAlias)
     std::string strStatusHtml;
     strStatusHtml += "<center>Alias: " + strAlias;
 
-    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+    for (const auto& mne : goldminenodeConfig.getEntries()) {
         if(mne.getAlias() == strAlias) {
             std::string strError;
             CGoldminenodeBroadcast mnb;
 
             bool fSuccess = CGoldminenodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
 
+            int nDoS;
+            if (fSuccess && !mnodeman.CheckMnbAndUpdateGoldminenodeList(NULL, mnb, nDoS, *g_connman)) {
+                strError = "Failed to verify MNB";
+                fSuccess = false;
+            }
+
             if(fSuccess) {
                 strStatusHtml += "<br>Successfully started goldminenode.";
-                mnodeman.UpdateGoldminenodeList(mnb, *g_connman);
-                mnb.Relay(*g_connman);
                 mnodeman.NotifyGoldminenodeUpdates(*g_connman);
             } else {
                 strStatusHtml += "<br>Failed to start goldminenode.<br>Error: " + strError;
@@ -137,7 +144,7 @@ void GoldminenodeList::StartAll(std::string strCommand)
     int nCountFailed = 0;
     std::string strFailedHtml;
 
-    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+    for (const auto& mne : goldminenodeConfig.getEntries()) {
         std::string strError;
         CGoldminenodeBroadcast mnb;
 
@@ -152,17 +159,20 @@ void GoldminenodeList::StartAll(std::string strCommand)
 
         bool fSuccess = CGoldminenodeBroadcast::Create(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), strError, mnb);
 
+        int nDoS;
+        if (fSuccess && !mnodeman.CheckMnbAndUpdateGoldminenodeList(NULL, mnb, nDoS, *g_connman)) {
+            strError = "Failed to verify MNB";
+            fSuccess = false;
+        }
+
         if(fSuccess) {
             nCountSuccessful++;
-            mnodeman.UpdateGoldminenodeList(mnb, *g_connman);
-            mnb.Relay(*g_connman);
             mnodeman.NotifyGoldminenodeUpdates(*g_connman);
         } else {
             nCountFailed++;
             strFailedHtml += "\nFailed to start " + mne.getAlias() + ". Error: " + strError;
         }
     }
-    pwalletMain->Lock();
 
     std::string returnObj;
     returnObj = strprintf("Successfully started %d goldminenodes, failed to start %d, total %d", nCountSuccessful, nCountFailed, nCountFailed + nCountSuccessful);
@@ -232,8 +242,13 @@ void GoldminenodeList::updateMyNodeList(bool fForce)
     if(nSecondsTillUpdate > 0 && !fForce) return;
     nTimeMyListUpdated = GetTime();
 
-    ui->tableWidgetGoldminenodes->setSortingEnabled(false);
-    BOOST_FOREACH(CGoldminenodeConfig::CGoldminenodeEntry mne, goldminenodeConfig.getEntries()) {
+    // Find selected row
+    QItemSelectionModel* selectionModel = ui->tableWidgetMyGoldminenodes->selectionModel();
+    QModelIndexList selected = selectionModel->selectedRows();
+    int nSelectedRow = selected.count() ? selected.at(0).row() : 0;
+
+    ui->tableWidgetMyGoldminenodes->setSortingEnabled(false);
+    for (const auto& mne : goldminenodeConfig.getEntries()) {
         int32_t nOutputIndex = 0;
         if(!ParseInt32(mne.getOutputIndex(), &nOutputIndex)) {
             continue;
@@ -241,7 +256,8 @@ void GoldminenodeList::updateMyNodeList(bool fForce)
 
         updateMyGoldminenodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), COutPoint(uint256S(mne.getTxHash()), nOutputIndex));
     }
-    ui->tableWidgetGoldminenodes->setSortingEnabled(true);
+    ui->tableWidgetMyGoldminenodes->selectRow(nSelectedRow);
+    ui->tableWidgetMyGoldminenodes->setSortingEnabled(true);
 
     // reset "timer"
     ui->secondsLabel->setText("0");
@@ -276,7 +292,7 @@ void GoldminenodeList::updateNodeList()
     std::map<COutPoint, CGoldminenode> mapGoldminenodes = mnodeman.GetFullGoldminenodeMap();
     int offsetFromUtc = GetOffsetFromUtc();
 
-    for(auto& mnpair : mapGoldminenodes)
+    for (const auto& mnpair : mapGoldminenodes)
     {
         CGoldminenode mn = mnpair.second;
         // populate list
@@ -424,4 +440,78 @@ void GoldminenodeList::on_tableWidgetMyGoldminenodes_itemSelectionChanged()
 void GoldminenodeList::on_UpdateButton_clicked()
 {
     updateMyNodeList(true);
+}
+
+void GoldminenodeList::on_QRButton_clicked()
+{
+    std::string strAlias;
+    {
+        LOCK(cs_mymnlist);
+        // Find selected node alias
+        QItemSelectionModel* selectionModel = ui->tableWidgetMyGoldminenodes->selectionModel();
+        QModelIndexList selected = selectionModel->selectedRows();
+
+        if(selected.count() == 0) return;
+
+        QModelIndex index = selected.at(0);
+        int nSelectedRow = index.row();
+        strAlias = ui->tableWidgetMyGoldminenodes->item(nSelectedRow, 0)->text().toStdString();
+    }
+
+    ShowQRCode(strAlias);
+}
+
+void GoldminenodeList::ShowQRCode(std::string strAlias) {
+
+    if(!walletModel || !walletModel->getOptionsModel())
+        return;
+
+    // Get private key for this alias
+    std::string strMNPrivKey = "";
+    std::string strCollateral = "";
+    std::string strIP = "";
+    CGoldminenode mn;
+    bool fFound = false;
+
+    for (const auto& mne : goldminenodeConfig.getEntries()) {
+        if (strAlias != mne.getAlias()) {
+            continue;
+        }
+        else {
+            strMNPrivKey = mne.getPrivKey();
+            strCollateral = mne.getTxHash() + "-" + mne.getOutputIndex();
+            strIP = mne.getIp();
+            fFound = mnodeman.Get(COutPoint(uint256S(mne.getTxHash()), atoi(mne.getOutputIndex())), mn);
+            break;
+        }
+    }
+
+    // Title of popup window
+    QString strWindowtitle = tr("Additional information for Goldminenode %1").arg(QString::fromStdString(strAlias));
+
+    // Title above QR-Code
+    QString strQRCodeTitle = tr("Goldminenode Private Key");
+
+    // Create dialog text as HTML
+    QString strHTML = "<html><font face='verdana, arial, helvetica, sans-serif'>";
+    strHTML += "<b>" + tr("Alias") +            ": </b>" + GUIUtil::HtmlEscape(strAlias) + "<br>";
+    strHTML += "<b>" + tr("Private Key") +      ": </b>" + GUIUtil::HtmlEscape(strMNPrivKey) + "<br>";
+    strHTML += "<b>" + tr("Collateral") +       ": </b>" + GUIUtil::HtmlEscape(strCollateral) + "<br>";
+    strHTML += "<b>" + tr("IP") +               ": </b>" + GUIUtil::HtmlEscape(strIP) + "<br>";
+    if (fFound) {
+        strHTML += "<b>" + tr("Protocol") +     ": </b>" + QString::number(mn.nProtocolVersion) + "<br>";
+        strHTML += "<b>" + tr("Version") +      ": </b>" + (mn.lastPing.nDaemonVersion > DEFAULT_DAEMON_VERSION ? GUIUtil::HtmlEscape(FormatVersion(mn.lastPing.nDaemonVersion)) : tr("Unknown")) + "<br>";
+        strHTML += "<b>" + tr("Sentinel") +     ": </b>" + (mn.lastPing.nSentinelVersion > DEFAULT_SENTINEL_VERSION ? GUIUtil::HtmlEscape(SafeIntVersionToString(mn.lastPing.nSentinelVersion)) : tr("Unknown")) + "<br>";
+        strHTML += "<b>" + tr("Status") +       ": </b>" + GUIUtil::HtmlEscape(CGoldminenode::StateToString(mn.nActiveState)) + "<br>";
+        strHTML += "<b>" + tr("Payee") +        ": </b>" + GUIUtil::HtmlEscape(CBitcoinAddress(mn.pubKeyCollateralAddress.GetID()).ToString()) + "<br>";
+        strHTML += "<b>" + tr("Active") +       ": </b>" + GUIUtil::HtmlEscape(DurationToDHMS(mn.lastPing.sigTime - mn.sigTime)) + "<br>";
+        strHTML += "<b>" + tr("Last Seen") +    ": </b>" + GUIUtil::HtmlEscape(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + GetOffsetFromUtc())) + "<br>";
+    }
+
+    // Open QR dialog
+    QRDialog *dialog = new QRDialog(this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setModel(walletModel->getOptionsModel());
+    dialog->setInfo(strWindowtitle, QString::fromStdString(strMNPrivKey), strHTML, strQRCodeTitle);
+    dialog->show();
 }

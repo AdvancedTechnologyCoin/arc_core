@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,12 +20,12 @@ class CPrivateSendServer : public CPrivateSendBase
 private:
     // Mixing uses collateral transactions to trust parties entering the pool
     // to behave honestly. If they don't it takes their money.
-    std::vector<CTransaction> vecSessionCollaterals;
+    std::vector<CTransactionRef> vecSessionCollaterals;
 
     bool fUnitTest;
 
     /// Add a clients entry to the pool
-    bool AddEntry(const CSpySendEntry& entryNew, PoolMessage& nMessageIDRet);
+    bool AddEntry(const CDarkSendEntry& entryNew, PoolMessage& nMessageIDRet);
     /// Add signature to a txin
     bool AddScriptSig(const CTxIn& txin);
 
@@ -41,9 +41,9 @@ private:
     void CommitFinalTransaction(CConnman& connman);
 
     /// Is this nDenom and txCollateral acceptable?
-    bool IsAcceptableDenomAndCollateral(int nDenom, CTransaction txCollateral, PoolMessage &nMessageIDRet);
-    bool CreateNewSession(int nDenom, CTransaction txCollateral, PoolMessage &nMessageIDRet, CConnman& connman);
-    bool AddUserToExistingSession(int nDenom, CTransaction txCollateral, PoolMessage &nMessageIDRet);
+    bool IsAcceptableDSA(const CDarksendAccept& dsa, PoolMessage &nMessageIDRet);
+    bool CreateNewSession(const CDarksendAccept& dsa, PoolMessage &nMessageIDRet, CConnman& connman);
+    bool AddUserToExistingSession(const CDarksendAccept& dsa, PoolMessage &nMessageIDRet);
     /// Do we have enough users to take entries?
     bool IsSessionReady() { return (int)vecSessionCollaterals.size() >= CPrivateSend::GetMaxPoolTransactions(); }
 
@@ -69,7 +69,7 @@ public:
     CPrivateSendServer() :
         fUnitTest(false) { SetNull(); }
 
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, CConnman& connman);
+    void ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman);
 
     void CheckTimeout(CConnman& connman);
     void CheckForCompleteQueue(CConnman& connman);

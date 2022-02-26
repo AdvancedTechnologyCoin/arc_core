@@ -8,6 +8,7 @@
         <file alias="fr">locale/arc_fr.qm</file>
         <file alias="it">locale/arc_it.qm</file>
         <file alias="ja">locale/arc_ja.qm</file>
+        <file alias="nl">locale/arc_nl.qm</file>
         <file alias="pl">locale/arc_pl.qm</file>
         <file alias="pt">locale/arc_pt.qm</file>
         <file alias="ru">locale/arc_ru.qm</file>

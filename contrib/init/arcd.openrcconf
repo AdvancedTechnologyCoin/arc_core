@@ -1,7 +1,7 @@
 # /etc/conf.d/arcd: config file for /etc/init.d/arcd
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/arccore/arc.conf"
+#BITCOIND_CONFIGFILE="/etc/arc/arc.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/arcd"
@@ -13,8 +13,8 @@
 #BITCOIND_DATADIR="/var/lib/arcd"
 
 # User and group to own arcd process
-#BITCOIND_USER="arccore"
-#BITCOIND_GROUP="arccore"
+#BITCOIND_USER="arc"
+#BITCOIND_GROUP="arc"
 
 # Path to arcd executable
 #BITCOIND_BIN="/usr/bin/arcd"
@@ -23,7 +23,7 @@
 #BITCOIND_NICE=0
 
 # Additional options (avoid -conf and -datadir, use flags above)
-BITCOIND_OPTS="-disablewallet"
+#BITCOIND_OPTS=""
 
 # The timeout in seconds OpenRC will wait for bitcoind to terminate
 # after a SIGTERM has been raised.

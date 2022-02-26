@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef GOLDMINENODE_SYNC_H
@@ -16,6 +16,9 @@ static const int GOLDMINENODE_SYNC_INITIAL         = 0; // sync just started, wa
 static const int GOLDMINENODE_SYNC_WAITING         = 1; // waiting after initial to see if we can get more headers/blocks
 static const int GOLDMINENODE_SYNC_LIST            = 2;
 static const int GOLDMINENODE_SYNC_MNW             = 3;
+static const int GOLDMINENODE_SYNC_GOVERNANCE      = 4;
+static const int GOLDMINENODE_SYNC_GOVOBJ          = 10;
+static const int GOLDMINENODE_SYNC_GOVOBJ_VOTE     = 11;
 static const int GOLDMINENODE_SYNC_FINISHED        = 999;
 
 static const int GOLDMINENODE_SYNC_TICK_SECONDS    = 6;
@@ -45,11 +48,13 @@ private:
     int64_t nTimeLastFailure;
 
     void Fail();
-    void ClearFulfilledRequests(CConnman& connman);
 
 public:
     CGoldminenodeSync() { Reset(); }
-	
+
+
+    void SendGovernanceSyncRequest(CNode* pnode, CConnman& connman);
+
     bool IsFailed() { return nRequestedGoldminenodeAssets == GOLDMINENODE_SYNC_FAILED; }
     bool IsBlockchainSynced() { return nRequestedGoldminenodeAssets > GOLDMINENODE_SYNC_WAITING; }
     bool IsGoldminenodeListSynced() { return nRequestedGoldminenodeAssets > GOLDMINENODE_SYNC_LIST; }
@@ -58,7 +63,7 @@ public:
 
     int GetAssetID() { return nRequestedGoldminenodeAssets; }
     int GetAttempt() { return nRequestedGoldminenodeAttempt; }
-    void BumpAssetLastTime(std::string strFuncName);
+    void BumpAssetLastTime(const std::string& strFuncName);
     int64_t GetAssetStartTime() { return nTimeAssetSyncStarted; }
     std::string GetAssetName();
     std::string GetSyncStatus();
@@ -66,7 +71,7 @@ public:
     void Reset();
     void SwitchToNextAsset(CConnman& connman);
 
-    void ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
+    void ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv);
     void ProcessTick(CConnman& connman);
 
     void AcceptedBlockHeader(const CBlockIndex *pindexNew);

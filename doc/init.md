@@ -68,9 +68,9 @@ can then be controlled by group membership.
 3b) Mac OS X
 
 Binary:              `/usr/local/bin/arcd`  
-Configuration file:  `~/Library/Application Support/Arc/arc.conf`  
-Data directory:      `~/Library/Application Support/Arc`
-Lock file:           `~/Library/Application Support/Arc/.lock`
+Configuration file:  `~/Library/Application Support/arc/arc.conf`  
+Data directory:      `~/Library/Application Support/arc`
+Lock file:           `~/Library/Application Support/arc/.lock`
 
 4. Installing Service Configuration
 -----------------------------------

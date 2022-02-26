@@ -1,4 +1,4 @@
-// Copyright (c) 2017 The Bitcoin Core developers
+// Copyright (c) 2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,6 +6,7 @@
 #include "ui_modaloverlay.h"
 
 #include "guiutil.h"
+#include "spork.h"
 
 #include "chainparams.h"
 
@@ -81,7 +82,6 @@ void ModalOverlay::tipUpdate(int count, const QDateTime& blockDate, double nVeri
 
     // keep a vector of samples of verification progress at height
     blockProcessTime.push_front(qMakePair(currentDate.toMSecsSinceEpoch(), nVerificationProgress));
-
     // show progress speed if we have more then one sample
     if (blockProcessTime.size() >= 2) {
         double progressDelta = 0;

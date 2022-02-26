@@ -1,9 +1,9 @@
 Goldminenode config
 =======================
 
-ARC allows controlling multiple remote goldminenodes from a single wallet. The wallet needs to have a valid collateral output of 1000 coins for each goldminenode and uses a configuration file named `goldminenode.conf` which can be found in the following data directory (depending on your operating system):
- * Windows: %APPDATA%\Arc\
- * Mac OS: ~/Library/Application Support/Arc/
+Arc Core allows controlling multiple remote goldminenodes from a single wallet. The wallet needs to have a valid collateral output of 1000 coins for each goldminenode and uses a configuration file named `goldminenode.conf` which can be found in the following data directory (depending on your operating system):
+ * Windows: %APPDATA%\arc\
+ * Mac OS: ~/Library/Application Support/arc/
  * Unix/Linux: ~/.arc/
 
 `goldminenode.conf` is a space separated text file. Each line consists of an alias, IP address followed by port, goldminenode private key, collateral output transaction id and collateral output index.

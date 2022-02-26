@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT software license, see the accompanying
 
 #include "base58.h"
@@ -39,7 +39,7 @@ bool CHDChain::IsCrypted() const
     return fCrypted;
 }
 
-void CHDChain::Debug(std::string strName) const
+void CHDChain::Debug(const std::string& strName) const
 {
     DBG(
         std::cout << __func__ << ": ---" << strName << "---" << std::endl;

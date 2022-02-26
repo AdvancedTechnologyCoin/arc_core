@@ -164,8 +164,8 @@
         <translation>Bekräfta plånbokskryptering</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR ARCTIC&lt;/b&gt;!</source>
-        <translation>Varning: Om du krypterar din plånbok och förlorar din lösenfras kommer du att &lt;b&gt;FÖRLORA ALLA DINA ARCTIC&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR ARC&lt;/b&gt;!</source>
+        <translation>Varning: Om du krypterar din plånbok och förlorar din lösenfras kommer du att &lt;b&gt;FÖRLORA ALLA DINA ARC&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -736,10 +736,10 @@ Adress: %4
     </message>
 </context>
 <context>
-    <name>SpysendConfig</name>
+    <name>DarksendConfig</name>
     <message>
-        <source>Configure Spysend</source>
-        <translation>Konfigurera Spysend</translation>
+        <source>Configure Darksend</source>
+        <translation>Konfigurera Darksend</translation>
     </message>
     <message>
         <source>Basic Privacy</source>
@@ -758,48 +758,48 @@ Adress: %4
         <translation>Vänligen välj en integritetsnivå.</translation>
     </message>
     <message>
-        <source>Use 2 separate goldminenodes to mix funds up to 1000 ARCTIC</source>
-        <translation>Använd 2 enskilda goldminenoder för att mixa medel upp till 1000 ARCTIC</translation>
+        <source>Use 2 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Använd 2 enskilda goldminenoder för att mixa medel upp till 1000 ARC</translation>
     </message>
     <message>
-        <source>Use 8 separate goldminenodes to mix funds up to 1000 ARCTIC</source>
-        <translation>Använd 8 enskilda goldminenoder för att mixa medel upp till 1000 ARCTIC.</translation>
+        <source>Use 8 separate goldminenodes to mix funds up to 1000 ARC</source>
+        <translation>Använd 8 enskilda goldminenoder för att mixa medel upp till 1000 ARC.</translation>
     </message>
     <message>
         <source>Use 16 separate goldminenodes</source>
         <translation>Använd 16 enskilda goldminenoder</translation>
     </message>
     <message>
-        <source>This option is the quickest and will cost about ~0.025 ARCTIC to anonymize 1000 ARCTIC</source>
-        <translation>Detta alternativ är det snabbaste och kommer att kosta omkring ~0,025 ARCTIC för att anonymisera 1000 ARCTIC</translation>
+        <source>This option is the quickest and will cost about ~0.025 ARC to anonymize 1000 ARC</source>
+        <translation>Detta alternativ är det snabbaste och kommer att kosta omkring ~0,025 ARC för att anonymisera 1000 ARC</translation>
     </message>
     <message>
-        <source>This option is moderately fast and will cost about 0.05 ARCTIC to anonymize 1000 ARCTIC</source>
-        <translation>Detta alternativ är relativt snabbt och kommer att kosta omkring 0,05 ARCTIC för att anonymisera 1000 ARCTIC</translation>
+        <source>This option is moderately fast and will cost about 0.05 ARC to anonymize 1000 ARC</source>
+        <translation>Detta alternativ är relativt snabbt och kommer att kosta omkring 0,05 ARC för att anonymisera 1000 ARC</translation>
     </message>
     <message>
-        <source>0.1 ARCTIC per 1000 ARCTIC you anonymize.</source>
-        <translation>0,1 ARCTIC per 1000 ARCTIC du anonymiserar.</translation>
+        <source>0.1 ARC per 1000 ARC you anonymize.</source>
+        <translation>0,1 ARC per 1000 ARC du anonymiserar.</translation>
     </message>
     <message>
         <source>This is the slowest and most secure option. Using maximum anonymity will cost</source>
         <translation>Detta är det långsammaste och det säkraste alternativet. Användning av maximal anonymitet kommer att kosta</translation>
     </message>
     <message>
-        <source>Spysend Configuration</source>
-        <translation>Spysend-konfiguration</translation>
+        <source>Darksend Configuration</source>
+        <translation>Darksend-konfiguration</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arc's configuration screen.</source>
-        <translation>Spysend ställdes framgångsrikt om till grundläggande (%1 och 2 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm.</translation>
+        <source>Darksend was successfully set to basic (%1 and 2 rounds). You can change this at any time by opening Arc's configuration screen.</source>
+        <translation>Darksend ställdes framgångsrikt om till grundläggande (%1 och 2 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arc's configuration screen.</source>
-        <translation>Spysend ställdes framgångsrikt in på hög (%1 och 8 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm.</translation>
+        <source>Darksend was successfully set to high (%1 and 8 rounds). You can change this at any time by opening Arc's configuration screen.</source>
+        <translation>Darksend ställdes framgångsrikt in på hög (%1 och 8 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm.</translation>
     </message>
     <message>
-        <source>Spysend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arc's configuration screen.</source>
-        <translation>Spysend ställdes framgångsrikt in på maximal (%1 och 16 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm</translation>
+        <source>Darksend was successfully set to maximum (%1 and 16 rounds). You can change this at any time by opening Arc's configuration screen.</source>
+        <translation>Darksend ställdes framgångsrikt in på maximal (%1 och 16 omgångar). Du kan ändra detta när som helst genom att öppna Arc:s konfigurationsskärm</translation>
     </message>
 </context>
 <context>
@@ -1013,12 +1013,12 @@ Adress: %4
         <translation>(0 = auto, &lt;0 = lämna så många kärnor lediga)</translation>
     </message>
     <message>
-        <source>Spysend rounds to use</source>
-        <translation>Spysend-omgångar att använda</translation>
+        <source>Darksend rounds to use</source>
+        <translation>Darksend-omgångar att använda</translation>
     </message>
     <message>
-        <source>This amount acts as a threshold to turn off Spysend once it's reached.</source>
-        <translation>Denna mängd fungerar som en tröskel att stänga av Spysend då det har uppnåtts.</translation>
+        <source>This amount acts as a threshold to turn off Darksend once it's reached.</source>
+        <translation>Denna mängd fungerar som en tröskel att stänga av Darksend då det har uppnåtts.</translation>
     </message>
     <message>
         <source>Amount of Arc to keep anonymized</source>
@@ -1230,16 +1230,16 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Förlopp:</translation>
     </message>
     <message>
-        <source>Spysend Balance:</source>
-        <translation>Spysend-medel:</translation>
+        <source>Darksend Balance:</source>
+        <translation>Darksend-medel:</translation>
     </message>
     <message>
         <source>Amount and Rounds:</source>
         <translation>Mängd och omgångar:</translation>
     </message>
     <message>
-        <source>0 ARCTIC / 0 Rounds</source>
-        <translation>0 ARCTIC/0 omgångar</translation>
+        <source>0 ARC / 0 Rounds</source>
+        <translation>0 ARC/0 omgångar</translation>
     </message>
     <message>
         <source>Submitted Denom:</source>
@@ -1250,8 +1250,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>E/t</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>Darksend</source>
+        <translation>Darksend</translation>
     </message>
     <message>
         <source>Start/Stop Mixing</source>
@@ -1262,16 +1262,16 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>(Senaste meddelande)</translation>
     </message>
     <message>
-        <source>Try to manually submit a Spysend request.</source>
-        <translation>Försök att lämna in en Spysend-begäran manuellt.</translation>
+        <source>Try to manually submit a Darksend request.</source>
+        <translation>Försök att lämna in en Darksend-begäran manuellt.</translation>
     </message>
     <message>
         <source>Try Mix</source>
         <translation>Försök att mixa</translation>
     </message>
     <message>
-        <source>Reset the current status of Spysend (can interrupt Spysend if it's in the process of Mixing, which can cost you money!)</source>
-        <translation>Återställ den nuvarande Spysend-statusen (kan störa Spysend om den håller på att mixa vilket kan kosta dig pengar!)</translation>
+        <source>Reset the current status of Darksend (can interrupt Darksend if it's in the process of Mixing, which can cost you money!)</source>
+        <translation>Återställ den nuvarande Darksend-statusen (kan störa Darksend om den håller på att mixa vilket kan kosta dig pengar!)</translation>
     </message>
     <message>
         <source>Reset</source>
@@ -1286,12 +1286,12 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Inaktiverad</translation>
     </message>
     <message>
-        <source>Start Spysend Mixing</source>
-        <translation>Påbörja Spysend-mixning</translation>
+        <source>Start Darksend Mixing</source>
+        <translation>Påbörja Darksend-mixning</translation>
     </message>
     <message>
-        <source>Stop Spysend Mixing</source>
-        <translation>Stoppa Spysend-mixning</translation>
+        <source>Stop Darksend Mixing</source>
+        <translation>Stoppa Darksend-mixning</translation>
     </message>
     <message>
         <source>No inputs detected</source>
@@ -1302,9 +1302,9 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Aktiverad</translation>
     </message>
     <message>
-        <source>Last Spysend message:
+        <source>Last Darksend message:
 </source>
-        <translation>Senaste Spysend-meddelande:
+        <translation>Senaste Darksend-meddelande:
 
 
 
@@ -1316,16 +1316,16 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>E/t</translation>
     </message>
     <message>
-        <source>Spysend was successfully reset.</source>
-        <translation>Spysend återställdes framgångsrikt.</translation>
+        <source>Darksend was successfully reset.</source>
+        <translation>Darksend återställdes framgångsrikt.</translation>
     </message>
     <message>
-        <source>Spysend requires at least %1 to use.</source>
-        <translation>Spysend kräver åtminstone %1 att använda.</translation>
+        <source>Darksend requires at least %1 to use.</source>
+        <translation>Darksend kräver åtminstone %1 att använda.</translation>
     </message>
     <message>
-        <source>Wallet is locked and user declined to unlock. Disabling Spysend.</source>
-        <translation>Plånboken är låst och användaren avböjde upplåsning. Inaktiverar Spysend.</translation>
+        <source>Wallet is locked and user declined to unlock. Disabling Darksend.</source>
+        <translation>Plånboken är låst och användaren avböjde upplåsning. Inaktiverar Darksend.</translation>
     </message>
 </context>
 <context>
@@ -1791,8 +1791,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Lägg till &amp;mottagare</translation>
     </message>
     <message>
-        <source>Spysend</source>
-        <translation>Spysend</translation>
+        <source>Darksend</source>
+        <translation>Darksend</translation>
     </message>
     <message>
         <source>InstantX</source>
@@ -1839,8 +1839,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>anonyma medel</translation>
     </message>
     <message>
-        <source>(spysend requires this amount to be rounded up to the nearest %1).</source>
-        <translation>(spysend kräver att denna mängd avrundas uppåt till närmaste %1)</translation>
+        <source>(darksend requires this amount to be rounded up to the nearest %1).</source>
+        <translation>(darksend kräver att denna mängd avrundas uppåt till närmaste %1)</translation>
     </message>
     <message>
         <source>any available funds (not recommended)</source>
@@ -2140,8 +2140,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Bitcoin Core-utvecklarna</translation>
     </message>
     <message>
-        <source>The Advanced Technology Coin and Eternity Group</source>
-        <translation>Advanced Technology Coin-utvecklarna är EternityGroup</translation>
+        <source>The Arc Core developers</source>
+        <translation>Arc Core-utvecklarna</translation>
     </message>
     <message>
         <source>[testnet]</source>
@@ -2384,8 +2384,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Mottagen från</translation>
     </message>
     <message>
-        <source>Received via Spysend</source>
-        <translation>Mottagen genom Spysend</translation>
+        <source>Received via Darksend</source>
+        <translation>Mottagen genom Darksend</translation>
     </message>
     <message>
         <source>Sent to</source>
@@ -2400,24 +2400,24 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Utvunnen</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend-denomination</translation>
+        <source>Darksend Denominate</source>
+        <translation>Darksend-denomination</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
+        <source>Darksend Collateral Payment</source>
         <translation>Darskends-säkerhetsbetalning</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend-skapa säkerhetsinmatningar</translation>
+        <source>Darksend Make Collateral Inputs</source>
+        <translation>Darksend-skapa säkerhetsinmatningar</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend-skapa denominationer</translation>
+        <source>Darksend Create Denominations</source>
+        <translation>Darksend-skapa denominationer</translation>
     </message>
     <message>
-        <source>Spysent</source>
-        <translation>Spysent-(skickat)</translation>
+        <source>Darksent</source>
+        <translation>Darksent-(skickat)</translation>
     </message>
     <message>
         <source>(n/a)</source>
@@ -2483,23 +2483,23 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Skickad till</translation>
     </message>
     <message>
-        <source>Spysent</source>
-        <translation>Spysent-(skickat)</translation>
+        <source>Darksent</source>
+        <translation>Darksent-(skickat)</translation>
     </message>
     <message>
-        <source>Spysend Make Collateral Inputs</source>
-        <translation>Spysend-skapa säkerhetsinmatningar</translation>
+        <source>Darksend Make Collateral Inputs</source>
+        <translation>Darksend-skapa säkerhetsinmatningar</translation>
     </message>
     <message>
-        <source>Spysend Create Denominations</source>
-        <translation>Spysend-skapa denominationer</translation>
+        <source>Darksend Create Denominations</source>
+        <translation>Darksend-skapa denominationer</translation>
     </message>
     <message>
-        <source>Spysend Denominate</source>
-        <translation>Spysend-denomination</translation>
+        <source>Darksend Denominate</source>
+        <translation>Darksend-denomination</translation>
     </message>
     <message>
-        <source>Spysend Collateral Payment</source>
+        <source>Darksend Collateral Payment</source>
         <translation>Darskends-säkerhetsbetalning</translation>
     </message>
     <message>
@@ -2666,8 +2666,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Kan inte erhålla ett lås på datakatalog %s. Arc Core körs förmodligen redan.</translation>
     </message>
     <message>
-        <source>Spysend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
-        <translation>Spysend använder exakta denominationsmängder för att skicka medel, du kanske måste anonymisera fler mynt.</translation>
+        <source>Darksend uses exact denominated amounts to send funds, you might simply need to anonymize some more coins.</source>
+        <translation>Darksend använder exakta denominationsmängder för att skicka medel, du kanske måste anonymisera fler mynt.</translation>
     </message>
     <message>
         <source>Enter regression test mode, which uses a special chain in which blocks can be solved instantly.</source>
@@ -2722,12 +2722,12 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Det går inte att binda till %s till denna dator. Arc Core körs förmodligen redan.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend denominated funds for this transaction.</source>
-        <translation>Kunde inte hitta tillräckliga Spysend-denominationsmedel för denna transaktion.</translation>
+        <source>Unable to locate enough Darksend denominated funds for this transaction.</source>
+        <translation>Kunde inte hitta tillräckliga Darksend-denominationsmedel för denna transaktion.</translation>
     </message>
     <message>
-        <source>Unable to locate enough Spysend non-denominated funds for this transaction that are not equal 1000 ARCTIC.</source>
-        <translation>Kunde inte hitta tillräckliga Spysend-icke-denominationsmedel för denna transaktion som inte är likvärdiga 1000 ARCTIC.</translation>
+        <source>Unable to locate enough Darksend non-denominated funds for this transaction that are not equal 1000 ARC.</source>
+        <translation>Kunde inte hitta tillräckliga Darksend-icke-denominationsmedel för denna transaktion som inte är likvärdiga 1000 ARC.</translation>
     </message>
     <message>
         <source>Warning: -paytxfee is set very high! This is the transaction fee you will pay if you send a transaction.</source>
@@ -2826,8 +2826,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Korrumperad blockdatabas upptäcktes</translation>
     </message>
     <message>
-        <source>Spysend options:</source>
-        <translation>Spysend-alternativ:</translation>
+        <source>Darksend options:</source>
+        <translation>Darksend-alternativ:</translation>
     </message>
     <message>
         <source>Debugging/Testing options:</source>
@@ -2898,8 +2898,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Fel: Plånbok låst, kan inte skapa en transaktion!</translation>
     </message>
     <message>
-        <source>Error: You already have pending entries in the Spysend pool</source>
-        <translation>Fel: Du har redan väntande inmatningar i Spysend-poolen</translation>
+        <source>Error: You already have pending entries in the Darksend pool</source>
+        <translation>Fel: Du har redan väntande inmatningar i Darksend-poolen</translation>
     </message>
     <message>
         <source>Failed to listen on any port. Use -listen=0 if you want this.</source>
@@ -3002,8 +3002,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Bibehåll som mest &lt;n&gt; icke-anslutningsbara transaktioner i minnet (standardvärde: %u)</translation>
     </message>
     <message>
-        <source>Last Spysend was too recent.</source>
-        <translation>Senaste Spysend gjordes för inte alltför länge sedan.</translation>
+        <source>Last Darksend was too recent.</source>
+        <translation>Senaste Darksend gjordes för inte alltför länge sedan.</translation>
     </message>
     <message>
         <source>Loading addresses...</source>
@@ -3206,8 +3206,8 @@ https://www.transifex.com/projects/p/arc/</translation>
         <translation>Användarnamn för JSON-RPC-anslutningar</translation>
     </message>
     <message>
-        <source>Value more than Spysend pool maximum allows.</source>
-        <translation>Värdera mer än vad Spysends poolmaximum tillåter.</translation>
+        <source>Value more than Darksend pool maximum allows.</source>
+        <translation>Värdera mer än vad Darksends poolmaximum tillåter.</translation>
     </message>
     <message>
         <source>Verifying blocks...</source>
