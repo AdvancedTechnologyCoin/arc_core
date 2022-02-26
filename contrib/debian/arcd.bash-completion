@@ -1,1 +1,2 @@
 contrib/arcd.bash-completion	arcd
+contrib/arc-cli.bash-completion    arc-cli

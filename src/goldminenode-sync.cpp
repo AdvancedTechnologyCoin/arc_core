@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,6 +10,7 @@
 #include "goldminenode-sync.h"
 #include "goldminenodeman.h"
 #include "netfulfilledman.h"
+#include "netmessagemaker.h"
 #include "spork.h"
 #include "ui_interface.h"
 #include "util.h"
@@ -32,7 +33,7 @@ void CGoldminenodeSync::Reset()
     nTimeLastFailure = 0;
 }
 
-void CGoldminenodeSync::BumpAssetLastTime(std::string strFuncName)
+void CGoldminenodeSync::BumpAssetLastTime(const std::string& strFuncName)
 {
     if(IsSynced() || IsFailed()) return;
     nTimeLastBumped = GetTime();
@@ -61,12 +62,10 @@ void CGoldminenodeSync::SwitchToNextAsset(CConnman& connman)
             throw std::runtime_error("Can't switch to next asset from failed, should use Reset() first!");
             break;
         case(GOLDMINENODE_SYNC_INITIAL):
-            ClearFulfilledRequests(connman);
             nRequestedGoldminenodeAssets = GOLDMINENODE_SYNC_WAITING;
             LogPrintf("CGoldminenodeSync::SwitchToNextAsset -- Starting %s\n", GetAssetName());
             break;
         case(GOLDMINENODE_SYNC_WAITING):
-            ClearFulfilledRequests(connman);
             LogPrintf("CGoldminenodeSync::SwitchToNextAsset -- Completed %s in %llds\n", GetAssetName(), GetTime() - nTimeAssetSyncStarted);
             nRequestedGoldminenodeAssets = GOLDMINENODE_SYNC_LIST;
             LogPrintf("CGoldminenodeSync::SwitchToNextAsset -- Starting %s\n", GetAssetName());
@@ -82,10 +81,6 @@ void CGoldminenodeSync::SwitchToNextAsset(CConnman& connman)
             uiInterface.NotifyAdditionalDataSyncProgressChanged(1);
             //try to activate our goldminenode if possible
             activeGoldminenode.ManageState(connman);
-
-            // TODO: Find out whether we can just use LOCK instead of:
-            // TRY_LOCK(cs_vNodes, lockRecv);
-            // if(lockRecv) { ... }
 
             connman.ForEachNode(CConnman::AllNodes, [](CNode* pnode) {
                 netfulfilledman.AddFulfilledRequest(pnode->addr, "full-sync");
@@ -112,7 +107,7 @@ std::string CGoldminenodeSync::GetSyncStatus()
     }
 }
 
-void CGoldminenodeSync::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
+void CGoldminenodeSync::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv)
 {
     if (strCommand == NetMsgType::SYNCSTATUSCOUNT) { //Sync status count
 
@@ -127,40 +122,32 @@ void CGoldminenodeSync::ProcessMessage(CNode* pfrom, std::string& strCommand, CD
     }
 }
 
-void CGoldminenodeSync::ClearFulfilledRequests(CConnman& connman)
-{
-    // TODO: Find out whether we can just use LOCK instead of:
-    // TRY_LOCK(cs_vNodes, lockRecv);
-    // if(!lockRecv) return;
-
-    connman.ForEachNode(CConnman::AllNodes, [](CNode* pnode) {
-        netfulfilledman.RemoveFulfilledRequest(pnode->addr, "spork-sync");
-        netfulfilledman.RemoveFulfilledRequest(pnode->addr, "goldminenode-list-sync");
-        netfulfilledman.RemoveFulfilledRequest(pnode->addr, "goldminenode-payment-sync");
-        netfulfilledman.RemoveFulfilledRequest(pnode->addr, "full-sync");
-    });
-}
-
 void CGoldminenodeSync::ProcessTick(CConnman& connman)
 {
     static int nTick = 0;
-    if(nTick++ % GOLDMINENODE_SYNC_TICK_SECONDS != 0) return;
+    nTick++;
 
     // reset the sync process if the last call to this function was more than 60 minutes ago (client was in sleep mode)
     static int64_t nTimeLastProcess = GetTime();
     if(GetTime() - nTimeLastProcess > 60*60) {
-        LogPrintf("CGoldminenodeSync::HasSyncFailures -- WARNING: no actions for too long, restarting sync...\n");
+        LogPrintf("CGoldminenodeSync::ProcessTick -- WARNING: no actions for too long, restarting sync...\n");
         Reset();
         SwitchToNextAsset(connman);
         nTimeLastProcess = GetTime();
         return;
     }
+
+    if(GetTime() - nTimeLastProcess < GOLDMINENODE_SYNC_TICK_SECONDS) {
+        // too early, nothing to do here
+        return;
+    }
+
     nTimeLastProcess = GetTime();
 
     // reset sync status in case of any other sync failure
     if(IsFailed()) {
         if(nTimeLastFailure + (1*60) < GetTime()) { // 1 minute cooldown after failed sync
-            LogPrintf("CGoldminenodeSync::HasSyncFailures -- WARNING: failed to sync, trying again...\n");
+            LogPrintf("CGoldminenodeSync::ProcessTick -- WARNING: failed to sync, trying again...\n");
             Reset();
             SwitchToNextAsset(connman);
         }
@@ -169,7 +156,7 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
 
     // gradually request the rest of the votes after sync finished
     if(IsSynced()) {
-        std::vector<CNode*> vNodesCopy = connman.CopyNodeVector();
+        std::vector<CNode*> vNodesCopy = connman.CopyNodeVector(CConnman::FullyConnectedOnly);
         connman.ReleaseNodeVector(vNodesCopy);
         return;
     }
@@ -179,33 +166,19 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
     LogPrintf("CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d nRequestedGoldminenodeAttempt %d nSyncProgress %f\n", nTick, nRequestedGoldminenodeAssets, nRequestedGoldminenodeAttempt, nSyncProgress);
     uiInterface.NotifyAdditionalDataSyncProgressChanged(nSyncProgress);
 
-    std::vector<CNode*> vNodesCopy = connman.CopyNodeVector();
+    std::vector<CNode*> vNodesCopy = connman.CopyNodeVector(CConnman::FullyConnectedOnly);
 
-    BOOST_FOREACH(CNode* pnode, vNodesCopy)
+    for (auto& pnode : vNodesCopy)
     {
+        CNetMsgMaker msgMaker(pnode->GetSendVersion());
+
         // Don't try to sync any data from outbound "goldminenode" connections -
         // they are temporary and should be considered unreliable for a sync process.
         // Inbound connection this early is most likely a "goldminenode" connection
         // initiated from another node, so skip it too.
-        if(pnode->fGoldminenode || (fGoldmineNode && pnode->fInbound)) continue;
+        if(pnode->fGoldminenode || (fGoldminenodeMode && pnode->fInbound)) continue;
 
-        // QUICK MODE (REGTEST ONLY!)
-        if(Params().NetworkIDString() == CBaseChainParams::REGTEST)
-        {
-            if(nRequestedGoldminenodeAttempt <= 2) {
-                connman.PushMessageWithVersion(pnode, INIT_PROTO_VERSION, NetMsgType::GETSPORKS); //get current network sporks
-            } else if(nRequestedGoldminenodeAttempt < 4) {
-                mnodeman.DsegUpdate(pnode, connman);
-            } else if(nRequestedGoldminenodeAttempt < 6) {
-                int nMnCount = mnodeman.CountGoldminenodes();
-                connman.PushMessage(pnode, NetMsgType::GOLDMINENODEPAYMENTSYNC, nMnCount); //sync payment votes
-            } else {
-                nRequestedGoldminenodeAssets = GOLDMINENODE_SYNC_FINISHED;
-            }
-            nRequestedGoldminenodeAttempt++;
-            connman.ReleaseNodeVector(vNodesCopy);
-            return;
-        }
+        
 
         // NORMAL NETWORK MODE - TESTNET/MAINNET
         {
@@ -213,7 +186,7 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
                 // We already fully synced from this node recently,
                 // disconnect to free this connection slot for another peer.
                 pnode->fDisconnect = true;
-                LogPrintf("CGoldminenodeSync::ProcessTick -- disconnecting from recently synced peer %d\n", pnode->id);
+                LogPrintf("CGoldminenodeSync::ProcessTick -- disconnecting from recently synced peer=%d\n", pnode->id);
                 continue;
             }
 
@@ -223,8 +196,8 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
                 // always get sporks first, only request once from each peer
                 netfulfilledman.AddFulfilledRequest(pnode->addr, "spork-sync");
                 // get current network sporks
-                connman.PushMessageWithVersion(pnode, INIT_PROTO_VERSION, NetMsgType::GETSPORKS);
-                LogPrintf("CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d -- requesting sporks from peer %d\n", nTick, nRequestedGoldminenodeAssets, pnode->id);
+                connman.PushMessage(pnode, msgMaker.Make(NetMsgType::GETSPORKS));
+                LogPrintf("CGoldminenodeSync::ProcessTick -- nTick %d nRequestedGoldminenodeAssets %d -- requesting sporks from peer=%d\n", nTick, nRequestedGoldminenodeAssets, pnode->id);
             }
 
             // INITIAL TIMEOUT
@@ -258,6 +231,12 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
                         return;
                     }
                     SwitchToNextAsset(connman);
+                    connman.ReleaseNodeVector(vNodesCopy);
+                    return;
+                }
+
+                // request from three peers max
+                if (nRequestedGoldminenodeAttempt > 2) {
                     connman.ReleaseNodeVector(vNodesCopy);
                     return;
                 }
@@ -306,6 +285,12 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
                     return;
                 }
 
+                // request from three peers max
+                if (nRequestedGoldminenodeAttempt > 2) {
+                    connman.ReleaseNodeVector(vNodesCopy);
+                    return;
+                }
+
                 // only request once from each peer
                 if(netfulfilledman.HasFulfilledRequest(pnode->addr, "goldminenode-payment-sync")) continue;
                 netfulfilledman.AddFulfilledRequest(pnode->addr, "goldminenode-payment-sync");
@@ -314,7 +299,12 @@ void CGoldminenodeSync::ProcessTick(CConnman& connman)
                 nRequestedGoldminenodeAttempt++;
 
                 // ask node for all payment votes it has (new nodes will only return votes for future payments)
-                connman.PushMessage(pnode, NetMsgType::GOLDMINENODEPAYMENTSYNC, mnpayments.GetStorageLimit());
+                //sync payment votes
+            //    if(pnode->nVersion == 70209) {
+                    connman.PushMessage(pnode, msgMaker.Make(NetMsgType::GOLDMINENODEPAYMENTSYNC, mnpayments.GetStorageLimit()));
+       //         } else {
+          //          connman.PushMessage(pnode, msgMaker.Make(NetMsgType::GOLDMINENODEPAYMENTSYNC));
+           //     }
                 // ask node for missing pieces only (old nodes will not be asked)
                 mnpayments.RequestLowDataPaymentBlocks(pnode, connman);
 
@@ -391,6 +381,11 @@ void CGoldminenodeSync::UpdatedBlockTip(const CBlockIndex *pindexNew, bool fInit
                 pindexNew->nHeight, pindexBestHeader->nHeight, fInitialDownload, fReachedBestHeader);
 
     if (!IsBlockchainSynced() && fReachedBestHeader) {
+        if (fLiteMode) {
+            // nothing to do in lite mode, just finish the process immediately
+            nRequestedGoldminenodeAssets = GOLDMINENODE_SYNC_FINISHED;
+            return;
+        }
         // Reached best header while being in initial mode.
         // We must be at the tip already, let's move to the next asset.
         SwitchToNextAsset(connman);

@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,8 +16,8 @@ class CConnman;
 static const int GOLDMINENODE_CHECK_SECONDS               =   5;
 static const int GOLDMINENODE_MIN_MNB_SECONDS             =   5 * 60;
 static const int GOLDMINENODE_MIN_MNP_SECONDS             =  10 * 60;
-static const int GOLDMINENODE_EXPIRATION_SECONDS          =  65 * 60;
-static const int GOLDMINENODE_WATCHDOG_MAX_SECONDS        = 120 * 60;
+static const int GOLDMINENODE_SENTINEL_PING_MAX_SECONDS   =  60 * 60;
+static const int GOLDMINENODE_EXPIRATION_SECONDS          = 120 * 60;
 static const int GOLDMINENODE_NEW_START_REQUIRED_SECONDS  = 180 * 60;
 
 static const int GOLDMINENODE_POSE_BAN_MAX_SCORE          = 5;
@@ -26,19 +26,22 @@ static const int GOLDMINENODE_POSE_BAN_MAX_SCORE          = 5;
 // The Goldminenode Ping Class : Contains a different serialize method for sending pings from goldminenodes throughout the network
 //
 
-// sentinel version before sentinel ping implementation
+// sentinel version before implementation of nSentinelVersion in CGoldminenodePing
 #define DEFAULT_SENTINEL_VERSION 0x010001
+// daemon version before implementation of nDaemonVersion in CGoldminenodePing
+#define DEFAULT_DAEMON_VERSION 120200
 
 class CGoldminenodePing
 {
 public:
-    CTxIn vin{};
+    COutPoint goldminenodeOutpoint{};
     uint256 blockHash{};
     int64_t sigTime{}; //mnb message times
     std::vector<unsigned char> vchSig{};
-    bool fSentinelIsCurrent = false; // true if last sentinel ping was actual
+    bool fSentinelIsCurrent = false; // true if last sentinel ping was current
     // MSB is always 0, other 3 bits corresponds to x.x.x version scheme
     uint32_t nSentinelVersion{DEFAULT_SENTINEL_VERSION};
+    uint32_t nDaemonVersion{DEFAULT_DAEMON_VERSION};
 
     CGoldminenodePing() = default;
 
@@ -47,46 +50,71 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(vin);
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        int nVersion = s.GetVersion();
+        if (nVersion == 70209 && (s.GetType() & SER_NETWORK)) {
+            // converting from/to old format
+            CTxIn txin{};
+            if (ser_action.ForRead()) {
+                READWRITE(txin);
+                goldminenodeOutpoint = txin.prevout;
+            } else {
+                txin = CTxIn(goldminenodeOutpoint);
+                READWRITE(txin);
+            }
+        } else {
+            // using new format directly
+            READWRITE(goldminenodeOutpoint);
+        }
         READWRITE(blockHash);
         READWRITE(sigTime);
-        READWRITE(vchSig);
-            if(ser_action.ForRead() && (s.size() == 0))
-            {
-                fSentinelIsCurrent = false;
-                nSentinelVersion = DEFAULT_SENTINEL_VERSION;
-                return;
-            }
-            READWRITE(fSentinelIsCurrent);
-            READWRITE(nSentinelVersion);
-        
+        if (!(s.GetType() & SER_GETHASH)) {
+            READWRITE(vchSig);
+        }
+        if(ser_action.ForRead() && s.size() == 0) {
+            // TODO: drop this after migration to 70209
+            fSentinelIsCurrent = false;
+            nSentinelVersion = DEFAULT_SENTINEL_VERSION;
+            nDaemonVersion = DEFAULT_DAEMON_VERSION;
+            return;
+        }
+        READWRITE(fSentinelIsCurrent);
+        READWRITE(nSentinelVersion);
+        if(ser_action.ForRead() && s.size() == 0) {
+            // TODO: drop this after migration to 70209
+            nDaemonVersion = DEFAULT_DAEMON_VERSION;
+            return;
+        }
+        if (!(nVersion == 70209 && (s.GetType() & SER_NETWORK))) {
+            READWRITE(nDaemonVersion);
+        }
     }
 
-    uint256 GetHash() const
-    {
-        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        ss << vin;
-        ss << sigTime;
-        return ss.GetHash();
-    }
+    uint256 GetHash() const;
+    uint256 GetSignatureHash() const;
 
     bool IsExpired() const { return GetAdjustedTime() - sigTime > GOLDMINENODE_NEW_START_REQUIRED_SECONDS; }
 
     bool Sign(const CKey& keyGoldminenode, const CPubKey& pubKeyGoldminenode);
-    bool CheckSignature(CPubKey& pubKeyGoldminenode, int &nDos);
+    bool CheckSignature(const CPubKey& pubKeyGoldminenode, int &nDos) const;
     bool SimpleCheck(int& nDos);
     bool CheckAndUpdate(CGoldminenode* pmn, bool fFromNewBroadcast, int& nDos, CConnman& connman);
     void Relay(CConnman& connman);
+
+    explicit operator bool() const;
 };
 
 inline bool operator==(const CGoldminenodePing& a, const CGoldminenodePing& b)
 {
-    return a.vin == b.vin && a.blockHash == b.blockHash;
+    return a.goldminenodeOutpoint == b.goldminenodeOutpoint && a.blockHash == b.blockHash;
 }
 inline bool operator!=(const CGoldminenodePing& a, const CGoldminenodePing& b)
 {
     return !(a == b);
+}
+inline CGoldminenodePing::operator bool() const
+{
+    return *this != CGoldminenodePing();
 }
 
 struct goldminenode_info_t
@@ -100,20 +128,18 @@ struct goldminenode_info_t
         nActiveState{activeState}, nProtocolVersion{protoVer}, sigTime{sTime} {}
 
     goldminenode_info_t(int activeState, int protoVer, int64_t sTime,
-                      COutPoint const& outpoint, CService const& addr,
-                      CPubKey const& pkCollAddr, CPubKey const& pkMN,
-                      int64_t tWatchdogV = 0) :
+                      COutPoint const& outpnt, CService const& addr,
+                      CPubKey const& pkCollAddr, CPubKey const& pkMN) :
         nActiveState{activeState}, nProtocolVersion{protoVer}, sigTime{sTime},
-        vin{outpoint}, addr{addr},
-        pubKeyCollateralAddress{pkCollAddr}, pubKeyGoldminenode{pkMN},
-        nTimeLastWatchdogVote{tWatchdogV} {}
+        outpoint{outpnt}, addr{addr},
+        pubKeyCollateralAddress{pkCollAddr}, pubKeyGoldminenode{pkMN} {}
 
     int nActiveState = 0;
     int nProtocolVersion = 0;
     int64_t sigTime = 0; //mnb message time
     int64_t enableTime = 0; //mnb message time
 
-    CTxIn vin{};
+    COutPoint outpoint{};
     CService addr{};
     CPubKey pubKeyCollateralAddress{};
     CPubKey pubKeyGoldminenode{};
@@ -143,7 +169,7 @@ public:
         GOLDMINENODE_EXPIRED,
         GOLDMINENODE_OUTPOINT_SPENT,
         GOLDMINENODE_UPDATE_REQUIRED,
-        GOLDMINENODE_WATCHDOG_EXPIRED,
+        GOLDMINENODE_SENTINEL_PING_EXPIRED,
         GOLDMINENODE_NEW_START_REQUIRED,
         GOLDMINENODE_POSE_BAN
     };
@@ -151,7 +177,8 @@ public:
     enum CollateralStatus {
         COLLATERAL_OK,
         COLLATERAL_UTXO_NOT_FOUND,
-        COLLATERAL_INVALID_AMOUNT
+        COLLATERAL_INVALID_AMOUNT,
+        COLLATERAL_INVALID_PUBKEY
     };
 
 
@@ -176,18 +203,30 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
+    inline void SerializationOp(Stream& s, Operation ser_action) {
         LOCK(cs);
-        READWRITE(vin);
+        int nVersion = s.GetVersion();
+        if (nVersion == 70209 && (s.GetType() & SER_NETWORK)) {
+            // converting from/to old format
+            CTxIn txin{};
+            if (ser_action.ForRead()) {
+                READWRITE(txin);
+                outpoint = txin.prevout;
+            } else {
+                txin = CTxIn(outpoint);
+                READWRITE(txin);
+            }
+        } else {
+            // using new format directly
+            READWRITE(outpoint);
+        }
         READWRITE(addr);
         READWRITE(pubKeyCollateralAddress);
         READWRITE(pubKeyGoldminenode);
         READWRITE(lastPing);
         READWRITE(vchSig);
         READWRITE(sigTime);
-        if(nProtocolVersion >= 70208) {
-        READWRITE(enableTime);	
-        }
+        READWRITE(enableTime);
         READWRITE(nLastDsq);
         READWRITE(nTimeLastChecked);
         READWRITE(nTimeLastPaid);
@@ -204,19 +243,19 @@ public:
     }
 
     // CALCULATE A RANK AGAINST OF GIVEN BLOCK
-    arith_uint256 CalculateScore(const uint256& blockHash);
+    arith_uint256 CalculateScore(const uint256& blockHash) const;
 
     bool UpdateFromNewBroadcast(CGoldminenodeBroadcast& mnb, CConnman& connman);
 
-    static CollateralStatus CheckCollateral(const COutPoint& outpoint);
-    static CollateralStatus CheckCollateral(const COutPoint& outpoint, int& nHeightRet);
+    static CollateralStatus CheckCollateral(const COutPoint& outpoint, const CPubKey& pubkey);
+    static CollateralStatus CheckCollateral(const COutPoint& outpoint, const CPubKey& pubkey, int& nHeightRet);
     void Check(bool fForce = false);
 
     bool IsBroadcastedWithin(int nSeconds) { return GetAdjustedTime() - sigTime < nSeconds; }
 
     bool IsPingedWithin(int nSeconds, int64_t nTimeToCheckAt = -1)
     {
-        if(lastPing == CGoldminenodePing()) return false;
+        if(!lastPing) return false;
 
         if(nTimeToCheckAt == -1) {
             nTimeToCheckAt = GetAdjustedTime();
@@ -224,40 +263,37 @@ public:
         return nTimeToCheckAt - lastPing.sigTime < nSeconds;
     }
 
-    bool IsEnabled() { return nActiveState == GOLDMINENODE_ENABLED; }
-    bool IsPreEnabled() { return nActiveState == GOLDMINENODE_PRE_ENABLED; }
-    bool IsPoSeBanned() { return nActiveState == GOLDMINENODE_POSE_BAN; }
+    bool IsEnabled() const { return nActiveState == GOLDMINENODE_ENABLED; }
+    bool IsPreEnabled() const { return nActiveState == GOLDMINENODE_PRE_ENABLED; }
+    bool IsPoSeBanned() const { return nActiveState == GOLDMINENODE_POSE_BAN; }
     // NOTE: this one relies on nPoSeBanScore, not on nActiveState as everything else here
-    bool IsPoSeVerified() { return nPoSeBanScore <= -GOLDMINENODE_POSE_BAN_MAX_SCORE; }
-    bool IsExpired() { return nActiveState == GOLDMINENODE_EXPIRED; }
-    bool IsOutpointSpent() { return nActiveState == GOLDMINENODE_OUTPOINT_SPENT; }
-    bool IsUpdateRequired() { return nActiveState == GOLDMINENODE_UPDATE_REQUIRED; }
-    bool IsWatchdogExpired() { return nActiveState == GOLDMINENODE_WATCHDOG_EXPIRED; }
-    bool IsNewStartRequired() { return nActiveState == GOLDMINENODE_NEW_START_REQUIRED; }
+    bool IsPoSeVerified() const { return nPoSeBanScore <= -GOLDMINENODE_POSE_BAN_MAX_SCORE; }
+    bool IsExpired() const { return nActiveState == GOLDMINENODE_EXPIRED; }
+    bool IsOutpointSpent() const { return nActiveState == GOLDMINENODE_OUTPOINT_SPENT; }
+    bool IsUpdateRequired() const { return nActiveState == GOLDMINENODE_UPDATE_REQUIRED; }
+    bool IsSentinelPingExpired() const { return nActiveState == GOLDMINENODE_SENTINEL_PING_EXPIRED; }
+    bool IsNewStartRequired() const { return nActiveState == GOLDMINENODE_NEW_START_REQUIRED; }
 
     static bool IsValidStateForAutoStart(int nActiveStateIn)
     {
         return  nActiveStateIn == GOLDMINENODE_ENABLED ||
                 nActiveStateIn == GOLDMINENODE_PRE_ENABLED ||
                 nActiveStateIn == GOLDMINENODE_EXPIRED ||
-                nActiveStateIn == GOLDMINENODE_WATCHDOG_EXPIRED;
+                nActiveStateIn == GOLDMINENODE_SENTINEL_PING_EXPIRED;
     }
 
-    bool IsValidForPayment()
+    bool IsValidForPayment() const
     {
         if(nActiveState == GOLDMINENODE_ENABLED) {
             return true;
         }
         if(!sporkManager.IsSporkActive(SPORK_14_REQUIRE_SENTINEL_FLAG) &&
-           (nActiveState == GOLDMINENODE_WATCHDOG_EXPIRED)) {
+           (nActiveState == GOLDMINENODE_SENTINEL_PING_EXPIRED)) {
             return true;
         }
 
         return false;
     }
-
-    /// Is the input associated with collateral public key? (and there is 10000 ARC - checking if valid goldminenode)
-    bool IsInputAssociatedWithPubkey();
 
     bool IsValidNetAddr();
     static bool IsValidNetAddr(CService addrIn);
@@ -266,14 +302,14 @@ public:
     void DecreasePoSeBanScore() { if(nPoSeBanScore > -GOLDMINENODE_POSE_BAN_MAX_SCORE) nPoSeBanScore--; }
     void PoSeBan() { nPoSeBanScore = GOLDMINENODE_POSE_BAN_MAX_SCORE; }
 
-    goldminenode_info_t GetInfo();
+    goldminenode_info_t GetInfo() const;
 
     static std::string StateToString(int nStateIn);
     std::string GetStateString() const;
     std::string GetStatus() const;
 
-    int GetLastPaidTime() { return nTimeLastPaid; }
-    int GetLastPaidBlock() { return nBlockLastPaid; }
+    int GetLastPaidTime() const { return nTimeLastPaid; }
+    int GetLastPaidBlock() const { return nBlockLastPaid; }
     void UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToScanBack);
 
     void UpdateWatchdogVoteTime(uint64_t nVoteTime = 0);
@@ -296,11 +332,11 @@ public:
 
 inline bool operator==(const CGoldminenode& a, const CGoldminenode& b)
 {
-    return a.vin == b.vin;
+    return a.outpoint == b.outpoint;
 }
 inline bool operator!=(const CGoldminenode& a, const CGoldminenode& b)
 {
-    return !(a.vin == b.vin);
+    return !(a.outpoint == b.outpoint);
 }
 
 
@@ -322,54 +358,57 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(vin);
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        int nVersion = s.GetVersion();
+        if (nVersion == 70209 && (s.GetType() & SER_NETWORK)) {
+            // converting from/to old format
+            CTxIn txin{};
+            if (ser_action.ForRead()) {
+                READWRITE(txin);
+                outpoint = txin.prevout;
+            } else {
+                txin = CTxIn(outpoint);
+                READWRITE(txin);
+            }
+        } else {
+            // using new format directly
+            READWRITE(outpoint);
+        }
         READWRITE(addr);
         READWRITE(pubKeyCollateralAddress);
         READWRITE(pubKeyGoldminenode);
-        READWRITE(vchSig);
+        if (!(s.GetType() & SER_GETHASH)) {
+            READWRITE(vchSig);
+        }
         READWRITE(sigTime);
-		
-			if(nProtocolVersion >= 70208) {
-				READWRITE(enableTime);
-			}
-        
+        READWRITE(enableTime);
         READWRITE(nProtocolVersion);
-        READWRITE(lastPing);
+        if (!(s.GetType() & SER_GETHASH)) {
+            READWRITE(lastPing);
+        }
     }
 
-    uint256 GetHash() const
-    {
-        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        ss << vin;
-        ss << pubKeyCollateralAddress;
-        ss << sigTime;
-		
-			if(nProtocolVersion >= 70208) {
-			ss << enableTime;
-			}
-		
-        return ss.GetHash();
-    }
+    uint256 GetHash() const;
+    uint256 GetSignatureHash() const;
 
     /// Create Goldminenode broadcast, needs to be relayed manually after that
     static bool Create(const COutPoint& outpoint, const CService& service, const CKey& keyCollateralAddressNew, const CPubKey& pubKeyCollateralAddressNew, const CKey& keyGoldminenodeNew, const CPubKey& pubKeyGoldminenodeNew, std::string &strErrorRet, CGoldminenodeBroadcast &mnbRet);
-    static bool Create(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CGoldminenodeBroadcast &mnbRet, bool fOffline = false);
+    static bool Create(const std::string& strService, const std::string& strKey, const std::string& strTxHash, const std::string& strOutputIndex, std::string& strErrorRet, CGoldminenodeBroadcast &mnbRet, bool fOffline = false);
 
     bool SimpleCheck(int& nDos);
     bool Update(CGoldminenode* pmn, int& nDos, CConnman& connman);
     bool CheckOutpoint(int& nDos);
 
     bool Sign(const CKey& keyCollateralAddress);
-    bool CheckSignature(int& nDos);
-    void Relay(CConnman& connman);
+    bool CheckSignature(int& nDos) const;
+    void Relay(CConnman& connman) const;
 };
 
 class CGoldminenodeVerification
 {
 public:
-    CTxIn vin1{};
-    CTxIn vin2{};
+    COutPoint goldminenodeOutpoint1{};
+    COutPoint goldminenodeOutpoint2{};
     CService addr{};
     int nonce{};
     int nBlockHeight{};
@@ -387,9 +426,28 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(vin1);
-        READWRITE(vin2);
+    inline void SerializationOp(Stream& s, Operation ser_action) {
+        int nVersion = s.GetVersion();
+        if (nVersion == 70209 && (s.GetType() & SER_NETWORK)) {
+            // converting from/to old format
+            CTxIn txin1{};
+            CTxIn txin2{};
+            if (ser_action.ForRead()) {
+                READWRITE(txin1);
+                READWRITE(txin2);
+                goldminenodeOutpoint1 = txin1.prevout;
+                goldminenodeOutpoint2 = txin2.prevout;
+            } else {
+                txin1 = CTxIn(goldminenodeOutpoint1);
+                txin2 = CTxIn(goldminenodeOutpoint2);
+                READWRITE(txin1);
+                READWRITE(txin2);
+            }
+        } else {
+            // using new format directly
+            READWRITE(goldminenodeOutpoint1);
+            READWRITE(goldminenodeOutpoint2);
+        }
         READWRITE(addr);
         READWRITE(nonce);
         READWRITE(nBlockHeight);
@@ -399,12 +457,39 @@ public:
 
     uint256 GetHash() const
     {
+        // Note: doesn't match serialization
+
         CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        ss << vin1;
-        ss << vin2;
+        // adding dummy values here to match old hashing format
+        ss << goldminenodeOutpoint1 << uint8_t{} << 0xffffffff;
+        ss << goldminenodeOutpoint2 << uint8_t{} << 0xffffffff;
         ss << addr;
         ss << nonce;
         ss << nBlockHeight;
+        return ss.GetHash();
+    }
+
+    uint256 GetSignatureHash1(const uint256& blockHash) const
+    {
+        // Note: doesn't match serialization
+
+        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
+        ss << addr;
+        ss << nonce;
+        ss << blockHash;
+        return ss.GetHash();
+    }
+
+    uint256 GetSignatureHash2(const uint256& blockHash) const
+    {
+        // Note: doesn't match serialization
+
+        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
+        ss << goldminenodeOutpoint1;
+        ss << goldminenodeOutpoint2;
+        ss << addr;
+        ss << nonce;
+        ss << blockHash;
         return ss.GetHash();
     }
 

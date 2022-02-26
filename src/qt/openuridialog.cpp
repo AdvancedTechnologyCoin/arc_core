@@ -1,5 +1,5 @@
-// Copyright (c) 2011-2013 The Bitcoin Core developers
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2011-2014 The Bitcoin Core developers
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 

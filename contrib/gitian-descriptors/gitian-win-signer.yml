@@ -1,20 +1,33 @@
 ---
-name: "bitcoin-win-signer"
+name: "arc-win-signer"
 suites:
 - "trusty"
 architectures:
 - "amd64"
 packages:
-- "libssl-dev"
+- "curl"
+- "g++"
+- "git-core"
+- "pkg-config"
 - "autoconf"
-reference_datetime: "2017-01-01 00:00:00"
+- "libtool"
+- "automake"
+- "faketime"
+- "bsdmainutils"
+- "mingw-w64"
+- "g++-mingw-w64"
+- "nsis"
+- "zip"
+- "ca-certificates"
+- "python"
+- "libssl-dev"
 remotes:
-- "url": "https://github.com/AdvancedTechnologyCoin/arc-detached-sigs.git"
-  "dir": "signature"
+- "url": "https://github.com/AdvancedTechnologyCoin/arc_core-detached-sigs.git"
+#  "dir": "signature"
 files:
 - "osslsigncode-1.7.1.tar.gz"
 - "osslsigncode-Backports-to-1.7.1.patch"
-- "bitcoin-win-unsigned.tar.gz"
+- "arc-win-unsigned.tar.gz"
 script: |
   BUILD_DIR=`pwd`
   SIGDIR=${BUILD_DIR}/signature/win
@@ -24,7 +37,7 @@ script: |
   echo "a8c4e9cafba922f89de0df1f2152e7be286aba73f78505169bc351a7938dd911  osslsigncode-Backports-to-1.7.1.patch" | sha256sum -c
 
   mkdir -p ${UNSIGNED_DIR}
-  tar -C ${UNSIGNED_DIR} -xf bitcoin-win-unsigned.tar.gz
+  tar -C ${UNSIGNED_DIR} -xf arc-win-unsigned.tar.gz
 
   tar xf osslsigncode-1.7.1.tar.gz
   cd osslsigncode-1.7.1

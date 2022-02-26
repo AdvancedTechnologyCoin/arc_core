@@ -1,14 +1,13 @@
 ---
 name: "arc-dmg-signer"
 suites:
-- "trusty"
+- "xenial"
 architectures:
 - "amd64"
 packages:
 - "faketime"
-reference_datetime: "2019-11-01 00:00:00"
 remotes:
-- "url": "https://github.com/AdvancedTechnologyCoin/arc"
+- "url": "https://github.com/AdvancedTechnologyCoin/arc_core-detached-sigs.git"
   "dir": "signature"
 files:
 - "arc-osx-unsigned.tar.gz"
@@ -32,6 +31,7 @@ script: |
   SIGNED=arc-osx-signed.dmg
 
   tar -xf ${UNSIGNED}
+  OSX_VOLNAME="$(cat osx_volname)"
   ./detached-sig-apply.sh ${UNSIGNED} signature/osx
-  ${WRAP_DIR}/genisoimage -no-cache-inodes -D -l -probe -V "Arc-Core" -no-pad -r -dir-mode 0755 -apple -o uncompressed.dmg signed-app
+  ${WRAP_DIR}/genisoimage -no-cache-inodes -D -l -probe -V "${OSX_VOLNAME}" -no-pad -r -dir-mode 0755 -apple -o uncompressed.dmg signed-app
   ${WRAP_DIR}/dmg dmg uncompressed.dmg ${OUTDIR}/${SIGNED}

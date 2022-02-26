@@ -1,86 +1,49 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "activegoldminenode.h"
 #include "addrman.h"
+#include "alert.h"
+#include "clientversion.h"
 #include "goldminenode-payments.h"
 #include "goldminenode-sync.h"
 #include "goldminenodeman.h"
 #include "messagesigner.h"
 #include "netfulfilledman.h"
+#include "netmessagemaker.h"
 #ifdef ENABLE_WALLET
 #include "privatesend-client.h"
 #endif // ENABLE_WALLET
 #include "script/standard.h"
+#include "ui_interface.h"
 #include "util.h"
+#include "warnings.h"
 
 /** Goldminenode manager */
 CGoldminenodeMan mnodeman;
 
-const std::string CGoldminenodeMan::SERIALIZATION_VERSION_STRING = "CGoldminenodeMan-Version-7";
+const std::string CGoldminenodeMan::SERIALIZATION_VERSION_STRING = "CGoldminenodeMan-Version-8";
+const int CGoldminenodeMan::LAST_PAID_SCAN_BLOCKS = 100;
 
 struct CompareLastPaidBlock
 {
-    bool operator()(const std::pair<int, CGoldminenode*>& t1,
-                    const std::pair<int, CGoldminenode*>& t2) const
+    bool operator()(const std::pair<int, const CGoldminenode*>& t1,
+                    const std::pair<int, const CGoldminenode*>& t2) const
     {
-        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->vin < t2.second->vin);
+        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->outpoint < t2.second->outpoint);
     }
 };
 
 struct CompareScoreMN
 {
-    bool operator()(const std::pair<arith_uint256, CGoldminenode*>& t1,
-                    const std::pair<arith_uint256, CGoldminenode*>& t2) const
+    bool operator()(const std::pair<arith_uint256, const CGoldminenode*>& t1,
+                    const std::pair<arith_uint256, const CGoldminenode*>& t2) const
     {
-        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->vin < t2.second->vin);
+        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->outpoint < t2.second->outpoint);
     }
 };
 
-CGoldminenodeIndex::CGoldminenodeIndex()
-    : nSize(0),
-      mapIndex(),
-      mapReverseIndex()
-{}
-
-bool CGoldminenodeIndex::Get(int nIndex, CTxIn& vinGoldminenode) const
-{
-    rindex_m_cit it = mapReverseIndex.find(nIndex);
-    if(it == mapReverseIndex.end()) {
-        return false;
-    }
-    vinGoldminenode = it->second;
-    return true;
-}
-
-int CGoldminenodeIndex::GetGoldminenodeIndex(const CTxIn& vinGoldminenode) const
-{
-    index_m_cit it = mapIndex.find(vinGoldminenode);
-    if(it == mapIndex.end()) {
-        return -1;
-    }
-    return it->second;
-}
-
-void CGoldminenodeIndex::AddGoldminenodeVIN(const CTxIn& vinGoldminenode)
-{
-    index_m_it it = mapIndex.find(vinGoldminenode);
-    if(it != mapIndex.end()) {
-        return;
-    }
-    int nNextIndex = nSize;
-    mapIndex[vinGoldminenode] = nNextIndex;
-    mapReverseIndex[nNextIndex] = vinGoldminenode;
-    ++nSize;
-}
-
-void CGoldminenodeIndex::Clear()
-{
-    mapIndex.clear();
-    mapReverseIndex.clear();
-    nSize = 0;
-}
 struct CompareByAddr
 
 {
@@ -91,39 +54,32 @@ struct CompareByAddr
     }
 };
 
-void CGoldminenodeIndex::RebuildIndex()
-{
-    nSize = mapIndex.size();
-    for(index_m_it it = mapIndex.begin(); it != mapIndex.end(); ++it) {
-        mapReverseIndex[it->second] = it->first;
-    }
-}
-CGoldminenodeMan::CGoldminenodeMan()
-: cs(),
-  mapGoldminenodes(),
-  mAskedUsForGoldminenodeList(),
-  mWeAskedForGoldminenodeList(),
-  mWeAskedForGoldminenodeListEntry(),
-  mWeAskedForVerification(),
-  mMnbRecoveryRequests(),
-  mMnbRecoveryGoodReplies(),
-  listScheduledMnbRequestConnections(),
-  fGoldminenodesAdded(false),
-  fGoldminenodesRemoved(false),
-  nLastWatchdogVoteTime(0),
-  mapSeenGoldminenodeBroadcast(),
-  mapSeenGoldminenodePing(),
-  nDsqCount(0)
+CGoldminenodeMan::CGoldminenodeMan():
+    cs(),
+    mapGoldminenodes(),
+    mAskedUsForGoldminenodeList(),
+    mWeAskedForGoldminenodeList(),
+    mWeAskedForGoldminenodeListEntry(),
+    mWeAskedForVerification(),
+    mMnbRecoveryRequests(),
+    mMnbRecoveryGoodReplies(),
+    listScheduledMnbRequestConnections(),
+    fGoldminenodesAdded(false),
+    fGoldminenodesRemoved(false),
+    nLastSentinelPingTime(0),
+    mapSeenGoldminenodeBroadcast(),
+    mapSeenGoldminenodePing(),
+    nDsqCount(0)
 {}
 
 bool CGoldminenodeMan::Add(CGoldminenode &mn)
 {
     LOCK(cs);
 
-    if (Has(mn.vin.prevout)) return false;
+    if (Has(mn.outpoint)) return false;
 
-    LogPrint("goldminenode", "CGoldminenodeMan::Add -- Adding new Goldminenode: addr=%s, %i now, enableTime = %ld\n", mn.addr.ToString(), size() + 1, mn.enableTime);
-    mapGoldminenodes[mn.vin.prevout] = mn;
+    LogPrint("goldminenode", "CGoldminenodeMan::Add -- Adding new Goldminenode: addr=%s, %i now\n", mn.addr.ToString(), size() + 1);
+    mapGoldminenodes[mn.outpoint] = mn;
     fGoldminenodesAdded = true;
     return true;
 }
@@ -132,29 +88,35 @@ void CGoldminenodeMan::AskForMN(CNode* pnode, const COutPoint& outpoint, CConnma
 {
     if(!pnode) return;
 
+    CNetMsgMaker msgMaker(pnode->GetSendVersion());
     LOCK(cs);
 
-    std::map<COutPoint, std::map<CNetAddr, int64_t> >::iterator it1 = mWeAskedForGoldminenodeListEntry.find(outpoint);
+    CService addrSquashed = Params().AllowMultiplePorts() ? (CService)pnode->addr : CService(pnode->addr, 0);
+    auto it1 = mWeAskedForGoldminenodeListEntry.find(outpoint);
     if (it1 != mWeAskedForGoldminenodeListEntry.end()) {
-        std::map<CNetAddr, int64_t>::iterator it2 = it1->second.find(pnode->addr);
+        auto it2 = it1->second.find(addrSquashed);
         if (it2 != it1->second.end()) {
             if (GetTime() < it2->second) {
                 // we've asked recently, should not repeat too often or we could get banned
                 return;
             }
             // we asked this node for this outpoint but it's ok to ask again already
-            LogPrintf("CGoldminenodeMan::AskForMN -- Asking same peer %s for missing goldminenode entry again: %s\n", pnode->addr.ToString(), outpoint.ToStringShort());
+            LogPrintf("CGoldminenodeMan::AskForMN -- Asking same peer %s for missing goldminenode entry again: %s\n", addrSquashed.ToString(), outpoint.ToStringShort());
         } else {
             // we already asked for this outpoint but not this node
-            LogPrintf("CGoldminenodeMan::AskForMN -- Asking new peer %s for missing goldminenode entry: %s\n", pnode->addr.ToString(), outpoint.ToStringShort());
+            LogPrintf("CGoldminenodeMan::AskForMN -- Asking new peer %s for missing goldminenode entry: %s\n", addrSquashed.ToString(), outpoint.ToStringShort());
         }
     } else {
         // we never asked any node for this outpoint
-        LogPrintf("CGoldminenodeMan::AskForMN -- Asking peer %s for missing goldminenode entry for the first time: %s\n", pnode->addr.ToString(), outpoint.ToStringShort());
+        LogPrintf("CGoldminenodeMan::AskForMN -- Asking peer %s for missing goldminenode entry for the first time: %s\n", addrSquashed.ToString(), outpoint.ToStringShort());
     }
-    mWeAskedForGoldminenodeListEntry[outpoint][pnode->addr] = GetTime() + DSEG_UPDATE_SECONDS;
+    mWeAskedForGoldminenodeListEntry[outpoint][addrSquashed] = GetTime() + DSEG_UPDATE_SECONDS;
 
-    connman.PushMessage(pnode, NetMsgType::DSEG, CTxIn(outpoint));
+   // if (pnode->GetSendVersion() == 70209) {
+        connman.PushMessage(pnode, msgMaker.Make(NetMsgType::DSEG, CTxIn(outpoint)));
+   // } else {
+  //      connman.PushMessage(pnode, msgMaker.Make(NetMsgType::DSEG, outpoint));
+   // }
 }
 
 bool CGoldminenodeMan::AllowMixing(const COutPoint &outpoint)
@@ -197,11 +159,13 @@ bool CGoldminenodeMan::PoSeBan(const COutPoint &outpoint)
 
 void CGoldminenodeMan::Check()
 {
-    LOCK(cs);
+    LOCK2(cs_main, cs);
 
-    LogPrint("goldminenode", "CGoldminenodeMan::Check -- nLastWatchdogVoteTime=%d, IsWatchdogActive()=%d\n", nLastWatchdogVoteTime, IsWatchdogActive());
+    LogPrint("goldminenode", "CGoldminenodeMan::Check -- nLastSentinelPingTime=%d, IsSentinelPingActive()=%d\n", nLastSentinelPingTime, IsSentinelPingActive());
 
     for (auto& mnpair : mapGoldminenodes) {
+        // NOTE: internally it checks only every GOLDMINENODE_CHECK_SECONDS seconds
+        // since the last time, so expect some MNs to skip this
         mnpair.second.Check();
     }
 }
@@ -242,10 +206,11 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
                 bool fAsk = (nAskForMnbRecovery > 0) &&
                             goldminenodeSync.IsSynced() &&
                             it->second.IsNewStartRequired() &&
-                            !IsMnbRecoveryRequested(hash);
+                            !IsMnbRecoveryRequested(hash) &&
+                            !IsArgSet("-connect");
                 if(fAsk) {
                     // this mn is in a non-recoverable state and we haven't asked other nodes yet
-                    std::set<CNetAddr> setRequested;
+                    std::set<CService> setRequested;
                     // calulate only once and only when it's needed
                     if(vecGoldminenodeRanks.empty()) {
                         int nRandomBlockHeight = GetRandInt(nCachedBlockHeight);
@@ -281,13 +246,13 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
                 // all nodes we asked should have replied now
                 if(itMnbReplies->second.size() >= MNB_RECOVERY_QUORUM_REQUIRED) {
                     // majority of nodes we asked agrees that this mn doesn't require new mnb, reprocess one of new mnbs
-                    LogPrint("goldminenode", "CGoldminenodeMan::CheckAndRemove -- reprocessing mnb, goldminenode=%s\n", itMnbReplies->second[0].vin.prevout.ToStringShort());
+                    LogPrint("goldminenode", "CGoldminenodeMan::CheckAndRemove -- reprocessing mnb, goldminenode=%s\n", itMnbReplies->second[0].outpoint.ToStringShort());
                     // mapSeenGoldminenodeBroadcast.erase(itMnbReplies->first);
                     int nDos;
                     itMnbReplies->second[0].fRecovery = true;
                     CheckMnbAndUpdateGoldminenodeList(NULL, itMnbReplies->second[0], nDos, connman);
                 }
-                LogPrint("goldminenode", "CGoldminenodeMan::CheckAndRemove -- removing mnb recovery reply, goldminenode=%s, size=%d\n", itMnbReplies->second[0].vin.prevout.ToStringShort(), (int)itMnbReplies->second.size());
+                LogPrint("goldminenode", "CGoldminenodeMan::CheckAndRemove -- removing mnb recovery reply, goldminenode=%s, size=%d\n", itMnbReplies->second[0].outpoint.ToStringShort(), (int)itMnbReplies->second.size());
                 mMnbRecoveryGoodReplies.erase(itMnbReplies++);
             } else {
                 ++itMnbReplies;
@@ -298,7 +263,7 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
         // no need for cm_main below
         LOCK(cs);
 
-        std::map<uint256, std::pair< int64_t, std::set<CNetAddr> > >::iterator itMnbRequest = mMnbRecoveryRequests.begin();
+        auto itMnbRequest = mMnbRecoveryRequests.begin();
         while(itMnbRequest != mMnbRecoveryRequests.end()){
             // Allow this mnb to be re-verified again after MNB_RECOVERY_RETRY_SECONDS seconds
             // if mn is still in GOLDMINENODE_NEW_START_REQUIRED state.
@@ -310,7 +275,7 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
         }
 
         // check who's asked for the Goldminenode list
-        std::map<CNetAddr, int64_t>::iterator it1 = mAskedUsForGoldminenodeList.begin();
+        auto it1 = mAskedUsForGoldminenodeList.begin();
         while(it1 != mAskedUsForGoldminenodeList.end()){
             if((*it1).second < GetTime()) {
                 mAskedUsForGoldminenodeList.erase(it1++);
@@ -330,9 +295,9 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
         }
 
         // check which Goldminenodes we've asked for
-        std::map<COutPoint, std::map<CNetAddr, int64_t> >::iterator it2 = mWeAskedForGoldminenodeListEntry.begin();
+        auto it2 = mWeAskedForGoldminenodeListEntry.begin();
         while(it2 != mWeAskedForGoldminenodeListEntry.end()){
-            std::map<CNetAddr, int64_t>::iterator it3 = it2->second.begin();
+            auto it3 = it2->second.begin();
             while(it3 != it2->second.end()){
                 if(it3->second < GetTime()){
                     it2->second.erase(it3++);
@@ -347,7 +312,7 @@ void CGoldminenodeMan::CheckAndRemove(CConnman& connman)
             }
         }
 
-        std::map<CNetAddr, CGoldminenodeVerification>::iterator it3 = mWeAskedForVerification.begin();
+        auto it3 = mWeAskedForVerification.begin();
         while(it3 != mWeAskedForVerification.end()){
             if(it3->second.nBlockHeight < nCachedBlockHeight - MAX_POSE_BLOCKS) {
                 mWeAskedForVerification.erase(it3++);
@@ -398,7 +363,7 @@ void CGoldminenodeMan::Clear()
     mapSeenGoldminenodeBroadcast.clear();
     mapSeenGoldminenodePing.clear();
     nDsqCount = 0;
-    nLastWatchdogVoteTime = 0;
+    nLastSentinelPingTime = 0;
 }
 
 int CGoldminenodeMan::CountGoldminenodes(int nProtocolVersion)
@@ -407,7 +372,7 @@ int CGoldminenodeMan::CountGoldminenodes(int nProtocolVersion)
     int nCount = 0;
     nProtocolVersion = nProtocolVersion == -1 ? mnpayments.GetMinGoldminenodePaymentsProto() : nProtocolVersion;
 
-    for (auto& mnpair : mapGoldminenodes) {
+    for (const auto& mnpair : mapGoldminenodes) {
         if(mnpair.second.nProtocolVersion < nProtocolVersion) continue;
         nCount++;
     }
@@ -420,14 +385,14 @@ int CGoldminenodeMan::CountEnabled(int nProtocolVersion)
     LOCK(cs);
     int nCount = 0;
     nProtocolVersion = nProtocolVersion == -1 ? mnpayments.GetMinGoldminenodePaymentsProto() : nProtocolVersion;
-	
-    for (auto& mnpair : mapGoldminenodes) {
+
+    for (const auto& mnpair : mapGoldminenodes) {
         if(mnpair.second.nProtocolVersion < nProtocolVersion || !mnpair.second.IsEnabled()) continue;
         nCount++;
     }
-	
+
     return nCount;
-}	
+}
 
 /* Only IPv4 goldminenodes are allowed in 12.1, saving this for later
 int CGoldminenodeMan::CountByIP(int nNetworkType)
@@ -435,7 +400,7 @@ int CGoldminenodeMan::CountByIP(int nNetworkType)
     LOCK(cs);
     int nNodeCount = 0;
 
-    for (auto& mnpair : mapGoldminenodes)
+    for (const auto& mnpair : mapGoldminenodes)
         if ((nNetworkType == NET_IPV4 && mnpair.second.addr.IsIPv4()) ||
             (nNetworkType == NET_TOR  && mnpair.second.addr.IsTor())  ||
             (nNetworkType == NET_IPV6 && mnpair.second.addr.IsIPv6())) {
@@ -448,21 +413,27 @@ int CGoldminenodeMan::CountByIP(int nNetworkType)
 
 void CGoldminenodeMan::DsegUpdate(CNode* pnode, CConnman& connman)
 {
+    CNetMsgMaker msgMaker(pnode->GetSendVersion());
     LOCK(cs);
 
+    CService addrSquashed = Params().AllowMultiplePorts() ? (CService)pnode->addr : CService(pnode->addr, 0);
     if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
         if(!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal())) {
-            std::map<CNetAddr, int64_t>::iterator it = mWeAskedForGoldminenodeList.find(pnode->addr);
+            auto it = mWeAskedForGoldminenodeList.find(addrSquashed);
             if(it != mWeAskedForGoldminenodeList.end() && GetTime() < (*it).second) {
-                LogPrintf("CGoldminenodeMan::DsegUpdate -- we already asked %s for the list; skipping...\n", pnode->addr.ToString());
+                LogPrintf("CGoldminenodeMan::DsegUpdate -- we already asked %s for the list; skipping...\n", addrSquashed.ToString());
                 return;
             }
         }
     }
 
-    connman.PushMessage(pnode, NetMsgType::DSEG, CTxIn());
+//    if (pnode->GetSendVersion() == 70209) {
+        connman.PushMessage(pnode, msgMaker.Make(NetMsgType::DSEG, CTxIn()));
+ //   } else {
+ //       connman.PushMessage(pnode, msgMaker.Make(NetMsgType::DSEG, COutPoint()));
+ //   }
     int64_t askAgain = GetTime() + DSEG_UPDATE_SECONDS;
-    mWeAskedForGoldminenodeList[pnode->addr] = askAgain;
+    mWeAskedForGoldminenodeList[addrSquashed] = askAgain;
 
     LogPrint("goldminenode", "CGoldminenodeMan::DsegUpdate -- asked %s for the list\n", pnode->addr.ToString());
 }
@@ -501,7 +472,7 @@ bool CGoldminenodeMan::GetGoldminenodeInfo(const COutPoint& outpoint, goldmineno
 bool CGoldminenodeMan::GetGoldminenodeInfo(const CPubKey& pubKeyGoldminenode, goldminenode_info_t& mnInfoRet)
 {
     LOCK(cs);
-    for (auto& mnpair : mapGoldminenodes) {
+    for (const auto& mnpair : mapGoldminenodes) {
         if (mnpair.second.pubKeyGoldminenode == pubKeyGoldminenode) {
             mnInfoRet = mnpair.second.GetInfo();
             return true;
@@ -513,7 +484,7 @@ bool CGoldminenodeMan::GetGoldminenodeInfo(const CPubKey& pubKeyGoldminenode, go
 bool CGoldminenodeMan::GetGoldminenodeInfo(const CScript& payee, goldminenode_info_t& mnInfoRet)
 {
     LOCK(cs);
-    for (auto& mnpair : mapGoldminenodes) {
+    for (const auto& mnpair : mapGoldminenodes) {
         CScript scriptCollateralAddress = GetScriptForDestination(mnpair.second.pubKeyCollateralAddress.GetID());
         if (scriptCollateralAddress == payee) {
             mnInfoRet = mnpair.second.GetInfo();
@@ -527,53 +498,6 @@ bool CGoldminenodeMan::Has(const COutPoint& outpoint)
 {
     LOCK(cs);
     return mapGoldminenodes.find(outpoint) != mapGoldminenodes.end();
-}
-
-bool CGoldminenodeMan::GetNextGoldminenodeInQueueForTmp(int nBlockHeight, bool fFilterSigTime, int& nCountRet, goldminenode_info_t& mnInfoRet)
-{
-    mnInfoRet = goldminenode_info_t();
-    nCountRet = 0;
-
-    if (!goldminenodeSync.IsWinnersListSynced()) {
-        // without winner list we can't reliably find the next winner anyway
-        return false;
-    }
-
-    // Need LOCK2 here to ensure consistent locking order because the GetBlockHash call below locks cs_main
-    LOCK2(cs_main,cs);
-
-    std::vector<std::pair<int64_t, CGoldminenode*> > vecGoldminenodeLastPaid;
-
-    /*
-        Make a vector with all of the last paid times
-    */
-
-    int nMnCount = CountGoldminenodes();
-	
-    for (auto& mnpair : mapGoldminenodes) {
-		if(!mnpair.second.IsValidForPayment()) continue;
-
-        //check protocol version
-        if(mnpair.second.nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto()) continue;
-		
-        //it's too new, wait for a cycle
-        if(fFilterSigTime && mnpair.second.sigTime + (nMnCount*2.6*60) > GetAdjustedTime()) continue;
-
-        //make sure it has at least as many confirmations as there are goldminenodes
-        if(GetUTXOConfirmations(mnpair.first) < nMnCount) continue;
-				
-        vecGoldminenodeLastPaid.push_back(std::make_pair(mnpair.second.enableTime, &mnpair.second));
-    }
-	
-    nCountRet = (int)vecGoldminenodeLastPaid.size();
-	
-	if( nCountRet > 0 ){
-		// Sort them low to high
-		sort(vecGoldminenodeLastPaid.begin(), vecGoldminenodeLastPaid.end(), CompareLastPaidBlock());	
-		mnInfoRet = vecGoldminenodeLastPaid[0].second->GetInfo();
-	}
-	
-    return mnInfoRet.fInfoValid;
 }
 
 //
@@ -597,38 +521,66 @@ bool CGoldminenodeMan::GetNextGoldminenodeInQueueForPayment(int nBlockHeight, bo
     // Need LOCK2 here to ensure consistent locking order because the GetBlockHash call below locks cs_main
     LOCK2(cs_main,cs);
 
-    std::vector<std::pair<int64_t, CGoldminenode*> > vecGoldminenodeLastPaid;
+    std::vector<std::pair<int, const CGoldminenode*> > vecGoldminenodeLastPaid;
 
     /*
         Make a vector with all of the last paid times
     */
 
     int nMnCount = CountGoldminenodes();
-	
-    for (auto& mnpair : mapGoldminenodes) {
-		if(!mnpair.second.IsValidForPayment()) continue;
+
+    for (const auto& mnpair : mapGoldminenodes) {
+        if(!mnpair.second.IsValidForPayment()) continue;
 
         //check protocol version
         if(mnpair.second.nProtocolVersion < mnpayments.GetMinGoldminenodePaymentsProto()) continue;
-		
+
+        //it's in the list (up to 8 entries ahead of current block to allow propagation) -- so let's skip it
+        if(mnpayments.IsScheduled(mnpair.second, nBlockHeight)) continue;
+
         //it's too new, wait for a cycle
         if(fFilterSigTime && mnpair.second.sigTime + (nMnCount*2.6*60) > GetAdjustedTime()) continue;
 
         //make sure it has at least as many confirmations as there are goldminenodes
         if(GetUTXOConfirmations(mnpair.first) < nMnCount) continue;
-				
-        vecGoldminenodeLastPaid.push_back(std::make_pair(mnpair.second.enableTime, &mnpair.second));
+
+        vecGoldminenodeLastPaid.push_back(std::make_pair(mnpair.second.GetLastPaidBlock(), &mnpair.second));
     }
-	
+
     nCountRet = (int)vecGoldminenodeLastPaid.size();
-	
-	if( nCountRet > 0 ){
-		// Sort them low to high
-		sort(vecGoldminenodeLastPaid.begin(), vecGoldminenodeLastPaid.end(), CompareLastPaidBlock());	
-		mnInfoRet = vecGoldminenodeLastPaid[0].second->GetInfo();
-		vecGoldminenodeLastPaid[0].second->enableTime = GetAdjustedTime();		
-	}
-	
+
+    //when the network is in the process of upgrading, don't penalize nodes that recently restarted
+    if(fFilterSigTime && nCountRet < nMnCount/3)
+        return GetNextGoldminenodeInQueueForPayment(nBlockHeight, false, nCountRet, mnInfoRet);
+
+    // Sort them low to high
+    sort(vecGoldminenodeLastPaid.begin(), vecGoldminenodeLastPaid.end(), CompareLastPaidBlock());
+
+    uint256 blockHash;
+    if(!GetBlockHash(blockHash, nBlockHeight - 101)) {
+        LogPrintf("CGoldminenode::GetNextGoldminenodeInQueueForPayment -- ERROR: GetBlockHash() failed at nBlockHeight %d\n", nBlockHeight - 101);
+        return false;
+    }
+    // Look at 1/10 of the oldest nodes (by last payment), calculate their scores and pay the best one
+    //  -- This doesn't look at who is being paid in the +8-10 blocks, allowing for double payments very rarely
+    //  -- 1/100 payments should be a double payment on mainnet - (1/(3000/10))*2
+    //  -- (chance per block * chances before IsScheduled will fire)
+    int nTenthNetwork = nMnCount/10;
+    int nCountTenth = 0;
+    arith_uint256 nHighest = 0;
+    const CGoldminenode *pBestGoldminenode = NULL;
+    for (const auto& s : vecGoldminenodeLastPaid) {
+        arith_uint256 nScore = s.second->CalculateScore(blockHash);
+        if(nScore > nHighest){
+            nHighest = nScore;
+            pBestGoldminenode = s.second;
+        }
+        nCountTenth++;
+        if(nCountTenth >= nTenthNetwork) break;
+    }
+    if (pBestGoldminenode) {
+        mnInfoRet = pBestGoldminenode->GetInfo();
+    }
     return mnInfoRet.fInfoValid;
 }
 
@@ -645,29 +597,29 @@ goldminenode_info_t CGoldminenodeMan::FindRandomNotInVec(const std::vector<COutP
     if(nCountNotExcluded < 1) return goldminenode_info_t();
 
     // fill a vector of pointers
-    std::vector<CGoldminenode*> vpGoldminenodesShuffled;
-    for (auto& mnpair : mapGoldminenodes) {
+    std::vector<const CGoldminenode*> vpGoldminenodesShuffled;
+    for (const auto& mnpair : mapGoldminenodes) {
         vpGoldminenodesShuffled.push_back(&mnpair.second);
     }
 
-    InsecureRand insecureRand;
+    FastRandomContext insecure_rand;
     // shuffle pointers
-    std::random_shuffle(vpGoldminenodesShuffled.begin(), vpGoldminenodesShuffled.end(), insecureRand);
+    std::random_shuffle(vpGoldminenodesShuffled.begin(), vpGoldminenodesShuffled.end(), insecure_rand);
     bool fExclude;
 
     // loop through
-    BOOST_FOREACH(CGoldminenode* pmn, vpGoldminenodesShuffled) {
+    for (const auto& pmn : vpGoldminenodesShuffled) {
         if(pmn->nProtocolVersion < nProtocolVersion || !pmn->IsEnabled()) continue;
         fExclude = false;
-        BOOST_FOREACH(const COutPoint &outpointToExclude, vecToExclude) {
-            if(pmn->vin.prevout == outpointToExclude) {
+        for (const auto& outpointToExclude : vecToExclude) {
+            if(pmn->outpoint == outpointToExclude) {
                 fExclude = true;
                 break;
             }
         }
         if(fExclude) continue;
         // found the one not in vecToExclude
-        LogPrint("goldminenode", "CGoldminenodeMan::FindRandomNotInVec -- found, goldminenode=%s\n", pmn->vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "CGoldminenodeMan::FindRandomNotInVec -- found, goldminenode=%s\n", pmn->outpoint.ToStringShort());
         return pmn->GetInfo();
     }
 
@@ -688,7 +640,7 @@ bool CGoldminenodeMan::GetGoldminenodeScores(const uint256& nBlockHash, CGoldmin
         return false;
 
     // calculate scores
-    for (auto& mnpair : mapGoldminenodes) {
+    for (const auto& mnpair : mapGoldminenodes) {
         if (mnpair.second.nProtocolVersion >= nMinProtocol) {
             vecGoldminenodeScoresRet.push_back(std::make_pair(mnpair.second.CalculateScore(nBlockHash), &mnpair.second));
         }
@@ -719,9 +671,9 @@ bool CGoldminenodeMan::GetGoldminenodeRank(const COutPoint& outpoint, int& nRank
         return false;
 
     int nRank = 0;
-    for (auto& scorePair : vecGoldminenodeScores) {
+    for (const auto& scorePair : vecGoldminenodeScores) {
         nRank++;
-        if(scorePair.second->vin.prevout == outpoint) {
+        if(scorePair.second->outpoint == outpoint) {
             nRankRet = nRank;
             return true;
         }
@@ -751,7 +703,7 @@ bool CGoldminenodeMan::GetGoldminenodeRanks(CGoldminenodeMan::rank_pair_vec_t& v
         return false;
 
     int nRank = 0;
-    for (auto& scorePair : vecGoldminenodeScores) {
+    for (const auto& scorePair : vecGoldminenodeScores) {
         nRank++;
         vecGoldminenodeRanksRet.push_back(std::make_pair(nRank, *scorePair.second));
     }
@@ -803,13 +755,54 @@ std::pair<CService, std::set<uint256> > CGoldminenodeMan::PopScheduledMnbRequest
     return std::make_pair(pairFront.first, setResult);
 }
 
-void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv, CConnman& connman)
+void CGoldminenodeMan::ProcessPendingMnbRequests(CConnman& connman)
 {
-    if(fLiteMode) 
-		return; // disable all Arc specific functionality
+    std::pair<CService, std::set<uint256> > p = PopScheduledMnbRequestConnection();
+    if (!(p.first == CService() || p.second.empty())) {
+        if (connman.IsGoldminenodeOrDisconnectRequested(p.first)) return;
+        mapPendingMNB.insert(std::make_pair(p.first, std::make_pair(GetTime(), p.second)));
+        connman.AddPendingGoldminenode(p.first);
+    }
 
-    if (strCommand == NetMsgType::MNANNOUNCE) 
-	{ //Goldminenode Broadcast
+    std::map<CService, std::pair<int64_t, std::set<uint256> > >::iterator itPendingMNB = mapPendingMNB.begin();
+    while (itPendingMNB != mapPendingMNB.end()) {
+        bool fDone = connman.ForNode(itPendingMNB->first, [&](CNode* pnode) {
+            // compile request vector
+            std::vector<CInv> vToFetch;
+            std::set<uint256>& setHashes = itPendingMNB->second.second;
+            std::set<uint256>::iterator it = setHashes.begin();
+            while(it != setHashes.end()) {
+                if(*it != uint256()) {
+                    vToFetch.push_back(CInv(MSG_GOLDMINENODE_ANNOUNCE, *it));
+                    LogPrint("goldminenode", "-- asking for mnb %s from addr=%s\n", it->ToString(), pnode->addr.ToString());
+                }
+                ++it;
+            }
+
+            // ask for data
+            CNetMsgMaker msgMaker(pnode->GetSendVersion());
+            connman.PushMessage(pnode, msgMaker.Make(NetMsgType::GETDATA, vToFetch));
+            return true;
+        });
+
+        int64_t nTimeAdded = itPendingMNB->second.first;
+        if (fDone || (GetTime() - nTimeAdded > 15)) {
+            if (!fDone) {
+                LogPrint("goldminenode", "CGoldminenodeMan::%s -- failed to connect to %s\n", __func__, itPendingMNB->first.ToString());
+            }
+            mapPendingMNB.erase(itPendingMNB++);
+        } else {
+            ++itPendingMNB;
+        }
+    }
+    LogPrint("goldminenode", "%s -- mapPendingMNB size: %d\n", __func__, mapPendingMNB.size());
+}
+
+void CGoldminenodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
+{
+    if(fLiteMode) return; // disable all Arc specific functionality
+
+    if (strCommand == NetMsgType::MNANNOUNCE) { //Goldminenode Broadcast
 
         CGoldminenodeBroadcast mnb;
         vRecv >> mnb;
@@ -818,7 +811,7 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
 
         if(!goldminenodeSync.IsBlockchainSynced()) return;
 
-        LogPrint("goldminenode", "MNANNOUNCE -- Goldminenode announce, goldminenode=%s\n", mnb.vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "MNANNOUNCE -- Goldminenode announce, goldminenode=%s\n", mnb.outpoint.ToStringShort());
 
         int nDos = 0;
 
@@ -826,15 +819,14 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
             // use announced Goldminenode as a peer
             connman.AddNewAddress(CAddress(mnb.addr, NODE_NETWORK), pfrom->addr, 2*60*60);
         } else if(nDos > 0) {
+            LOCK(cs_main);
             Misbehaving(pfrom->GetId(), nDos);
         }
 
         if(fGoldminenodesAdded) {
             NotifyGoldminenodeUpdates(connman);
         }
-    } 
-	else if (strCommand == NetMsgType::MNPING) 
-	{ //Goldminenode Ping
+    } else if (strCommand == NetMsgType::MNPING) { //Goldminenode Ping
 
         CGoldminenodePing mnp;
         vRecv >> mnp;
@@ -843,29 +835,23 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
 
         pfrom->setAskFor.erase(nHash);
 
-        if(!goldminenodeSync.IsBlockchainSynced()) 
-			return;
+        if(!goldminenodeSync.IsBlockchainSynced()) return;
 
-        LogPrint("goldminenode", "MNPING -- Goldminenode ping, goldminenode=%s\n", mnp.vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "MNPING -- Goldminenode ping, goldminenode=%s\n", mnp.goldminenodeOutpoint.ToStringShort());
 
         // Need LOCK2 here to ensure consistent locking order because the CheckAndUpdate call below locks cs_main
         LOCK2(cs_main, cs);
 
-        if(mapSeenGoldminenodePing.count(nHash)) 
-			return; //seen
-		
+        if(mapSeenGoldminenodePing.count(nHash)) return; //seen
         mapSeenGoldminenodePing.insert(std::make_pair(nHash, mnp));
 
-        LogPrint("goldminenode", "MNPING -- Goldminenode ping, goldminenode=%s new\n", mnp.vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "MNPING -- Goldminenode ping, goldminenode=%s new\n", mnp.goldminenodeOutpoint.ToStringShort());
 
         // see if we have this Goldminenode
-        CGoldminenode* pmn = Find(mnp.vin.prevout);
+        CGoldminenode* pmn = Find(mnp.goldminenodeOutpoint);
 
-        // if goldminenode uses sentinel ping instead of watchdog
-        // we shoud update nTimeLastWatchdogVote here if sentinel
-        // ping flag is actual
         if(pmn && mnp.fSentinelIsCurrent)
-            UpdateWatchdogVoteTime(mnp.vin.prevout, mnp.sigTime);
+            UpdateLastSentinelPingTime();
 
         // too late, new MNANNOUNCE is required
         if(pmn && pmn->IsNewStartRequired()) return;
@@ -873,91 +859,45 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
         int nDos = 0;
         if(mnp.CheckAndUpdate(pmn, false, nDos, connman)) return;
 
-        if(nDos > 0) 
-		{
+        if(nDos > 0) {
             // if anything significant failed, mark that node
             Misbehaving(pfrom->GetId(), nDos);
-        } 
-		else if(pmn != NULL) 
-		{
+        } else if(pmn != NULL) {
             // nothing significant failed, mn is a known one too
             return;
         }
 
         // something significant is broken or mn is unknown,
         // we might have to ask for a goldminenode entry once
-        AskForMN(pfrom, mnp.vin.prevout, connman);
+        AskForMN(pfrom, mnp.goldminenodeOutpoint, connman);
 
-    } 
-	else if (strCommand == NetMsgType::DSEG) 
-	{ //Get Goldminenode list or specific entry
+    } else if (strCommand == NetMsgType::DSEG) { //Get Goldminenode list or specific entry
         // Ignore such requests until we are fully synced.
         // We could start processing this after goldminenode list is synced
         // but this is a heavy one so it's better to finish sync first.
-        if (!goldminenodeSync.IsSynced()) 
-			return;
+        if (!goldminenodeSync.IsSynced()) return;
 
-        CTxIn vin;
-        vRecv >> vin;
+        COutPoint goldminenodeOutpoint;
 
-        LogPrint("goldminenode", "DSEG -- Goldminenode list, goldminenode=%s\n", vin.prevout.ToStringShort());
+      //  if (pfrom->nVersion == 70209) {
+            CTxIn vin;
+            vRecv >> vin;
+            goldminenodeOutpoint = vin.prevout;
+     //   } else {
+        //    vRecv >> goldminenodeOutpoint;
+     //   }
 
-        LOCK(cs);
+        LogPrint("goldminenode", "DSEG -- Goldminenode list, goldminenode=%s\n", goldminenodeOutpoint.ToStringShort());
 
-        if(vin == CTxIn()) { //only should ask for this once
-            //local network
-            bool isLocal = (pfrom->addr.IsRFC1918() || pfrom->addr.IsLocal());
-
-            if(!isLocal && Params().NetworkIDString() == CBaseChainParams::MAIN) {
-                std::map<CNetAddr, int64_t>::iterator it = mAskedUsForGoldminenodeList.find(pfrom->addr);
-                if (it != mAskedUsForGoldminenodeList.end() && it->second > GetTime()) {
-                    Misbehaving(pfrom->GetId(), 34);
-                    LogPrintf("DSEG -- peer already asked me for the list, peer=%d\n", pfrom->id);
-                    return;
-                }
-                int64_t askAgain = GetTime() + DSEG_UPDATE_SECONDS;
-                mAskedUsForGoldminenodeList[pfrom->addr] = askAgain;
-            }
-        } //else, asking for a specific node which is ok
-
-        int nInvCount = 0;
-
-        for (auto& mnpair : mapGoldminenodes) {
-            if (vin != CTxIn() && vin != mnpair.second.vin) continue; // asked for specific vin but we are not there yet
-            if (mnpair.second.addr.IsRFC1918() || mnpair.second.addr.IsLocal()) continue; // do not send local network goldminenode
-            if (mnpair.second.IsUpdateRequired()) continue; // do not send outdated goldminenodes
-
-            LogPrint("goldminenode", "DSEG -- Sending Goldminenode entry: goldminenode=%s  addr=%s\n", mnpair.first.ToStringShort(), mnpair.second.addr.ToString());
-            CGoldminenodeBroadcast mnb = CGoldminenodeBroadcast(mnpair.second);
-            CGoldminenodePing mnp = mnpair.second.lastPing;
-            uint256 hashMNB = mnb.GetHash();
-            uint256 hashMNP = mnp.GetHash();
-            pfrom->PushInventory(CInv(MSG_GOLDMINENODE_ANNOUNCE, hashMNB));
-            pfrom->PushInventory(CInv(MSG_GOLDMINENODE_PING, hashMNP));
-            nInvCount++;
-
-            mapSeenGoldminenodeBroadcast.insert(std::make_pair(hashMNB, std::make_pair(GetTime(), mnb)));
-            mapSeenGoldminenodePing.insert(std::make_pair(hashMNP, mnp));
-
-            if (vin.prevout == mnpair.first) {
-                LogPrintf("DSEG -- Sent 1 Goldminenode inv to peer %d\n", pfrom->id);
-                return;
-            }
+        if(goldminenodeOutpoint.IsNull()) {
+            SyncAll(pfrom, connman);
+        } else {
+            SyncSingle(pfrom, goldminenodeOutpoint, connman);
         }
 
-        if(vin == CTxIn()) {
-            connman.PushMessage(pfrom, NetMsgType::SYNCSTATUSCOUNT, GOLDMINENODE_SYNC_LIST, nInvCount);
-            LogPrintf("DSEG -- Sent %d Goldminenode invs to peer %d\n", nInvCount, pfrom->id);
-            return;
-        }
-        // smth weird happen - someone asked us for vin we have no idea about?
-        LogPrint("goldminenode", "DSEG -- No invs sent to peer %d\n", pfrom->id);
+    } else if (strCommand == NetMsgType::MNVERIFY) { // Goldminenode Verify
 
-    } 
-	else if (strCommand == NetMsgType::MNVERIFY) 
-	{ // Goldminenode Verify
-
-        // Need LOCK2 here to ensure consistent locking order because the all functions below call GetBlockHash which locks cs_main
+        // Need LOCK2 here to ensure consistent locking order because all functions below call GetBlockHash which locks cs_main
         LOCK2(cs_main, cs);
 
         CGoldminenodeVerification mnv;
@@ -965,8 +905,7 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
 
         pfrom->setAskFor.erase(mnv.GetHash());
 
-        if(!goldminenodeSync.IsGoldminenodeListSynced()) 
-			return;
+        if(!goldminenodeSync.IsGoldminenodeListSynced()) return;
 
         if(mnv.vchSig1.empty()) {
             // CASE 1: someone asked me to verify myself /IP we are using/
@@ -981,19 +920,87 @@ void CGoldminenodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDa
     }
 }
 
+void CGoldminenodeMan::SyncSingle(CNode* pnode, const COutPoint& outpoint, CConnman& connman)
+{
+    // do not provide any data until our node is synced
+    if (!goldminenodeSync.IsSynced()) return;
+
+    LOCK(cs);
+
+    auto it = mapGoldminenodes.find(outpoint);
+
+    if(it != mapGoldminenodes.end()) {
+        if (it->second.addr.IsRFC1918() || it->second.addr.IsLocal()) return; // do not send local network goldminenode
+        // NOTE: send goldminenode regardless of its current state, the other node will need it to verify old votes.
+        LogPrint("goldminenode", "CGoldminenodeMan::%s -- Sending Goldminenode entry: goldminenode=%s  addr=%s\n", __func__, outpoint.ToStringShort(), it->second.addr.ToString());
+        PushDsegInvs(pnode, it->second);
+        LogPrintf("CGoldminenodeMan::%s -- Sent 1 Goldminenode inv to peer=%d\n", __func__, pnode->id);
+    }
+}
+
+void CGoldminenodeMan::SyncAll(CNode* pnode, CConnman& connman)
+{
+    // do not provide any data until our node is synced
+    if (!goldminenodeSync.IsSynced()) return;
+
+    // local network
+    bool isLocal = (pnode->addr.IsRFC1918() || pnode->addr.IsLocal());
+
+    CService addrSquashed = Params().AllowMultiplePorts() ? (CService)pnode->addr : CService(pnode->addr, 0);
+    // should only ask for this once
+    if(!isLocal && Params().NetworkIDString() == CBaseChainParams::MAIN) {
+        LOCK2(cs_main, cs);
+        auto it = mAskedUsForGoldminenodeList.find(addrSquashed);
+        if (it != mAskedUsForGoldminenodeList.end() && it->second > GetTime()) {
+            Misbehaving(pnode->GetId(), 34);
+            LogPrintf("CGoldminenodeMan::%s -- peer already asked me for the list, peer=%d\n", __func__, pnode->id);
+            return;
+        }
+        int64_t askAgain = GetTime() + DSEG_UPDATE_SECONDS;
+        mAskedUsForGoldminenodeList[addrSquashed] = askAgain;
+    }
+
+    int nInvCount = 0;
+
+    LOCK(cs);
+
+    for (const auto& mnpair : mapGoldminenodes) {
+        if (mnpair.second.addr.IsRFC1918() || mnpair.second.addr.IsLocal()) continue; // do not send local network goldminenode
+        // NOTE: send goldminenode regardless of its current state, the other node will need it to verify old votes.
+        LogPrint("goldminenode", "CGoldminenodeMan::%s -- Sending Goldminenode entry: goldminenode=%s  addr=%s\n", __func__, mnpair.first.ToStringShort(), mnpair.second.addr.ToString());
+        PushDsegInvs(pnode, mnpair.second);
+        nInvCount++;
+    }
+
+    connman.PushMessage(pnode, CNetMsgMaker(pnode->GetSendVersion()).Make(NetMsgType::SYNCSTATUSCOUNT, GOLDMINENODE_SYNC_LIST, nInvCount));
+    LogPrintf("CGoldminenodeMan::%s -- Sent %d Goldminenode invs to peer=%d\n", __func__, nInvCount, pnode->id);
+}
+
+void CGoldminenodeMan::PushDsegInvs(CNode* pnode, const CGoldminenode& mn)
+{
+    AssertLockHeld(cs);
+
+    CGoldminenodeBroadcast mnb(mn);
+    CGoldminenodePing mnp = mnb.lastPing;
+    uint256 hashMNB = mnb.GetHash();
+    uint256 hashMNP = mnp.GetHash();
+    pnode->PushInventory(CInv(MSG_GOLDMINENODE_ANNOUNCE, hashMNB));
+    pnode->PushInventory(CInv(MSG_GOLDMINENODE_PING, hashMNP));
+    mapSeenGoldminenodeBroadcast.insert(std::make_pair(hashMNB, std::make_pair(GetTime(), mnb)));
+    mapSeenGoldminenodePing.insert(std::make_pair(hashMNP, mnp));
+}
+
 // Verification of goldminenodes via unique direct requests.
 
 void CGoldminenodeMan::DoFullVerificationStep(CConnman& connman)
 {
-    if(activeGoldminenode.outpoint == COutPoint()) return;
+    if(activeGoldminenode.outpoint.IsNull()) return;
     if(!goldminenodeSync.IsSynced()) return;
 
     rank_pair_vec_t vecGoldminenodeRanks;
     GetGoldminenodeRanks(vecGoldminenodeRanks, nCachedBlockHeight - 1, MIN_POSE_PROTO_VERSION);
 
-    // Need LOCK2 here to ensure consistent locking order because the SendVerifyRequest call below locks cs_main
-    // through GetHeight() signal in ConnectNode
-    LOCK2(cs_main, cs);
+    LOCK(cs);
 
     int nCount = 0;
 
@@ -1001,14 +1008,14 @@ void CGoldminenodeMan::DoFullVerificationStep(CConnman& connman)
     int nRanksTotal = (int)vecGoldminenodeRanks.size();
 
     // send verify requests only if we are in top MAX_POSE_RANK
-    std::vector<std::pair<int, CGoldminenode> >::iterator it = vecGoldminenodeRanks.begin();
+    rank_pair_vec_t::iterator it = vecGoldminenodeRanks.begin();
     while(it != vecGoldminenodeRanks.end()) {
         if(it->first > MAX_POSE_RANK) {
             LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Must be in top %d to send verify request\n",
                         (int)MAX_POSE_RANK);
             return;
         }
-        if(it->second.vin.prevout == activeGoldminenode.outpoint) {
+        if(it->second.outpoint == activeGoldminenode.outpoint) {
             nMyRank = it->first;
             LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Found self at rank %d/%d, verifying up to %d goldminenodes\n",
                         nMyRank, nRanksTotal, (int)MAX_POSE_CONNECTIONS);
@@ -1025,8 +1032,8 @@ void CGoldminenodeMan::DoFullVerificationStep(CConnman& connman)
     int nOffset = MAX_POSE_RANK + nMyRank - 1;
     if(nOffset >= (int)vecGoldminenodeRanks.size()) return;
 
-    std::vector<CGoldminenode*> vSortedByAddr;
-    for (auto& mnpair : mapGoldminenodes) {
+    std::vector<const CGoldminenode*> vSortedByAddr;
+    for (const auto& mnpair : mapGoldminenodes) {
         vSortedByAddr.push_back(&mnpair.second);
     }
 
@@ -1039,14 +1046,14 @@ void CGoldminenodeMan::DoFullVerificationStep(CConnman& connman)
                         it->second.IsPoSeVerified() ? "verified" : "",
                         it->second.IsPoSeVerified() && it->second.IsPoSeBanned() ? " and " : "",
                         it->second.IsPoSeBanned() ? "banned" : "",
-                        it->second.vin.prevout.ToStringShort(), it->second.addr.ToString());
+                        it->second.outpoint.ToStringShort(), it->second.addr.ToString());
             nOffset += MAX_POSE_CONNECTIONS;
             if(nOffset >= (int)vecGoldminenodeRanks.size()) break;
             it += MAX_POSE_CONNECTIONS;
             continue;
         }
         LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Verifying goldminenode %s rank %d/%d address %s\n",
-                    it->second.vin.prevout.ToStringShort(), it->first, nRanksTotal, it->second.addr.ToString());
+                    it->second.outpoint.ToStringShort(), it->first, nRanksTotal, it->second.addr.ToString());
         if(SendVerifyRequest(CAddress(it->second.addr, NODE_NETWORK), vSortedByAddr, connman)) {
             nCount++;
             if(nCount >= MAX_POSE_CONNECTIONS) break;
@@ -1058,7 +1065,6 @@ void CGoldminenodeMan::DoFullVerificationStep(CConnman& connman)
 
     LogPrint("goldminenode", "CGoldminenodeMan::DoFullVerificationStep -- Sent verification requests to %d goldminenodes\n", nCount);
 }
-
 
 // This function tries to find goldminenodes with the same addr,
 // find a verified one and ban all the other. If there are many nodes
@@ -1084,7 +1090,7 @@ void CGoldminenodeMan::CheckSameAddr()
 
         sort(vSortedByAddr.begin(), vSortedByAddr.end(), CompareByAddr());
 
-        BOOST_FOREACH(CGoldminenode* pmn, vSortedByAddr) {
+        for (const auto& pmn : vSortedByAddr) {
             // check only (pre)enabled goldminenodes
             if(!pmn->IsEnabled() && !pmn->IsPreEnabled()) continue;
             // initial step
@@ -1112,13 +1118,13 @@ void CGoldminenodeMan::CheckSameAddr()
     }
 
     // ban duplicates
-    BOOST_FOREACH(CGoldminenode* pmn, vBan) {
-        LogPrintf("CGoldminenodeMan::CheckSameAddr -- increasing PoSe ban score for goldminenode %s\n", pmn->vin.prevout.ToStringShort());
+    for (auto& pmn : vBan) {
+        LogPrintf("CGoldminenodeMan::CheckSameAddr -- increasing PoSe ban score for goldminenode %s\n", pmn->outpoint.ToStringShort());
         pmn->IncreasePoSeBanScore();
     }
 }
 
-bool CGoldminenodeMan::SendVerifyRequest(const CAddress& addr, const std::vector<CGoldminenode*>& vSortedByAddr, CConnman& connman)
+bool CGoldminenodeMan::SendVerifyRequest(const CAddress& addr, const std::vector<const CGoldminenode*>& vSortedByAddr, CConnman& connman)
 {
     if(netfulfilledman.HasFulfilledRequest(addr, strprintf("%s", NetMsgType::MNVERIFY)+"-request")) {
         // we already asked for verification, not a good idea to do this too often, skip it
@@ -1126,27 +1132,53 @@ bool CGoldminenodeMan::SendVerifyRequest(const CAddress& addr, const std::vector
         return false;
     }
 
-    CNode* pnode = connman.ConnectNode(addr, NULL, true);
-    if(pnode == NULL) {
-        LogPrintf("CGoldminenodeMan::SendVerifyRequest -- can't connect to node to verify it, addr=%s\n", addr.ToString());
-        return false;
-    }
+    if (connman.IsGoldminenodeOrDisconnectRequested(addr)) return false;
 
-    netfulfilledman.AddFulfilledRequest(addr, strprintf("%s", NetMsgType::MNVERIFY)+"-request");
+    connman.AddPendingGoldminenode(addr);
     // use random nonce, store it and require node to reply with correct one later
     CGoldminenodeVerification mnv(addr, GetRandInt(999999), nCachedBlockHeight - 1);
-    mWeAskedForVerification[addr] = mnv;
+    LOCK(cs_mapPendingMNV);
+    mapPendingMNV.insert(std::make_pair(addr, std::make_pair(GetTime(), mnv)));
     LogPrintf("CGoldminenodeMan::SendVerifyRequest -- verifying node using nonce %d addr=%s\n", mnv.nonce, addr.ToString());
-    connman.PushMessage(pnode, NetMsgType::MNVERIFY, mnv);
-
     return true;
 }
 
-//--.
+void CGoldminenodeMan::ProcessPendingMnvRequests(CConnman& connman)
+{
+    LOCK(cs_mapPendingMNV);
+
+    std::map<CService, std::pair<int64_t, CGoldminenodeVerification> >::iterator itPendingMNV = mapPendingMNV.begin();
+
+    while (itPendingMNV != mapPendingMNV.end()) {
+        bool fDone = connman.ForNode(itPendingMNV->first, [&](CNode* pnode) {
+            netfulfilledman.AddFulfilledRequest(pnode->addr, strprintf("%s", NetMsgType::MNVERIFY)+"-request");
+            // use random nonce, store it and require node to reply with correct one later
+            mWeAskedForVerification[pnode->addr] = itPendingMNV->second.second;
+            LogPrint("goldminenode", "-- verifying node using nonce %d addr=%s\n", itPendingMNV->second.second.nonce, pnode->addr.ToString());
+            CNetMsgMaker msgMaker(pnode->GetSendVersion()); // TODO this gives a warning about version not being set (we should wait for VERSION exchange)
+            connman.PushMessage(pnode, msgMaker.Make(NetMsgType::MNVERIFY, itPendingMNV->second.second));
+            return true;
+        });
+
+        int64_t nTimeAdded = itPendingMNV->second.first;
+        if (fDone || (GetTime() - nTimeAdded > 15)) {
+            if (!fDone) {
+                LogPrint("goldminenode", "CGoldminenodeMan::%s -- failed to connect to %s\n", __func__, itPendingMNV->first.ToString());
+            }
+            mapPendingMNV.erase(itPendingMNV++);
+        } else {
+            ++itPendingMNV;
+        }
+    }
+    LogPrint("goldminenode", "%s -- mapPendingMNV size: %d\n", __func__, mapPendingMNV.size());
+}
+
 void CGoldminenodeMan::SendVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv, CConnman& connman)
 {
+    AssertLockHeld(cs_main);
+
     // only goldminenodes can sign this, why would someone ask regular node?
-    if(!fGoldmineNode) {
+    if(!fGoldminenodeMode) {
         // do not ban, malicious node might be using my IP
         // and trying to confuse the node which tries to verify it
         return;
@@ -1165,26 +1197,43 @@ void CGoldminenodeMan::SendVerifyReply(CNode* pnode, CGoldminenodeVerification& 
         return;
     }
 
-    std::string strMessage = strprintf("%s%d%s", activeGoldminenode.service.ToString(false), mnv.nonce, blockHash.ToString());
-
-    if(!CMessageSigner::SignMessage(strMessage, mnv.vchSig1, activeGoldminenode.keyGoldminenode)) {
-        LogPrintf("GoldminenodeMan::SendVerifyReply -- SignMessage() failed\n");
-        return;
-    }
-
     std::string strError;
 
-    if(!CMessageSigner::VerifyMessage(activeGoldminenode.pubKeyGoldminenode, mnv.vchSig1, strMessage, strError)) {
-        LogPrintf("GoldminenodeMan::SendVerifyReply -- VerifyMessage() failed, error: %s\n", strError);
-        return;
+    if (sporkManager.IsSporkActive(SPORK_6_NEW_SIGS)) {
+        uint256 hash = mnv.GetSignatureHash1(blockHash);
+
+        if(!CHashSigner::SignHash(hash, activeGoldminenode.keyGoldminenode, mnv.vchSig1)) {
+            LogPrintf("CGoldminenodeMan::SendVerifyReply -- SignHash() failed\n");
+            return;
+        }
+
+        if (!CHashSigner::VerifyHash(hash, activeGoldminenode.pubKeyGoldminenode, mnv.vchSig1, strError)) {
+            LogPrintf("CGoldminenodeMan::SendVerifyReply -- VerifyHash() failed, error: %s\n", strError);
+            return;
+        }
+    } else {
+        std::string strMessage = strprintf("%s%d%s", activeGoldminenode.service.ToString(false), mnv.nonce, blockHash.ToString());
+
+        if(!CMessageSigner::SignMessage(strMessage, mnv.vchSig1, activeGoldminenode.keyGoldminenode)) {
+            LogPrintf("GoldminenodeMan::SendVerifyReply -- SignMessage() failed\n");
+            return;
+        }
+
+        if(!CMessageSigner::VerifyMessage(activeGoldminenode.pubKeyGoldminenode, mnv.vchSig1, strMessage, strError)) {
+            LogPrintf("GoldminenodeMan::SendVerifyReply -- VerifyMessage() failed, error: %s\n", strError);
+            return;
+        }
     }
 
-    connman.PushMessage(pnode, NetMsgType::MNVERIFY, mnv);
+    CNetMsgMaker msgMaker(pnode->GetSendVersion());
+    connman.PushMessage(pnode, msgMaker.Make(NetMsgType::MNVERIFY, mnv));
     netfulfilledman.AddFulfilledRequest(pnode->addr, strprintf("%s", NetMsgType::MNVERIFY)+"-reply");
 }
 
 void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerification& mnv)
 {
+    AssertLockHeld(cs_main);
+
     std::string strError;
 
     // did we even ask for it? if that's the case we should have matching fulfilled request
@@ -1229,10 +1278,20 @@ void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerificatio
 
         CGoldminenode* prealGoldminenode = NULL;
         std::vector<CGoldminenode*> vpGoldminenodesToBan;
+
+        uint256 hash1 = mnv.GetSignatureHash1(blockHash);
         std::string strMessage1 = strprintf("%s%d%s", pnode->addr.ToString(false), mnv.nonce, blockHash.ToString());
+
         for (auto& mnpair : mapGoldminenodes) {
             if(CAddress(mnpair.second.addr, NODE_NETWORK) == pnode->addr) {
-                if(CMessageSigner::VerifyMessage(mnpair.second.pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
+                bool fFound = false;
+                if (sporkManager.IsSporkActive(SPORK_6_NEW_SIGS)) {
+                    fFound = CHashSigner::VerifyHash(hash1, mnpair.second.pubKeyGoldminenode, mnv.vchSig1, strError);
+                    // we don't care about mnv with signature in old format
+                } else {
+                    fFound = CMessageSigner::VerifyMessage(mnpair.second.pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError);
+                }
+                if (fFound) {
                     // found it!
                     prealGoldminenode = &mnpair.second;
                     if(!mnpair.second.IsPoSeVerified()) {
@@ -1241,24 +1300,39 @@ void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerificatio
                     netfulfilledman.AddFulfilledRequest(pnode->addr, strprintf("%s", NetMsgType::MNVERIFY)+"-done");
 
                     // we can only broadcast it if we are an activated goldminenode
-                    if(activeGoldminenode.outpoint == COutPoint()) continue;
+                    if(activeGoldminenode.outpoint.IsNull()) continue;
                     // update ...
                     mnv.addr = mnpair.second.addr;
-                    mnv.vin1 = mnpair.second.vin;
-                    mnv.vin2 = CTxIn(activeGoldminenode.outpoint);
-                    std::string strMessage2 = strprintf("%s%d%s%s%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString(),
-                                            mnv.vin1.prevout.ToStringShort(), mnv.vin2.prevout.ToStringShort());
+                    mnv.goldminenodeOutpoint1 = mnpair.second.outpoint;
+                    mnv.goldminenodeOutpoint2 = activeGoldminenode.outpoint;
                     // ... and sign it
-                    if(!CMessageSigner::SignMessage(strMessage2, mnv.vchSig2, activeGoldminenode.keyGoldminenode)) {
-                        LogPrintf("GoldminenodeMan::ProcessVerifyReply -- SignMessage() failed\n");
-                        return;
-                    }
-
                     std::string strError;
 
-                    if(!CMessageSigner::VerifyMessage(activeGoldminenode.pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
-                        LogPrintf("GoldminenodeMan::ProcessVerifyReply -- VerifyMessage() failed, error: %s\n", strError);
-                        return;
+                    if (sporkManager.IsSporkActive(SPORK_6_NEW_SIGS)) {
+                        uint256 hash2 = mnv.GetSignatureHash2(blockHash);
+
+                        if(!CHashSigner::SignHash(hash2, activeGoldminenode.keyGoldminenode, mnv.vchSig2)) {
+                            LogPrintf("GoldminenodeMan::ProcessVerifyReply -- SignHash() failed\n");
+                            return;
+                        }
+
+                        if(!CHashSigner::VerifyHash(hash2, activeGoldminenode.pubKeyGoldminenode, mnv.vchSig2, strError)) {
+                            LogPrintf("GoldminenodeMan::ProcessVerifyReply -- VerifyHash() failed, error: %s\n", strError);
+                            return;
+                        }
+                    } else {
+                        std::string strMessage2 = strprintf("%s%d%s%s%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString(),
+                                                mnv.goldminenodeOutpoint1.ToStringShort(), mnv.goldminenodeOutpoint2.ToStringShort());
+
+                        if(!CMessageSigner::SignMessage(strMessage2, mnv.vchSig2, activeGoldminenode.keyGoldminenode)) {
+                            LogPrintf("GoldminenodeMan::ProcessVerifyReply -- SignMessage() failed\n");
+                            return;
+                        }
+
+                        if(!CMessageSigner::VerifyMessage(activeGoldminenode.pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
+                            LogPrintf("GoldminenodeMan::ProcessVerifyReply -- VerifyMessage() failed, error: %s\n", strError);
+                            return;
+                        }
                     }
 
                     mWeAskedForVerification[pnode->addr] = mnv;
@@ -1279,12 +1353,12 @@ void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerificatio
             return;
         }
         LogPrintf("CGoldminenodeMan::ProcessVerifyReply -- verified real goldminenode %s for addr %s\n",
-                    prealGoldminenode->vin.prevout.ToStringShort(), pnode->addr.ToString());
+                    prealGoldminenode->outpoint.ToStringShort(), pnode->addr.ToString());
         // increase ban score for everyone else
-        BOOST_FOREACH(CGoldminenode* pmn, vpGoldminenodesToBan) {
+        for (const auto& pmn : vpGoldminenodesToBan) {
             pmn->IncreasePoSeBanScore();
             LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyReply -- increased PoSe ban score for %s addr %s, new score %d\n",
-                        prealGoldminenode->vin.prevout.ToStringShort(), pnode->addr.ToString(), pmn->nPoSeBanScore);
+                        prealGoldminenode->outpoint.ToStringShort(), pnode->addr.ToString(), pmn->nPoSeBanScore);
         }
         if(!vpGoldminenodesToBan.empty())
             LogPrintf("CGoldminenodeMan::ProcessVerifyReply -- PoSe score increased for %d fake goldminenodes, addr %s\n",
@@ -1294,6 +1368,8 @@ void CGoldminenodeMan::ProcessVerifyReply(CNode* pnode, CGoldminenodeVerificatio
 
 void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeVerification& mnv)
 {
+    AssertLockHeld(cs_main);
+
     std::string strError;
 
     if(mapSeenGoldminenodeVerification.find(mnv.GetHash()) != mapSeenGoldminenodeVerification.end()) {
@@ -1309,9 +1385,9 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
         return;
     }
 
-    if(mnv.vin1.prevout == mnv.vin2.prevout) {
-        LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- ERROR: same vins %s, peer=%d\n",
-                    mnv.vin1.prevout.ToStringShort(), pnode->id);
+    if(mnv.goldminenodeOutpoint1 == mnv.goldminenodeOutpoint2) {
+        LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- ERROR: same outpoints %s, peer=%d\n",
+                    mnv.goldminenodeOutpoint1.ToStringShort(), pnode->id);
         // that was NOT a good idea to cheat and verify itself,
         // ban the node we received such message from
         Misbehaving(pnode->id, 100);
@@ -1327,34 +1403,30 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
 
     int nRank;
 
-    if (!GetGoldminenodeRank(mnv.vin2.prevout, nRank, mnv.nBlockHeight, MIN_POSE_PROTO_VERSION)) {
+    if (!GetGoldminenodeRank(mnv.goldminenodeOutpoint2, nRank, mnv.nBlockHeight, MIN_POSE_PROTO_VERSION)) {
         LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- Can't calculate rank for goldminenode %s\n",
-                    mnv.vin2.prevout.ToStringShort());
+                    mnv.goldminenodeOutpoint2.ToStringShort());
         return;
     }
 
     if(nRank > MAX_POSE_RANK) {
         LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- Goldminenode %s is not in top %d, current rank %d, peer=%d\n",
-                    mnv.vin2.prevout.ToStringShort(), (int)MAX_POSE_RANK, nRank, pnode->id);
+                    mnv.goldminenodeOutpoint2.ToStringShort(), (int)MAX_POSE_RANK, nRank, pnode->id);
         return;
     }
 
     {
         LOCK(cs);
 
-        std::string strMessage1 = strprintf("%s%d%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString());
-        std::string strMessage2 = strprintf("%s%d%s%s%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString(),
-                                mnv.vin1.prevout.ToStringShort(), mnv.vin2.prevout.ToStringShort());
-
-        CGoldminenode* pmn1 = Find(mnv.vin1.prevout);
+        CGoldminenode* pmn1 = Find(mnv.goldminenodeOutpoint1);
         if(!pmn1) {
-            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- can't find goldminenode1 %s\n", mnv.vin1.prevout.ToStringShort());
+            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- can't find goldminenode1 %s\n", mnv.goldminenodeOutpoint1.ToStringShort());
             return;
         }
 
-        CGoldminenode* pmn2 = Find(mnv.vin2.prevout);
+        CGoldminenode* pmn2 = Find(mnv.goldminenodeOutpoint2);
         if(!pmn2) {
-            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- can't find goldminenode2 %s\n", mnv.vin2.prevout.ToStringShort());
+            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- can't find goldminenode2 %s\n", mnv.goldminenodeOutpoint2.ToStringShort());
             return;
         }
 
@@ -1362,42 +1434,48 @@ void CGoldminenodeMan::ProcessVerifyBroadcast(CNode* pnode, const CGoldminenodeV
             LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- addr %s does not match %s\n", mnv.addr.ToString(), pmn1->addr.ToString());
             return;
         }
-		if(sporkManager.IsSporkActive(SPORK_23_GOLDMINENODE_UPDATE_PROTO2))
-		{
-	        if(!CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
-	            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
-	            return;
-	        }
-	
-	        if(!CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
-	            LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
-	            return;
-	        }
-		}
-		else
-		{
-			if(CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
-	            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
-	            return;
-	        }
-	
-	        if(CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
-	            LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
-	            return;
-	        }
-		}
+
+        if (sporkManager.IsSporkActive(SPORK_6_NEW_SIGS)) {
+            uint256 hash1 = mnv.GetSignatureHash1(blockHash);
+            uint256 hash2 = mnv.GetSignatureHash2(blockHash);
+
+            if(!CHashSigner::VerifyHash(hash1, pmn1->pubKeyGoldminenode, mnv.vchSig1, strError)) {
+                LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyHash() failed, error: %s\n", strError);
+                return;
+            }
+
+            if(!CHashSigner::VerifyHash(hash2, pmn2->pubKeyGoldminenode, mnv.vchSig2, strError)) {
+                LogPrintf("GoldminenodeMan::ProcessVerifyBroadcast -- VerifyHash() failed, error: %s\n", strError);
+                return;
+            }
+        } else {
+            std::string strMessage1 = strprintf("%s%d%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString());
+            std::string strMessage2 = strprintf("%s%d%s%s%s", mnv.addr.ToString(false), mnv.nonce, blockHash.ToString(),
+                                    mnv.goldminenodeOutpoint1.ToStringShort(), mnv.goldminenodeOutpoint2.ToStringShort());
+
+            if(!CMessageSigner::VerifyMessage(pmn1->pubKeyGoldminenode, mnv.vchSig1, strMessage1, strError)) {
+                LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode1 failed, error: %s\n", strError);
+                return;
+            }
+
+            if(!CMessageSigner::VerifyMessage(pmn2->pubKeyGoldminenode, mnv.vchSig2, strMessage2, strError)) {
+                LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- VerifyMessage() for goldminenode2 failed, error: %s\n", strError);
+                return;
+            }
+        }
+
         if(!pmn1->IsPoSeVerified()) {
             pmn1->DecreasePoSeBanScore();
         }
         mnv.Relay();
 
         LogPrintf("CGoldminenodeMan::ProcessVerifyBroadcast -- verified goldminenode %s for addr %s\n",
-                    pmn1->vin.prevout.ToStringShort(), pmn1->addr.ToString());
+                    pmn1->outpoint.ToStringShort(), pmn1->addr.ToString());
 
         // increase ban score for everyone else with the same addr
         int nCount = 0;
         for (auto& mnpair : mapGoldminenodes) {
-            if(mnpair.second.addr != mnv.addr || mnpair.first == mnv.vin1.prevout) continue;
+            if(mnpair.second.addr != mnv.addr || mnpair.first == mnv.goldminenodeOutpoint1) continue;
             mnpair.second.IncreasePoSeBanScore();
             nCount++;
             LogPrint("goldminenode", "CGoldminenodeMan::ProcessVerifyBroadcast -- increased PoSe ban score for %s addr %s, new score %d\n",
@@ -1422,32 +1500,6 @@ std::string CGoldminenodeMan::ToString() const
     return info.str();
 }
 
-void CGoldminenodeMan::UpdateGoldminenodeList(CGoldminenodeBroadcast mnb, CConnman& connman)
-{
-    LOCK2(cs_main, cs);
-    mapSeenGoldminenodePing.insert(std::make_pair(mnb.lastPing.GetHash(), mnb.lastPing));
-    mapSeenGoldminenodeBroadcast.insert(std::make_pair(mnb.GetHash(), std::make_pair(GetTime(), mnb)));
-
-    LogPrintf("CGoldminenodeMan::UpdateGoldminenodeList -- goldminenode=%s  addr=%s\n", mnb.vin.prevout.ToStringShort(), mnb.addr.ToString());
-
-    CGoldminenode* pmn = Find(mnb.vin.prevout);
-    if(pmn == NULL) 
-	{
-        if(Add(mnb)) 
-		{
-            goldminenodeSync.BumpAssetLastTime("CGoldminenodeMan::UpdateGoldminenodeList - new");
-        }
-    } 
-	else 
-	{
-        CGoldminenodeBroadcast mnbOld = mapSeenGoldminenodeBroadcast[CGoldminenodeBroadcast(*pmn).GetHash()].second;
-        if(pmn->UpdateFromNewBroadcast(mnb, connman)) {
-            goldminenodeSync.BumpAssetLastTime("CGoldminenodeMan::UpdateGoldminenodeList - seen");
-            mapSeenGoldminenodeBroadcast.erase(mnbOld.GetHash());
-        }
-    }
-}
-
 bool CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldminenodeBroadcast mnb, int& nDos, CConnman& connman)
 {
     // Need to lock cs_main here to ensure consistent locking order because the SimpleCheck call below locks cs_main
@@ -1456,39 +1508,33 @@ bool CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldmine
     {
         LOCK(cs);
         nDos = 0;
-        LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s\n", mnb.vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s\n", mnb.outpoint.ToStringShort());
 
         uint256 hash = mnb.GetHash();
-        if(mapSeenGoldminenodeBroadcast.count(hash) && !mnb.fRecovery) 
-		{ //seen
-            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen\n", mnb.vin.prevout.ToStringShort());
+        if(mapSeenGoldminenodeBroadcast.count(hash) && !mnb.fRecovery) { //seen
+            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen\n", mnb.outpoint.ToStringShort());
             // less then 2 pings left before this MN goes into non-recoverable state, bump sync timeout
-            if(GetTime() - mapSeenGoldminenodeBroadcast[hash].first > GOLDMINENODE_NEW_START_REQUIRED_SECONDS - GOLDMINENODE_MIN_MNP_SECONDS * 2) 
-			{
-                LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen update\n", mnb.vin.prevout.ToStringShort());
+            if(GetTime() - mapSeenGoldminenodeBroadcast[hash].first > GOLDMINENODE_NEW_START_REQUIRED_SECONDS - GOLDMINENODE_MIN_MNP_SECONDS * 2) {
+                LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen update\n", mnb.outpoint.ToStringShort());
                 mapSeenGoldminenodeBroadcast[hash].first = GetTime();
                 goldminenodeSync.BumpAssetLastTime("CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList - seen");
             }
             // did we ask this node for it?
-            if(pfrom && IsMnbRecoveryRequested(hash) && GetTime() < mMnbRecoveryRequests[hash].first) 
-			{
+            if(pfrom && IsMnbRecoveryRequested(hash) && GetTime() < mMnbRecoveryRequests[hash].first) {
                 LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- mnb=%s seen request\n", hash.ToString());
-                if(mMnbRecoveryRequests[hash].second.count(pfrom->addr)) 
-				{
+                if(mMnbRecoveryRequests[hash].second.count(pfrom->addr)) {
                     LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- mnb=%s seen request, addr=%s\n", hash.ToString(), pfrom->addr.ToString());
                     // do not allow node to send same mnb multiple times in recovery mode
                     mMnbRecoveryRequests[hash].second.erase(pfrom->addr);
                     // does it have newer lastPing?
-                    if(mnb.lastPing.sigTime > mapSeenGoldminenodeBroadcast[hash].second.lastPing.sigTime) 
-					{
+                    if(mnb.lastPing.sigTime > mapSeenGoldminenodeBroadcast[hash].second.lastPing.sigTime) {
                         // simulate Check
                         CGoldminenode mnTemp = CGoldminenode(mnb);
                         mnTemp.Check();
                         LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- mnb=%s seen request, addr=%s, better lastPing: %d min ago, projected mn state: %s\n", hash.ToString(), pfrom->addr.ToString(), (GetAdjustedTime() - mnb.lastPing.sigTime)/60, mnTemp.GetStateString());
-                        if(mnTemp.IsValidStateForAutoStart(mnTemp.nActiveState)) 
-						{
+                        if(mnTemp.IsValidStateForAutoStart(mnTemp.nActiveState)) {
                             // this node thinks it's a good one
-                            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen good\n", mnb.vin.prevout.ToStringShort());
+                            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s seen good\n", mnb.outpoint.ToStringShort());
                             mMnbRecoveryGoodReplies[hash].push_back(mnb);
                         }
                     }
@@ -1498,43 +1544,38 @@ bool CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldmine
         }
         mapSeenGoldminenodeBroadcast.insert(std::make_pair(hash, std::make_pair(GetTime(), mnb)));
 
-        LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s new\n", mnb.vin.prevout.ToStringShort());
+        LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- goldminenode=%s new\n", mnb.outpoint.ToStringShort());
 
-        if(!mnb.SimpleCheck(nDos)) 
-		{
-            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- SimpleCheck() failed, goldminenode=%s\n", mnb.vin.prevout.ToStringShort());
+        if(!mnb.SimpleCheck(nDos)) {
+            LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- SimpleCheck() failed, goldminenode=%s\n", mnb.outpoint.ToStringShort());
             return false;
         }
 
         // search Goldminenode list
-        CGoldminenode* pmn = Find(mnb.vin.prevout);
-        if(pmn) 
-		{
+        CGoldminenode* pmn = Find(mnb.outpoint);
+        if(pmn) {
             CGoldminenodeBroadcast mnbOld = mapSeenGoldminenodeBroadcast[CGoldminenodeBroadcast(*pmn).GetHash()].second;
-            if(!mnb.Update(pmn, nDos, connman)) 
-			{
-                LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- Update() failed, goldminenode=%s\n", mnb.vin.prevout.ToStringShort());
+            if(!mnb.Update(pmn, nDos, connman)) {
+                LogPrint("goldminenode", "CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- Update() failed, goldminenode=%s\n", mnb.outpoint.ToStringShort());
                 return false;
             }
-            if(hash != mnbOld.GetHash()) 
-			{
+            if(hash != mnbOld.GetHash()) {
                 mapSeenGoldminenodeBroadcast.erase(mnbOld.GetHash());
             }
             return true;
         }
     }
 
-    if(mnb.CheckOutpoint(nDos)) 
-	{
+    if(mnb.CheckOutpoint(nDos)) {
         Add(mnb);
         goldminenodeSync.BumpAssetLastTime("CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList - new");
         // if it matches our Goldminenode privkey...
-        if(fGoldmineNode && mnb.pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
+        if(fGoldminenodeMode && mnb.pubKeyGoldminenode == activeGoldminenode.pubKeyGoldminenode) {
             mnb.nPoSeBanScore = -GOLDMINENODE_POSE_BAN_MAX_SCORE;
             if(mnb.nProtocolVersion == PROTOCOL_VERSION) {
                 // ... and PROTOCOL_VERSION, then we've been remotely activated ...
                 LogPrintf("CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- Got NEW Goldminenode entry: goldminenode=%s  sigTime=%lld  addr=%s\n",
-                            mnb.vin.prevout.ToStringShort(), mnb.sigTime, mnb.addr.ToString());
+                            mnb.outpoint.ToStringShort(), mnb.sigTime, mnb.addr.ToString());
                 activeGoldminenode.ManageState(connman);
             } else {
                 // ... otherwise we need to reactivate our node, do not add it to the list and do not relay
@@ -1545,7 +1586,7 @@ bool CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList(CNode* pfrom, CGoldmine
         }
         mnb.Relay(connman);
     } else {
-        LogPrintf("CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- Rejected Goldminenode entry: %s  addr=%s\n", mnb.vin.prevout.ToStringShort(), mnb.addr.ToString());
+        LogPrintf("CGoldminenodeMan::CheckMnbAndUpdateGoldminenodeList -- Rejected Goldminenode entry: %s  addr=%s\n", mnb.outpoint.ToStringShort(), mnb.addr.ToString());
         return false;
     }
 
@@ -1558,42 +1599,37 @@ void CGoldminenodeMan::UpdateLastPaid(const CBlockIndex* pindex)
 
     if(fLiteMode || !goldminenodeSync.IsWinnersListSynced() || mapGoldminenodes.empty()) return;
 
-    static bool IsFirstRun = true;
-    // Do full scan on first run or if we are not a goldminenode
-    // (MNs should update this info on every block, so limited scan should be enough for them)
-    int nMaxBlocksToScanBack = (IsFirstRun || !fGoldmineNode) ? mnpayments.GetStorageLimit() : LAST_PAID_SCAN_BLOCKS;
+    static int nLastRunBlockHeight = 0;
+    // Scan at least LAST_PAID_SCAN_BLOCKS but no more than mnpayments.GetStorageLimit()
+    int nMaxBlocksToScanBack = std::max(LAST_PAID_SCAN_BLOCKS, nCachedBlockHeight - nLastRunBlockHeight);
+    nMaxBlocksToScanBack = std::min(nMaxBlocksToScanBack, mnpayments.GetStorageLimit());
 
-    // LogPrint("mnpayments", "CGoldminenodeMan::UpdateLastPaid -- nHeight=%d, nMaxBlocksToScanBack=%d, IsFirstRun=%s\n",
-    //                         nCachedBlockHeight, nMaxBlocksToScanBack, IsFirstRun ? "true" : "false");
+    LogPrint("goldminenode", "CGoldminenodeMan::UpdateLastPaid -- nCachedBlockHeight=%d, nLastRunBlockHeight=%d, nMaxBlocksToScanBack=%d\n",
+                            nCachedBlockHeight, nLastRunBlockHeight, nMaxBlocksToScanBack);
 
-    for (auto& mnpair: mapGoldminenodes) {
+    for (auto& mnpair : mapGoldminenodes) {
         mnpair.second.UpdateLastPaid(pindex, nMaxBlocksToScanBack);
     }
 
-    IsFirstRun = false;
+    nLastRunBlockHeight = nCachedBlockHeight;
 }
 
-void CGoldminenodeMan::UpdateWatchdogVoteTime(const COutPoint& outpoint, uint64_t nVoteTime)
+void CGoldminenodeMan::UpdateLastSentinelPingTime()
 {
     LOCK(cs);
-    CGoldminenode* pmn = Find(outpoint);
-    if(!pmn) {
-        return;
-    }
-    pmn->UpdateWatchdogVoteTime(nVoteTime);
-    nLastWatchdogVoteTime = GetTime();
+    nLastSentinelPingTime = GetTime();
 }
 
-bool CGoldminenodeMan::IsWatchdogActive()
+bool CGoldminenodeMan::IsSentinelPingActive()
 {
     LOCK(cs);
     // Check if any goldminenodes have voted recently, otherwise return false
-    return (GetTime() - nLastWatchdogVoteTime) <= GOLDMINENODE_WATCHDOG_MAX_SECONDS;
+    return (GetTime() - nLastSentinelPingTime) <= GOLDMINENODE_SENTINEL_PING_MAX_SECONDS;
 }
 
 void CGoldminenodeMan::CheckGoldminenode(const CPubKey& pubKeyGoldminenode, bool fForce)
 {
-    LOCK(cs);
+    LOCK2(cs_main, cs);
     for (auto& mnpair : mapGoldminenodes) {
         if (mnpair.second.pubKeyGoldminenode == pubKeyGoldminenode) {
             mnpair.second.Check(fForce);
@@ -1617,11 +1653,8 @@ void CGoldminenodeMan::SetGoldminenodeLastPing(const COutPoint& outpoint, const 
         return;
     }
     pmn->lastPing = mnp;
-    // if goldminenode uses sentinel ping instead of watchdog
-    // we shoud update nTimeLastWatchdogVote here if sentinel
-    // ping flag is actual
     if(mnp.fSentinelIsCurrent) {
-        UpdateWatchdogVoteTime(mnp.vin.prevout, mnp.sigTime);
+        UpdateLastSentinelPingTime();
     }
     mapSeenGoldminenodePing.insert(std::make_pair(mnp.GetHash(), mnp));
 
@@ -1639,15 +1672,53 @@ void CGoldminenodeMan::UpdatedBlockTip(const CBlockIndex *pindex)
 
     CheckSameAddr();
 
-    if(fGoldmineNode) {
+    if(fGoldminenodeMode) {
         // normal wallet does not need to update this every block, doing update on rpc call should be enough
         UpdateLastPaid(pindex);
     }
 }
 
-void CGoldminenodeMan::NotifyGoldminenodeUpdates(CConnman& connman)
+void CGoldminenodeMan::WarnGoldminenodeDaemonUpdates()
 {
     LOCK(cs);
-    fGoldminenodesAdded = false;
-    fGoldminenodesRemoved = false;
+
+    static bool fWarned = false;
+
+    if (fWarned || !size() || !goldminenodeSync.IsGoldminenodeListSynced())
+        return;
+
+    int nUpdatedGoldminenodes{0};
+
+    for (const auto& mnpair : mapGoldminenodes) {
+        if (mnpair.second.lastPing.nDaemonVersion > CLIENT_VERSION) {
+            ++nUpdatedGoldminenodes;
+        }
+    }
+
+    // Warn only when at least half of known goldminenodes already updated
+    if (nUpdatedGoldminenodes < size() / 2)
+        return;
+
+    std::string strWarning;
+    if (nUpdatedGoldminenodes != size()) {
+        strWarning = strprintf(_("Warning: At least %d of %d goldminenodes are running on a newer software version. Please check latest releases, you might need to update too."),
+                    nUpdatedGoldminenodes, size());
+    } else {
+        // someone was postponing this update for way too long probably
+        strWarning = strprintf(_("Warning: Every goldminenode (out of %d known ones) is running on a newer software version. Please check latest releases, it's very likely that you missed a major/critical update."),
+                    size());
+    }
+
+    // notify GetWarnings(), called by Qt and the JSON-RPC code to warn the user
+    SetMiscWarning(strWarning);
+    // trigger GUI update
+    uiInterface.NotifyAlertChanged(SerializeHash(strWarning), CT_NEW);
+    // trigger cmd-line notification
+    CAlert::Notify(strWarning);
+
+    fWarned = true;
+}
+
+void CGoldminenodeMan::NotifyGoldminenodeUpdates(CConnman& connman)
+{
 }

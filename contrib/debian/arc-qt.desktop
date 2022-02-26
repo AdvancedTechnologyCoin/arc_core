@@ -1,7 +1,8 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Arc
+Name=Arc Core
 Comment=Arc P2P Cryptocurrency
+Comment[de]=Verbinde mit dem Arc peer-to-peer Netzwerk
 Comment[fr]=Arc, monnaie virtuelle cryptographique pair à pair
 Comment[tr]=Arc, eşten eşe kriptografik sanal para birimi
 Exec=arc-qt %u

@@ -39,6 +39,7 @@ typedef enum arcconsensus_error_t
     arcconsensus_ERR_TX_INDEX,
     arcconsensus_ERR_TX_SIZE_MISMATCH,
     arcconsensus_ERR_TX_DESERIALIZE,
+    arcconsensus_ERR_INVALID_FLAGS,
 } arcconsensus_error;
 
 /** Script verification flags */
@@ -47,7 +48,12 @@ enum
     arcconsensus_SCRIPT_FLAGS_VERIFY_NONE                = 0,
     arcconsensus_SCRIPT_FLAGS_VERIFY_P2SH                = (1U << 0), // evaluate P2SH (BIP16) subscripts
     arcconsensus_SCRIPT_FLAGS_VERIFY_DERSIG              = (1U << 2), // enforce strict DER (BIP66) compliance
+    arcconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY           = (1U << 4), // enforce NULLDUMMY (BIP147)
     arcconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY = (1U << 9), // enable CHECKLOCKTIMEVERIFY (BIP65)
+    arcconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY = (1U << 10), // enable CHECKSEQUENCEVERIFY (BIP112)
+    arcconsensus_SCRIPT_FLAGS_VERIFY_ALL                 = arcconsensus_SCRIPT_FLAGS_VERIFY_P2SH | arcconsensus_SCRIPT_FLAGS_VERIFY_DERSIG |
+                                                            arcconsensus_SCRIPT_FLAGS_VERIFY_NULLDUMMY | arcconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY |
+                                                            arcconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY
 };
 
 /// Returns 1 if the input nIn of the serialized transaction pointed to by

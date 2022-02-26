@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Advanced Technology Coin and Eternity Group
+// Copyright (c) 2017-2022 The Advanced Technology Coin
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,6 +6,7 @@
 #include "goldminenode.h"
 #include "goldminenode-sync.h"
 #include "goldminenodeman.h"
+#include "netbase.h"
 #include "protocol.h"
 
 // Keep track of the active Goldminenode
@@ -14,7 +15,7 @@ CActiveGoldminenode activeGoldminenode;
 void CActiveGoldminenode::ManageState(CConnman& connman)
 {
     LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- Start\n");
-    if(!fGoldmineNode) {
+    if(!fGoldminenodeMode) {
         LogPrint("goldminenode", "CActiveGoldminenode::ManageState -- Not a goldminenode, returning\n");
         return;
     }
@@ -97,7 +98,7 @@ bool CActiveGoldminenode::SendGoldminenodePing(CConnman& connman)
     CGoldminenodePing mnp(outpoint);
     mnp.nSentinelVersion = nSentinelVersion;
     mnp.fSentinelIsCurrent =
-            (abs(GetAdjustedTime() - nSentinelPingTime) < GOLDMINENODE_WATCHDOG_MAX_SECONDS);
+            (abs(GetAdjustedTime() - nSentinelPingTime) < GOLDMINENODE_SENTINEL_PING_MAX_SECONDS);
     if(!mnp.Sign(keyGoldminenode, pubKeyGoldminenode)) {
         LogPrintf("CActiveGoldminenode::SendGoldminenodePing -- ERROR: Couldn't sign Goldminenode Ping\n");
         return false;
@@ -180,9 +181,13 @@ void CActiveGoldminenode::ManageStateInitial(CConnman& connman)
         return;
     }
 
+    // Check socket connectivity
     LogPrintf("CActiveGoldminenode::ManageStateInitial -- Checking inbound connection to '%s'\n", service.ToString());
+    SOCKET hSocket;
+    bool fConnected = ConnectSocket(service, hSocket, nConnectTimeout) && IsSelectableSocket(hSocket);
+    CloseSocket(hSocket);
 
-    if(!connman.ConnectNode(CAddress(service, NODE_NETWORK), NULL, true)) {
+    if (!fConnected) {
         nState = ACTIVE_GOLDMINENODE_NOT_CAPABLE;
         strNotCapableReason = "Could not connect to " + service.ToString();
         LogPrintf("CActiveGoldminenode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
@@ -223,7 +228,7 @@ void CActiveGoldminenode::ManageStateRemote()
         }
         if(nState != ACTIVE_GOLDMINENODE_STARTED) {
             LogPrintf("CActiveGoldminenode::ManageStateRemote -- STARTED!\n");
-            outpoint = infoMn.vin.prevout;
+            outpoint = infoMn.outpoint;
             service = infoMn.addr;
             fPingerEnabled = true;
             nState = ACTIVE_GOLDMINENODE_STARTED;

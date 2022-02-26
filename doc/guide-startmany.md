@@ -18,7 +18,7 @@ Close your QT Wallet.
 
 ### Send 1000 ARC to New Addresses
 
-Send exactly 10000 ARC to each new address created above.
+Send exactly 1000 ARC to each new address created above.
 
 ### Create New Goldminenode Private Keys
 
@@ -53,7 +53,7 @@ Issue the following:
 Make note of the hash (which is your collateral_output) and index.
 
 ### Enter your Goldminenode details into your goldminenode.conf file
-[From the arc github repo](https://github.com/AdvancedTechnologyCoin/arc/blob/master/doc/goldminenode_conf.md)
+[From the arc github repo](https://github.com/AdvancedTechnologyCoin/arc_core/blob/master/doc/goldminenode_conf.md)
 
 `goldminenode.conf` format is a space seperated text file. Each line consisting of an alias, IP address followed by port, goldminenode private key, collateral output transaction id and collateral output index.
 
@@ -64,8 +64,8 @@ alias ipaddress:port goldminenode_private_key collateral_output collateral_outpu
 Example:
 
 ```
-gm01 127.0.0.1:7209 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0
-gm02 127.0.0.2:7209 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f1034d973377a5e733272c3d0eced1de22555ad45d6b24abadff8087948d4 0
+mn01 127.0.0.1:7209 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0
+mn02 127.0.0.2:7209 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f1034d973377a5e733272c3d0eced1de22555ad45d6b24abadff8087948d4 0
 ```
 
 ## Update arc.conf on server
@@ -89,7 +89,7 @@ You can confirm that remote server is on the correct block by issuing
 
 ```arc-cli getinfo```
 
-and comparing with the official explorer at http://explorer.advtech.group/
+and comparing with the official explorer at https://explorer.arc.org/chain/Arc
 
 ### Local
 
